@@ -1,9 +1,9 @@
 # Documentação Inicial — Interpretador (Grupo 16)
 
-**Linguagem do projeto:** Python
-**Grupo:** Grupo 16
-**Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
-**Objetivo geral:** projetar e implementar um interpretador para uma linguagem simples definida pelo grupo, usando Flex/Bison para a etapa léxica/sintática e Python para a implementação da AST, análise semântica e interpretador.
+* **Linguagem do projeto:** Python
+* **Grupo:** Grupo 16
+* **Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
+* **Objetivo geral:** projetar e implementar um interpretador para uma linguagem simples definida pelo grupo, usando Flex/Bison para a etapa léxica/sintática e Python para a implementação da AST, análise semântica e interpretador.
 
 ---
 
