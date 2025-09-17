@@ -1,15 +1,15 @@
 # Documentação Inicial — Interpretador (Grupo 16)
 
-* **Linguagem do projeto:** Python
+* **Linguagem do projeto:** C/C++
 * **Grupo:** Grupo 16
 * **Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
 * **Objetivo geral:** projetar e implementar um interpretador para uma linguagem simples definida pelo grupo, usando Flex/Bison para a etapa léxica/sintática e Python para a implementação da AST, análise semântica e interpretador.
 
 ---
 
-# 1. Por que usamos Python?
+# 1. Por que usamos C/C++?
 
-* **Protótipo rápido:** Python permite desenvolver e iterar rapidamente estruturas de dados (AST, tabela de símbolos) e componentes do interpretador.
+* **Protótipo rápido:** A Linguagrem C permite desenvolver e iterar rapidamente estruturas de dados (AST, tabela de símbolos) e componentes do interpretador.
 * **Leitura e manutenção:** sintaxe clara e menor boilerplate facilitam o trabalho em equipe.
 * **Bibliotecas e ferramentas:** opção de usar bibliotecas de parsing (ex.: PLY, lark) caso se deseje, além de utilitários para testes e logging.
 * **Integração com Flex/Bison:** Flex/Bison podem gerar a etapa léxica/sintática tradicional; Python é ideal para implementar a camada de execução (AST/interpreter) sem precisar compilar todo o backend em C/C++.
