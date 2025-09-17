@@ -1358,7 +1358,7 @@ yyreduce:
   case 7: /* linha: error NEWLINE  */
 #line 86 "parser.y"
                     {
-        fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", yylineno);
+        fprintf(stderr, "Linha %d: Erro sintático — recuperado até fim da linha\n", yylineno);
         yyerrok; /* limpa o estado de erro do parser */
         hadError = 0;
     }
