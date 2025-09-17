@@ -73,22 +73,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SIMBOLOS 100 
+#define MAX_SIMBOLOS 100
 struct simbolo {
     char nome[50];
     int valor;
 };
 
 struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
-int proximoSimbolo = 0; // Usado para rastrear o proximo indice livre na tabela
+int proximoSimbolo = 0;
 
-// Funções para gerenciar a tabela de símbolos
+/* flag de erro semântico na linha atual */
+int hadError = 0;
+
 int inserir_simbolo(char *nome, int valor) {
     if (proximoSimbolo >= MAX_SIMBOLOS) {
         fprintf(stderr, "Erro: Tabela de símbolos cheia!\n");
         exit(1);
     }
-    strcpy(tabelaSimbolos[proximoSimbolo].nome, nome);
+    strncpy(tabelaSimbolos[proximoSimbolo].nome, nome, sizeof(tabelaSimbolos[proximoSimbolo].nome)-1);
+    tabelaSimbolos[proximoSimbolo].nome[sizeof(tabelaSimbolos[proximoSimbolo].nome)-1] = '\0';
     tabelaSimbolos[proximoSimbolo].valor = valor;
     return proximoSimbolo++;
 }
@@ -102,14 +105,16 @@ int procurar_simbolo(char *nome) {
     return -1;
 }
 
+/* evitar warnings de símbolos do lexer */
+int yylex(void);
+void yyerror(const char *s);
 
-/* Declara a função yylex (gerada pelo Flex) e 
-   a função yyerror, para evitar avisos de declaração implícita. */
+/* acessar a linha do lexer */
+extern int yylineno;
+/* obter texto do token atual (do lexer) */
+extern char *yytext;
 
-  int yylex(void);
-  void yyerror(const char *s);
-
-#line 113 "parser.tab.c"
+#line 118 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -352,7 +357,7 @@ typedef int yy_state_fast_t;
 
 #define YY_ASSERT(E) ((void) (0 && (E)))
 
-#if !defined yyoverflow
+#if 1
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
@@ -417,7 +422,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 # endif
-#endif /* !defined yyoverflow */
+#endif /* 1 */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
@@ -539,34 +544,31 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    62,    62,    63,    67,    68,    69,    70,    74,    87,
-      89,    98,    99,   100,   101,   110
+       0,    70,    70,    72,    76,    82,    85,    86,    94,   107,
+     109,   121,   122,   123,   124,   133
 };
 #endif
 
 /** Accessing symbol of state STATE.  */
 #define YY_ACCESSING_SYMBOL(State) YY_CAST (yysymbol_kind_t, yystos[State])
 
-#if YYDEBUG || 0
+#if 1
 /* The user-facing name of the symbol whose (internal) number is
    YYSYMBOL.  No bounds checking.  */
 static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
 
-/* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-   First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
-static const char *const yytname[] =
-{
-  "\"end of file\"", "error", "\"invalid token\"", "NUM", "NEWLINE",
-  "PLUS", "MINUS", "TIMES", "DIVIDE", "LPAREN", "RPAREN", "ID", "IGUAL",
-  "$accept", "programa", "linha", "atribuicao", "expressao", YY_NULLPTR
-};
-
 static const char *
 yysymbol_name (yysymbol_kind_t yysymbol)
 {
-  return yytname[yysymbol];
+  static const char *const yy_sname[] =
+  {
+  "end of file", "error", "invalid token", "NUM", "NEWLINE", "PLUS",
+  "MINUS", "TIMES", "DIVIDE", "LPAREN", "RPAREN", "ID", "IGUAL", "$accept",
+  "programa", "linha", "atribuicao", "expressao", YY_NULLPTR
+  };
+  return yy_sname[yysymbol];
 }
 #endif
 
@@ -833,8 +835,226 @@ int yydebug;
 #endif
 
 
+/* Context of a parse error.  */
+typedef struct
+{
+  yy_state_t *yyssp;
+  yysymbol_kind_t yytoken;
+} yypcontext_t;
+
+/* Put in YYARG at most YYARGN of the expected tokens given the
+   current YYCTX, and return the number of tokens stored in YYARG.  If
+   YYARG is null, return the number of expected tokens (guaranteed to
+   be less than YYNTOKENS).  Return YYENOMEM on memory exhaustion.
+   Return 0 if there are more than YYARGN expected tokens, yet fill
+   YYARG up to YYARGN. */
+static int
+yypcontext_expected_tokens (const yypcontext_t *yyctx,
+                            yysymbol_kind_t yyarg[], int yyargn)
+{
+  /* Actual size of YYARG. */
+  int yycount = 0;
+  int yyn = yypact[+*yyctx->yyssp];
+  if (!yypact_value_is_default (yyn))
+    {
+      /* Start YYX at -YYN if negative to avoid negative indexes in
+         YYCHECK.  In other words, skip the first -YYN actions for
+         this state because they are default actions.  */
+      int yyxbegin = yyn < 0 ? -yyn : 0;
+      /* Stay within bounds of both yycheck and yytname.  */
+      int yychecklim = YYLAST - yyn + 1;
+      int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+      int yyx;
+      for (yyx = yyxbegin; yyx < yyxend; ++yyx)
+        if (yycheck[yyx + yyn] == yyx && yyx != YYSYMBOL_YYerror
+            && !yytable_value_is_error (yytable[yyx + yyn]))
+          {
+            if (!yyarg)
+              ++yycount;
+            else if (yycount == yyargn)
+              return 0;
+            else
+              yyarg[yycount++] = YY_CAST (yysymbol_kind_t, yyx);
+          }
+    }
+  if (yyarg && yycount == 0 && 0 < yyargn)
+    yyarg[0] = YYSYMBOL_YYEMPTY;
+  return yycount;
+}
 
 
+
+
+#ifndef yystrlen
+# if defined __GLIBC__ && defined _STRING_H
+#  define yystrlen(S) (YY_CAST (YYPTRDIFF_T, strlen (S)))
+# else
+/* Return the length of YYSTR.  */
+static YYPTRDIFF_T
+yystrlen (const char *yystr)
+{
+  YYPTRDIFF_T yylen;
+  for (yylen = 0; yystr[yylen]; yylen++)
+    continue;
+  return yylen;
+}
+# endif
+#endif
+
+#ifndef yystpcpy
+# if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
+#  define yystpcpy stpcpy
+# else
+/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
+   YYDEST.  */
+static char *
+yystpcpy (char *yydest, const char *yysrc)
+{
+  char *yyd = yydest;
+  const char *yys = yysrc;
+
+  while ((*yyd++ = *yys++) != '\0')
+    continue;
+
+  return yyd - 1;
+}
+# endif
+#endif
+
+
+
+static int
+yy_syntax_error_arguments (const yypcontext_t *yyctx,
+                           yysymbol_kind_t yyarg[], int yyargn)
+{
+  /* Actual size of YYARG. */
+  int yycount = 0;
+  /* There are many possibilities here to consider:
+     - If this state is a consistent state with a default action, then
+       the only way this function was invoked is if the default action
+       is an error action.  In that case, don't check for expected
+       tokens because there are none.
+     - The only way there can be no lookahead present (in yychar) is if
+       this state is a consistent state with a default action.  Thus,
+       detecting the absence of a lookahead is sufficient to determine
+       that there is no unexpected or expected token to report.  In that
+       case, just report a simple "syntax error".
+     - Don't assume there isn't a lookahead just because this state is a
+       consistent state with a default action.  There might have been a
+       previous inconsistent state, consistent state with a non-default
+       action, or user semantic action that manipulated yychar.
+     - Of course, the expected token list depends on states to have
+       correct lookahead information, and it depends on the parser not
+       to perform extra reductions after fetching a lookahead from the
+       scanner and before detecting a syntax error.  Thus, state merging
+       (from LALR or IELR) and default reductions corrupt the expected
+       token list.  However, the list is correct for canonical LR with
+       one exception: it will still contain any token that will not be
+       accepted due to an error action in a later state.
+  */
+  if (yyctx->yytoken != YYSYMBOL_YYEMPTY)
+    {
+      int yyn;
+      if (yyarg)
+        yyarg[yycount] = yyctx->yytoken;
+      ++yycount;
+      yyn = yypcontext_expected_tokens (yyctx,
+                                        yyarg ? yyarg + 1 : yyarg, yyargn - 1);
+      if (yyn == YYENOMEM)
+        return YYENOMEM;
+      else
+        yycount += yyn;
+    }
+  return yycount;
+}
+
+/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
+   about the unexpected token YYTOKEN for the state stack whose top is
+   YYSSP.
+
+   Return 0 if *YYMSG was successfully written.  Return -1 if *YYMSG is
+   not large enough to hold the message.  In that case, also set
+   *YYMSG_ALLOC to the required number of bytes.  Return YYENOMEM if the
+   required number of bytes is too large to store.  */
+static int
+yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
+                const yypcontext_t *yyctx)
+{
+  enum { YYARGS_MAX = 5 };
+  /* Internationalized format string. */
+  const char *yyformat = YY_NULLPTR;
+  /* Arguments of yyformat: reported tokens (one for the "unexpected",
+     one per "expected"). */
+  yysymbol_kind_t yyarg[YYARGS_MAX];
+  /* Cumulated lengths of YYARG.  */
+  YYPTRDIFF_T yysize = 0;
+
+  /* Actual size of YYARG. */
+  int yycount = yy_syntax_error_arguments (yyctx, yyarg, YYARGS_MAX);
+  if (yycount == YYENOMEM)
+    return YYENOMEM;
+
+  switch (yycount)
+    {
+#define YYCASE_(N, S)                       \
+      case N:                               \
+        yyformat = S;                       \
+        break
+    default: /* Avoid compiler warnings. */
+      YYCASE_(0, YY_("syntax error"));
+      YYCASE_(1, YY_("syntax error, unexpected %s"));
+      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+#undef YYCASE_
+    }
+
+  /* Compute error message size.  Don't count the "%s"s, but reserve
+     room for the terminator.  */
+  yysize = yystrlen (yyformat) - 2 * yycount + 1;
+  {
+    int yyi;
+    for (yyi = 0; yyi < yycount; ++yyi)
+      {
+        YYPTRDIFF_T yysize1
+          = yysize + yystrlen (yysymbol_name (yyarg[yyi]));
+        if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
+          yysize = yysize1;
+        else
+          return YYENOMEM;
+      }
+  }
+
+  if (*yymsg_alloc < yysize)
+    {
+      *yymsg_alloc = 2 * yysize;
+      if (! (yysize <= *yymsg_alloc
+             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
+        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
+      return -1;
+    }
+
+  /* Avoid sprintf, as that infringes on the user's name space.
+     Don't have undefined behavior even if the translation
+     produced a string with the wrong number of "%s"s.  */
+  {
+    char *yyp = *yymsg;
+    int yyi = 0;
+    while ((*yyp = *yyformat) != '\0')
+      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
+        {
+          yyp = yystpcpy (yyp, yysymbol_name (yyarg[yyi++]));
+          yyformat += 2;
+        }
+      else
+        {
+          ++yyp;
+          ++yyformat;
+        }
+  }
+  return 0;
+}
 
 
 /*-----------------------------------------------.
@@ -903,7 +1123,10 @@ yyparse (void)
      action routines.  */
   YYSTYPE yyval;
 
-
+  /* Buffer for error messages, and its allocated size.  */
+  char yymsgbuf[128];
+  char *yymsg = yymsgbuf;
+  YYPTRDIFF_T yymsg_alloc = sizeof yymsgbuf;
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
@@ -1114,91 +1337,111 @@ yyreduce:
   switch (yyn)
     {
   case 4: /* linha: expressao NEWLINE  */
-#line 67 "parser.y"
-                      { printf("Resultado: %d\n", (yyvsp[-1].valor)); }
-#line 1120 "parser.tab.c"
+#line 76 "parser.y"
+                      {
+        if (!hadError) {
+            printf("Resultado: %d\n", (yyvsp[-1].valor));
+        }
+        hadError = 0; /* reset para próxima linha */
+    }
+#line 1348 "parser.tab.c"
+    break;
+
+  case 5: /* linha: atribuicao NEWLINE  */
+#line 82 "parser.y"
+                         {
+        hadError = 0;
+    }
+#line 1356 "parser.tab.c"
     break;
 
   case 7: /* linha: error NEWLINE  */
-#line 70 "parser.y"
-                    { yyerrok; }
-#line 1126 "parser.tab.c"
+#line 86 "parser.y"
+                    {
+        fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", yylineno);
+        yyerrok; /* limpa o estado de erro do parser */
+        hadError = 0;
+    }
+#line 1366 "parser.tab.c"
     break;
 
   case 8: /* atribuicao: ID IGUAL expressao  */
-#line 74 "parser.y"
+#line 94 "parser.y"
                        {
-    int indice = procurar_simbolo((yyvsp[-2].str));
-      if (indice == -1) {
-        inserir_simbolo((yyvsp[-2].str), (yyvsp[0].valor));
-      } 
-      else {
-        // Atualize o valor
-        tabelaSimbolos[indice].valor = (yyvsp[0].valor);
-      }
+        /* $1 é strdup() no lexer; copiamos para a tabela e liberamos */
+        int indice = procurar_simbolo((yyvsp[-2].str));
+        if (indice == -1) {
+            inserir_simbolo((yyvsp[-2].str), (yyvsp[0].valor));
+        } else {
+            tabelaSimbolos[indice].valor = (yyvsp[0].valor);
+        }
+        free((yyvsp[-2].str)); /* evita memory leak */
     }
-#line 1141 "parser.tab.c"
+#line 1381 "parser.tab.c"
     break;
 
   case 9: /* expressao: NUM  */
-#line 87 "parser.y"
-        {(yyval.valor)=(yyvsp[0].valor);}
-#line 1147 "parser.tab.c"
+#line 107 "parser.y"
+        { (yyval.valor) = (yyvsp[0].valor); }
+#line 1387 "parser.tab.c"
     break;
 
   case 10: /* expressao: ID  */
-#line 89 "parser.y"
-       { // pegar o valor da variavel
+#line 109 "parser.y"
+       {
         int indice = procurar_simbolo((yyvsp[0].str));
         if (indice == -1) {
-            fprintf(stderr, "Erro semantico: Variavel '%s' nao declarada\n", (yyvsp[0].str));
-            exit(1);
+            fprintf(stderr, "Linha %d: Erro semântico: Variável '%s' não declarada\n", yylineno, (yyvsp[0].str));
+            hadError = 1;
+            (yyval.valor) = 0; /* valor default para seguir a análise */
+        } else {
+            (yyval.valor) = tabelaSimbolos[indice].valor;
         }
-        (yyval.valor) = tabelaSimbolos[indice].valor;
+        free((yyvsp[0].str));
     }
-#line 1160 "parser.tab.c"
+#line 1403 "parser.tab.c"
     break;
 
   case 11: /* expressao: expressao PLUS expressao  */
-#line 98 "parser.y"
-                             {(yyval.valor)=(yyvsp[-2].valor)+(yyvsp[0].valor);}
-#line 1166 "parser.tab.c"
+#line 121 "parser.y"
+                              { (yyval.valor) = (yyvsp[-2].valor) + (yyvsp[0].valor); }
+#line 1409 "parser.tab.c"
     break;
 
   case 12: /* expressao: expressao MINUS expressao  */
-#line 99 "parser.y"
-                              {(yyval.valor)=(yyvsp[-2].valor)-3;}
-#line 1172 "parser.tab.c"
+#line 122 "parser.y"
+                              { (yyval.valor) = (yyvsp[-2].valor) - (yyvsp[0].valor); }
+#line 1415 "parser.tab.c"
     break;
 
   case 13: /* expressao: expressao TIMES expressao  */
-#line 100 "parser.y"
-                              {(yyval.valor)=(yyvsp[-2].valor)*(yyvsp[0].valor);}
-#line 1178 "parser.tab.c"
+#line 123 "parser.y"
+                              { (yyval.valor) = (yyvsp[-2].valor) * (yyvsp[0].valor); }
+#line 1421 "parser.tab.c"
     break;
 
   case 14: /* expressao: expressao DIVIDE expressao  */
-#line 101 "parser.y"
+#line 124 "parser.y"
                                {
-    if((yyvsp[0].valor)==0){
-      fprintf(stderr, "Erro: Divisao por zero!\n");
-            exit(1);
+        if ((yyvsp[0].valor) == 0) {
+            fprintf(stderr, "Linha %d: Erro semântico: divisão por zero\n", yylineno);
+            hadError = 1;
+            (yyval.valor) = 0; /* evita crash, continua a análise */
+        } else {
+            (yyval.valor) = (yyvsp[-2].valor) / (yyvsp[0].valor);
+        }
     }
-    else{
-      (yyval.valor) = (yyvsp[-2].valor) / (yyvsp[0].valor);
-    }
-  }
-#line 1192 "parser.tab.c"
+#line 1435 "parser.tab.c"
     break;
 
   case 15: /* expressao: LPAREN expressao RPAREN  */
-#line 110 "parser.y"
-                            {(yyval.valor)=(yyvsp[-1].valor);}
-#line 1198 "parser.tab.c"
+#line 133 "parser.y"
+                            { (yyval.valor) = (yyvsp[-1].valor); }
+#line 1441 "parser.tab.c"
     break;
 
 
-#line 1202 "parser.tab.c"
+#line 1445 "parser.tab.c"
 
       default: break;
     }
@@ -1245,7 +1488,37 @@ yyerrlab:
   if (!yyerrstatus)
     {
       ++yynerrs;
-      yyerror (YY_("syntax error"));
+      {
+        yypcontext_t yyctx
+          = {yyssp, yytoken};
+        char const *yymsgp = YY_("syntax error");
+        int yysyntax_error_status;
+        yysyntax_error_status = yysyntax_error (&yymsg_alloc, &yymsg, &yyctx);
+        if (yysyntax_error_status == 0)
+          yymsgp = yymsg;
+        else if (yysyntax_error_status == -1)
+          {
+            if (yymsg != yymsgbuf)
+              YYSTACK_FREE (yymsg);
+            yymsg = YY_CAST (char *,
+                             YYSTACK_ALLOC (YY_CAST (YYSIZE_T, yymsg_alloc)));
+            if (yymsg)
+              {
+                yysyntax_error_status
+                  = yysyntax_error (&yymsg_alloc, &yymsg, &yyctx);
+                yymsgp = yymsg;
+              }
+            else
+              {
+                yymsg = yymsgbuf;
+                yymsg_alloc = sizeof yymsgbuf;
+                yysyntax_error_status = YYENOMEM;
+              }
+          }
+        yyerror (yymsgp);
+        if (yysyntax_error_status == YYENOMEM)
+          YYNOMEM;
+      }
     }
 
   if (yyerrstatus == 3)
@@ -1387,24 +1660,24 @@ yyreturnlab:
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-
+  if (yymsg != yymsgbuf)
+    YYSTACK_FREE (yymsg);
   return yyresult;
 }
 
-#line 112 "parser.y"
+#line 135 "parser.y"
 
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Erro sintático: %s\n", s);
+    /* yytext vem do scanner; yylineno também */
+    fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n", yylineno, s, yytext ? yytext : "");
 }
 
 int main(void) {
-
-  while(1){
-    printf("Digite uma expressao: ");
-    fflush(stdout); // Adiciona o printf automaticamente antes da chamada da função
-    yyparse();
-  }
-    
-  return 0;
+    while (1) {
+        printf("Digite uma expressao: ");
+        fflush(stdout);
+        yyparse();
+    }
+    return 0;
 }

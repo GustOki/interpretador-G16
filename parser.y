@@ -3,22 +3,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SIMBOLOS 100 
+#define MAX_SIMBOLOS 100
 struct simbolo {
     char nome[50];
     int valor;
 };
 
 struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
-int proximoSimbolo = 0; // Usado para rastrear o proximo indice livre na tabela
+int proximoSimbolo = 0;
 
-// Funções para gerenciar a tabela de símbolos
+/* flag de erro semântico na linha atual */
+int hadError = 0;
+
 int inserir_simbolo(char *nome, int valor) {
     if (proximoSimbolo >= MAX_SIMBOLOS) {
         fprintf(stderr, "Erro: Tabela de símbolos cheia!\n");
         exit(1);
     }
-    strcpy(tabelaSimbolos[proximoSimbolo].nome, nome);
+    strncpy(tabelaSimbolos[proximoSimbolo].nome, nome, sizeof(tabelaSimbolos[proximoSimbolo].nome)-1);
+    tabelaSimbolos[proximoSimbolo].nome[sizeof(tabelaSimbolos[proximoSimbolo].nome)-1] = '\0';
     tabelaSimbolos[proximoSimbolo].valor = valor;
     return proximoSimbolo++;
 }
@@ -32,15 +35,17 @@ int procurar_simbolo(char *nome) {
     return -1;
 }
 
+/* evitar warnings de símbolos do lexer */
+int yylex(void);
+void yyerror(const char *s);
 
-/* Declara a função yylex (gerada pelo Flex) e 
-   a função yyerror, para evitar avisos de declaração implícita. */
-
-  int yylex(void);
-  void yyerror(const char *s);
+/* acessar a linha do lexer */
+extern int yylineno;
+/* obter texto do token atual (do lexer) */
+extern char *yytext;
 %}
 
-// Definindo o tipo de dados para os valores semânticos (inteiro e string )
+/* Tipo dos valores semânticos */
 %union {
     int valor;
     char *str;
@@ -53,75 +58,92 @@ int procurar_simbolo(char *nome) {
 %token <str> ID
 %token IGUAL
 
-//Prioridade (mais alta em baixo)
+/* mensagens de erro mais detalhadas */
+%define parse.error detailed
+
+/* precedências */
 %left PLUS MINUS
 %left TIMES DIVIDE
 %nonassoc LPAREN RPAREN
 
 %%
 programa:
+    /* vazio */
     | programa linha
     ;
 
 linha:
-    expressao NEWLINE { printf("Resultado: %d\n", $1); }
-    | atribuicao NEWLINE
+    expressao NEWLINE {
+        if (!hadError) {
+            printf("Resultado: %d\n", $1);
+        }
+        hadError = 0; /* reset para próxima linha */
+    }
+    | atribuicao NEWLINE {
+        hadError = 0;
+    }
     | NEWLINE
-    | error NEWLINE { yyerrok; }
+    | error NEWLINE {
+        fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", yylineno);
+        yyerrok; /* limpa o estado de erro do parser */
+        hadError = 0;
+    }
     ;
 
 atribuicao:
     ID IGUAL expressao {
-    int indice = procurar_simbolo($1);
-      if (indice == -1) {
-        inserir_simbolo($1, $3);
-      } 
-      else {
-        // Atualize o valor
-        tabelaSimbolos[indice].valor = $3;
-      }
-    }
-;
-
-expressao:
-    NUM {$$=$1;}
-
-  | ID { // pegar o valor da variavel
+        /* $1 é strdup() no lexer; copiamos para a tabela e liberamos */
         int indice = procurar_simbolo($1);
         if (indice == -1) {
-            fprintf(stderr, "Erro semantico: Variavel '%s' nao declarada\n", $1);
-            exit(1);
+            inserir_simbolo($1, $3);
+        } else {
+            tabelaSimbolos[indice].valor = $3;
         }
-        $$ = tabelaSimbolos[indice].valor;
+        free($1); /* evita memory leak */
+    }
+    ;
+
+expressao:
+    NUM { $$ = $1; }
+
+  | ID {
+        int indice = procurar_simbolo($1);
+        if (indice == -1) {
+            fprintf(stderr, "Linha %d: Erro semântico: Variável '%s' não declarada\n", yylineno, $1);
+            hadError = 1;
+            $$ = 0; /* valor default para seguir a análise */
+        } else {
+            $$ = tabelaSimbolos[indice].valor;
+        }
+        free($1);
     }
 
-  | expressao PLUS expressao {$$=$1+$3;}
-  | expressao MINUS expressao {$$=$1-3;}
-  | expressao TIMES expressao {$$=$1*$3;}
+  | expressao PLUS expressao  { $$ = $1 + $3; }
+  | expressao MINUS expressao { $$ = $1 - $3; } /* CORREÇÃO: $3 em vez de 3 */
+  | expressao TIMES expressao { $$ = $1 * $3; }
   | expressao DIVIDE expressao {
-    if($3==0){
-      fprintf(stderr, "Erro: Divisao por zero!\n");
-            exit(1);
+        if ($3 == 0) {
+            fprintf(stderr, "Linha %d: Erro semântico: divisão por zero\n", yylineno);
+            hadError = 1;
+            $$ = 0; /* evita crash, continua a análise */
+        } else {
+            $$ = $1 / $3;
+        }
     }
-    else{
-      $$ = $1 / $3;
-    }
-  }
-  | LPAREN expressao RPAREN {$$=$2;}
+  | LPAREN expressao RPAREN { $$ = $2; }
   ;
 %%
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Erro sintático: %s\n", s);
+    /* yytext vem do scanner; yylineno também */
+    fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n", yylineno, s, yytext ? yytext : "");
 }
 
 int main(void) {
-
-  while(1){
-    printf("Digite uma expressao: ");
-    fflush(stdout); // Adiciona o printf automaticamente antes da chamada da função
-    yyparse();
-  }
-    
-  return 0;
+    while (1) {
+        printf("Digite uma expressao: ");
+        fflush(stdout);
+        yyparse();
+    }
+    return 0;
 }

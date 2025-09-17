@@ -162,8 +162,27 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
     
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex.
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -322,6 +341,9 @@ void yyfree ( void *  );
 #define YY_AT_BOL() (YY_CURRENT_BUFFER_LVALUE->yy_at_bol)
 
 /* Begin user sect3 */
+
+#define yywrap() (/*CONSTCOND*/1)
+#define YY_SKIP_YYWRAP
 typedef flex_uint8_t YY_CHAR;
 
 FILE *yyin = NULL, *yyout = NULL;
@@ -362,8 +384,8 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[20] =
     {   0,
-        0,    0,   14,   12,   11,    8,    6,    7,    4,    2,
-        3,    5,    1,   10,    9,   11,    1,    9,    0
+        0,    0,   14,   12,    9,    8,    6,    7,    4,    2,
+        3,    5,    1,   11,   10,    9,    1,   10,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -432,6 +454,11 @@ static const flex_int16_t yy_chk[34] =
        19,   19,   19
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static const flex_int32_t yy_rule_can_match_eol[14] =
+    {   0,
+0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,     };
+
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -447,12 +474,15 @@ int yy_flex_debug = 0;
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 #line 1 "lexer.l"
-#line 2 "lexer.l"
-#include "parser.tab.h" 
+#line 5 "lexer.l"
+#include "parser.tab.h"
 #include <stdio.h>
-#include <stdlib.h> 
-#line 455 "lex.yy.c"
-#line 456 "lex.yy.c"
+#include <stdlib.h>
+#include <string.h>
+
+extern int yylineno;
+#line 485 "lex.yy.c"
+#line 486 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -669,10 +699,10 @@ YY_DECL
 		}
 
 	{
-#line 7 "lexer.l"
+#line 13 "lexer.l"
 
 
-#line 676 "lex.yy.c"
+#line 706 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -718,6 +748,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			int yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -731,71 +771,71 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 9 "lexer.l"
-{ yylval.valor=atoi(yytext); return NUM; } //Converte para numero
+#line 15 "lexer.l"
+{ yylval.valor = atoi(yytext); return NUM; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 10 "lexer.l"
+#line 16 "lexer.l"
 { return PLUS; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 11 "lexer.l"
+#line 17 "lexer.l"
 { return MINUS; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 12 "lexer.l"
+#line 18 "lexer.l"
 { return TIMES; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 13 "lexer.l"
+#line 19 "lexer.l"
 { return DIVIDE; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 14 "lexer.l"
+#line 20 "lexer.l"
 { return LPAREN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 15 "lexer.l"
+#line 21 "lexer.l"
 { return RPAREN; }
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 16 "lexer.l"
+#line 22 "lexer.l"
 { return NEWLINE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 18 "lexer.l"
-{ yylval.str = strdup(yytext); return ID; }
+#line 23 "lexer.l"
+{ /* ignora espaços e tabs */ }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 19 "lexer.l"
-{ return IGUAL; }
+#line 24 "lexer.l"
+{ yylval.str = strdup(yytext); return ID; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 22 "lexer.l"
-{ /* ignora espaços e quebras de linha */ }
+#line 25 "lexer.l"
+{ return IGUAL; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 24 "lexer.l"
-{ printf("Caractere invalido: %s\n", yytext);  /* ignora qualquer outro caractere */ }
+#line 27 "lexer.l"
+{ fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 26 "lexer.l"
+#line 29 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 799 "lex.yy.c"
+#line 839 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1163,6 +1203,10 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1239,6 +1283,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		
+    yylineno++;
+;
 
 	return c;
 }
@@ -1706,6 +1755,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = NULL;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -1800,11 +1852,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 26 "lexer.l"
-
-
-int yywrap(void) {
-    return 1;
-}
+#line 29 "lexer.l"
 
 
