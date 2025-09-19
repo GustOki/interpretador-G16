@@ -11,25 +11,17 @@ typedef enum {
     NODE_TYPE_ASSIGN    // Nó para uma atribuição 
 } NodeType;
 
-// Estrutura principal de um nó da AST
 typedef struct AstNode {
-    NodeType type;      // O tipo do nó
-    char op;            // O operador para nós do tipo OP (+, -, *, /)
-    
-    // Union para armazenar dados específicos de cada tipo de nó
+    NodeType type;
+    char op;
+    int lineno;   /* NOVO: linha aproximada onde o nó foi criado */
     union {
-        // Se o tipo for NODE_TYPE_NUM
         int valor;
-
-        // Se o tipo for NODE_TYPE_ID
         char* nome;
-
-        // Se for uma operação ou atribuição
         struct {
             struct AstNode* left;
             struct AstNode* right;
         } children;
-
     } data;
 } AstNode;
 
