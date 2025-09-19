@@ -829,14 +829,17 @@ YY_RULE_SETUP
 case 12:
 YY_RULE_SETUP
 #line 27 "lexer/lexer.l"
-{ fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext); }
+{
+                            /* yytext contém o caractere inválido (terminado em '\0') */
+                            fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext);
+                        }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 29 "lexer/lexer.l"
+#line 32 "lexer/lexer.l"
 ECHO;
 	YY_BREAK
-#line 840 "lexer/lex.yy.c"
+#line 843 "lexer/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1853,6 +1856,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 29 "lexer/lexer.l"
+#line 32 "lexer/lexer.l"
 
 

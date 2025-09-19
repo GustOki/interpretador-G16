@@ -24,6 +24,9 @@ extern int yylineno;
 [a-zA-Z][a-zA-Z0-9_]*   { yylval.str = strdup(yytext); return ID; }
 "="                     { return IGUAL; }
 
-.                       { fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext); }
+.                       {
+                            /* yytext contém o caractere inválido (terminado em '\0') */
+                            fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext);
+                        }
 
 %%
