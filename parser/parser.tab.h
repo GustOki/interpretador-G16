@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_PARSER_TAB_H_INCLUDED
-# define YY_YY_PARSER_TAB_H_INCLUDED
+#ifndef YY_YY_PARSER_PARSER_TAB_H_INCLUDED
+# define YY_YY_PARSER_PARSER_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -55,14 +55,14 @@ extern int yydebug;
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
     NUM = 258,                     /* NUM  */
-    NEWLINE = 259,                 /* NEWLINE  */
-    PLUS = 260,                    /* PLUS  */
-    MINUS = 261,                   /* MINUS  */
-    TIMES = 262,                   /* TIMES  */
-    DIVIDE = 263,                  /* DIVIDE  */
-    LPAREN = 264,                  /* LPAREN  */
-    RPAREN = 265,                  /* RPAREN  */
-    ID = 266,                      /* ID  */
+    ID = 259,                      /* ID  */
+    NEWLINE = 260,                 /* NEWLINE  */
+    PLUS = 261,                    /* PLUS  */
+    MINUS = 262,                   /* MINUS  */
+    TIMES = 263,                   /* TIMES  */
+    DIVIDE = 264,                  /* DIVIDE  */
+    LPAREN = 265,                  /* LPAREN  */
+    RPAREN = 266,                  /* RPAREN  */
     IGUAL = 267                    /* IGUAL  */
   };
   typedef enum yytokentype yytoken_kind_t;
@@ -72,12 +72,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 49 "parser.y"
+#line 14 "parser/parser.y"
 
     int valor;
     char *str;
+    struct AstNode* no;
 
-#line 81 "parser.tab.h"
+#line 82 "parser/parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -92,4 +93,4 @@ extern YYSTYPE yylval;
 int yyparse (void);
 
 
-#endif /* !YY_YY_PARSER_TAB_H_INCLUDED  */
+#endif /* !YY_YY_PARSER_PARSER_TAB_H_INCLUDED  */
