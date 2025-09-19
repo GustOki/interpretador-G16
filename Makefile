@@ -1,65 +1,87 @@
-# Makefile (Versão Robusta)
+# Makefile para Estrutura de Pastas Organizada
 
-# Compilador C
+# --- Variáveis de Compilação ---
 CC = gcc
+# Flags do compilador:
+# -g para informações de debug (para usar com gdb)
+# -Wall para mostrar todos os avisos
+# -Isrc para procurar headers na pasta src/
+# -Iparser para procurar o parser.tab.h na pasta parser/
+CFLAGS = -g -Wall -Isrc -Iparser
+# Flags do Linker: -lfl para a biblioteca do Flex
+LDFLAGS = -lfl
 
-# Opções de compilação: 
-# -Wall (todos warnings)
-# -Isrc (inclui a pasta src para achar ast.h)
-# -Iparser (inclui a pasta parser para achar parser.tab.h)
-# -g (adiciona símbolos de debug, útil para depurar)
-CFLAGS = -Wall -Isrc -Iparser -g
-
-# Ferramentas
-LEX = flex
-YACC = bison
-
-# Nome do executável
+# --- Variáveis de Projeto ---
 TARGET = interpretador
+BUILD_DIR = build
 
-# Arquivos fonte de C (gerados e escritos)
-SOURCES = \
-	src/main.c \
-	src/ast.c \
-	src/interpretador.c \
-	parser/parser.tab.c \
-	lexer/lexer.yy.c
+# --- Definição dos Arquivos ---
+# Fontes .c escritos à mão
+C_SOURCES   = $(wildcard src/*.c)
+# Arquivos de parser e lexer
+LEXER_SRC   = lexer/lexer.l
+PARSER_SRC  = parser/parser.y
 
-# Arquivos objeto correspondentes
-OBJECTS = $(SOURCES:.c=.o)
+# Arquivos que serão gerados pelo Flex e Bison
+PARSER_GEN_C = parser/parser.tab.c
+PARSER_GEN_H = parser/parser.tab.h
+LEXER_GEN_C  = lexer/lex.yy.c
 
-# Regra principal: o que fazer quando digitar "make"
-all: $(TARGET)
+# Lista de todos os arquivos objeto que serão criados na pasta build/
+C_OBJS      = $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(C_SOURCES))
+PARSER_OBJ  = $(BUILD_DIR)/parser.tab.o
+LEXER_OBJ   = $(BUILD_DIR)/lex.yy.o
+OBJECTS     = $(C_OBJS) $(PARSER_OBJ) $(LEXER_OBJ)
 
-# Regra de linkagem: como criar o executável final a partir dos objetos
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS)
+# --- Regras do Make ---
 
-# Regra de compilação genérica: como transformar qualquer .c em .o
-# O $< representa o pré-requisito (o arquivo .c)
-# O $@ representa o alvo (o arquivo .o)
-%.o: %.c
+# Regra padrão: executada ao digitar "make"
+# Depende do executável final.
+all: $(BUILD_DIR)/$(TARGET)
+
+# Regra para linkar e criar o executável final
+$(BUILD_DIR)/$(TARGET): $(OBJECTS)
+	@echo "===> LINKANDO PROJETO..."
+	$(CC) -o $@ $^ $(LDFLAGS)
+	@echo "===> PROJETO CONSTRUÍDO: $@"
+
+# Regra para compilar os arquivos .c da pasta src/ para .o na pasta build/
+# Depende do header do Bison para garantir a ordem correta de compilação.
+$(BUILD_DIR)/%.o: src/%.c $(PARSER_GEN_H)
+	@echo "===> COMPILANDO (C): $<"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# --- REGRAS DE GERAÇÃO (A PARTE MAIS IMPORTANTE) ---
+# Regra para compilar o parser.tab.c gerado
+$(PARSER_OBJ): $(PARSER_GEN_C)
+	@echo "===> COMPILANDO (PARSER): $<"
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra de dependência para o Parser:
-# Alvo: os dois arquivos que o Bison deve criar
-# Pré-requisitos: o que o Bison precisa para trabalhar
-parser/parser.tab.c parser/parser.tab.h: parser/parser.y src/ast.h
-	# Comando para o Bison:
-	# -d: cria o arquivo .h
-	# --header=...: especifica EXATAMENTE onde criar o .h
-	# -o ...: especifica EXATAMENTE onde criar o .c
-	$(YACC) -d --header=parser/parser.tab.h -o parser/parser.tab.c parser/parser.y
+# Regra para compilar o lex.yy.c gerado
+$(LEXER_OBJ): $(LEXER_GEN_C)
+	@echo "===> COMPILANDO (LEXER): $<"
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra de dependência para o Lexer:
-# Alvo: o arquivo que o Flex vai criar
-# Pré-requisitos: o que o Flex precisa para trabalhar
-lexer/lexer.yy.c: lexer/lexer.l parser/parser.tab.h
-	# Comando para o Flex
-	$(LEX) -o lexer/lexer.yy.c lexer/lexer.l
+# Regra para gerar os arquivos do Parser (.tab.c e .tab.h) a partir do .y
+$(PARSER_GEN_C) $(PARSER_GEN_H): $(PARSER_SRC)
+	@echo "===> GERANDO PARSER (BISON)..."
+	bison -d -o $(PARSER_GEN_C) $(PARSER_SRC)
 
-# Regra para limpar os arquivos gerados (muito útil para forçar uma reconstrução limpa)
+# Regra para gerar o arquivo do Lexer (.yy.c) a partir do .l
+# Depende do header do Bison, garantindo que o Bison rode primeiro.
+$(LEXER_GEN_C): $(LEXER_SRC) $(PARSER_GEN_H)
+	@echo "===> GERANDO LEXER (FLEX)..."
+	flex -o $(LEXER_GEN_C) $(LEXER_SRC)
+
+# Regra para garantir que a pasta build/ exista antes de criar arquivos .o nela
+$(OBJECTS): | $(BUILD_DIR)
+
+$(BUILD_DIR):
+	@echo "===> CRIANDO DIRETÓRIO DE BUILD..."
+	mkdir -p $(BUILD_DIR)
+
+# Regra para limpar todos os arquivos gerados
+.PHONY: clean
 clean:
-	rm -f $(TARGET) $(OBJECTS) parser/parser.tab.c parser/parser.tab.h lexer/lexer.yy.c
+	@echo "===> LIMPANDO PROJETO..."
+	rm -rf $(BUILD_DIR)
+	rm -f $(PARSER_GEN_C) $(PARSER_GEN_H) $(LEXER_GEN_C)
