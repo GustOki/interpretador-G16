@@ -366,11 +366,3 @@ clean:
 * Em caso de dúvidas técnicas sobre Flex/Bison ou integração com Python, documentem e criem issues para rastrear a solução.
 
 ---
-
-## Anexos possíveis (se desejar que eu gere)
-
-* `README.md` pronto para o repositório.
-* Esqueleto `lexer.l` e `parser.y` para começar.
-* Esqueleto `ast.py` e `interpreter.py` em Python.
-
-> Se quiser, eu já gero qualquer um dos anexos acima em Markdown/código — diga qual você quer agora.
