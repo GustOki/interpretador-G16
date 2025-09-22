@@ -185,19 +185,7 @@ clean:
 
 ---
 
-# 7. Próximos passos imediatos (Sprint 1 — checklist)
-
-1. Criar repositório e adicionar membros (incluir `sergioaafreitas`).
-2. Configurar `.gitignore` e `README.md` inicial.
-3. Instalar Flex/Bison e testar localmente.
-4. Escrever `.l` mínimo que reconheça IDENT, NUMBER e símbolos; testar com `flex`.
-5. Escrever `.y` mínimo para expressões e `print`; testar com `bison`.
-6. Definir e documentar a sintaxe básica em `docs/especificacao_linguagem.md`.
-7. Agendar reuniões rápidas (quartas-feiras) e criar issues iniciais.
-
----
-
-# 8. Responsabilidades (sugestão)
+# 7. Responsabilidades (sugestão)
 
 * **Líder do grupo:** (nome) — coordenação geral.
 * **Lexer/Parser:** (nome) — Flex/Bison e testes.
@@ -207,7 +195,7 @@ clean:
 
 ---
 
-# 9. Observações finais
+# 8. Observações finais
 
 * Quartas-feiras sugeridas para daily meetings/integração.
 * Mantenham commits estáveis e documentem bem a AST e decisões de design.
