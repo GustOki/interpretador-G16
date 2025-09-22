@@ -185,17 +185,7 @@ clean:
 
 ---
 
-# 7. Responsabilidades (sugestão)
-
-* **Líder do grupo:** (nome) — coordenação geral.
-* **Lexer/Parser:** (nome) — Flex/Bison e testes.
-* **AST/Semântica:** (nome) — design da AST e análise semântica.
-* **Intérprete/Runtime:** (nome) — execução e testes.
-* **Todos:** documentação, testes, revisão de código.
-
----
-
-# 8. Observações finais
+# 7. Observações finais
 
 * Quartas-feiras sugeridas para daily meetings/integração.
 * Mantenham commits estáveis e documentem bem a AST e decisões de design.
