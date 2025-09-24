@@ -1,14 +1,8 @@
-// Arquivo: src/interpretador.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
-#include "simbolo.h" // <<< PASSO CRUCIAL: Inclui a definição da struct!
+#include "simbolo.h" 
 
-// Precisamos acessar a tabela de símbolos que está no parser
-extern struct simbolo tabelaSimbolos[];
-extern int procurar_simbolo(char* nome);
-extern int inserir_simbolo(char* nome, int valor);
 
 int interpretar(AstNode* no) {
     if (!no) return 0;
@@ -41,11 +35,13 @@ int interpretar(AstNode* no) {
                 case '-': return val_esq - val_dir;
                 case '*': return val_esq * val_dir;
                 case '/':
-                    // ... (código da divisão)
+                    if (val_dir == 0) {
+                        fprintf(stderr, "Erro: Divisão por zero.\n");
+                        exit(1);
+                    }
                     return val_esq / val_dir;
-            }
-            // <<< O PROBLEMA ESTÁ AQUI
+            } 
         }
     }
-    return 0; // Se chegar aqui, algo deu errado
+    return 0; 
 }
