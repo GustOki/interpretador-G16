@@ -7,7 +7,29 @@
 
 int yylex(void);
 void yyerror(const char *s);
+
+/* --- DECLARAÇÕES EXTERNAS DO LEXER (Flex) --- */
+extern int yylineno;   /* número da linha fornecido pelo lexer */
+extern char *yytext;   /* texto do token atual */
+extern int interpret_error;
+
+/* Variável para lembrar a linha em que o último erro sintático foi detectado */
+int last_error_lineno = 0;
+
+/* Implementação única de yyerror - salva a linha no momento do erro */
+void yyerror(const char *s) {
+    last_error_lineno = yylineno;
+
+    if (yytext && yytext[0] != '\0') {
+        fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n",
+                last_error_lineno, s, yytext);
+    } else {
+        fprintf(stderr, "Linha %d: Erro sintático: %s\n", last_error_lineno, s);
+    }
+}
 %}
+
+%define parse.error verbose
 
 %union {
     int valor;
@@ -35,34 +57,49 @@ programa:
 
 linha:
     expressao NEWLINE   {
+                            interpret_error = 0; /* zera antes de interpretar */
                             int resultado = interpretar($1);
-                            printf("Resultado: %d\n", resultado);
+                            if (!interpret_error) {
+                                printf("Resultado: %d\n", resultado);
+                            }
                             liberar_ast($1);
                         }
     | atribuicao NEWLINE  {
+                            interpret_error = 0;
                             int resultado = interpretar($1);
-                            printf("Resultado: %d\n", resultado);
+                            if (!interpret_error) {
+                                printf("Resultado: %d\n", resultado);
+                            }
                             liberar_ast($1);
                         }
     | NEWLINE             { /* Nao faz nada com uma linha em branco */ }
-    | error NEWLINE       { yyerrok; }
+    | error NEWLINE       { /* Mensagem amigável e recuperação até o fim da linha */
+                            fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
+                            yyerrok;
+                          }
     ;
+
 
 atribuicao:
     ID IGUAL expressao {
-        $$ = create_assign_node(create_id_node($1), $3);
+        AstNode* left = create_id_node($1);
+        left->lineno = yylineno;   /* linha do ID token */
+        $$ = create_assign_node(left, $3);
+        $$->lineno = left->lineno; /* linha da atribuição = linha do id */
     }
 ;
 
+
 expressao:
-    NUM                 { $$ = create_num_node($1); }
-    | ID                { $$ = create_id_node($1); }
-    | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3); }
-    | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3); }
-    | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3); }
-    | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); }
-    | LPAREN expressao RPAREN    { $$ = $2; }
+    NUM                 { $$ = create_num_node($1); $$->lineno = yylineno; }
+    | ID                { $$ = create_id_node($1); $$->lineno = yylineno; }
+    | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3); $$->lineno = $1->lineno; }
+    | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3); $$->lineno = $1->lineno; }
+    | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3); $$->lineno = $1->lineno; }
+    | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); $$->lineno = $1->lineno; }
+    | LPAREN expressao RPAREN    { $$ = $2; /* já tem lineno do $2 */ }
 ;
+
 
 /* ========================================================================= */
 /* AQUI COMECA A SECAO DE CODIGO C FINAL - NOTE O SEPARADOR %%             */
@@ -77,10 +114,6 @@ expressao:
 // Definicoes globais da tabela de simbolos
 struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
 int proximoSimbolo = 0;
-
-void yyerror(const char *s) {
-    fprintf(stderr, "Erro sintatico: %s\n", s);
-}
 
 int inserir_simbolo(char *nome, int valor) {
     int indice = procurar_simbolo(nome);
