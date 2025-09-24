@@ -1,5 +1,3 @@
-// Arquivo: parser/parser.y
-
 %{
 #include <stdio.h>
 #include <stdlib.h>

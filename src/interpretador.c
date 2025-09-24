@@ -1,13 +1,10 @@
-// src/interpretador.c
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
-#include "simbolo.h"
+#include "simbolo.h" 
 
-extern int yylineno; /* só se quiser usar linha do lexer nas mensagens (opcional) */
+extern int yylineno; 
 
-/* Flag global que indica se houve um erro durante a interpretação.
-   Definida aqui (definição única). O parser declara 'extern' para consultar. */
 int interpret_error = 0;
 
 extern struct simbolo tabelaSimbolos[];
@@ -63,8 +60,8 @@ int interpretar(AstNode* no) {
             }
         }
     }
-    /* Nó inválido */
     interpret_error = 1;
     fprintf(stderr, "Linha %d: Erro interno: nó inválido na AST\n", yylineno);
     return 0;
 }
+
