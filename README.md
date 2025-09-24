@@ -1,376 +1,251 @@
-# Documentação Inicial — Interpretador (Grupo 16)
+# Interpretador — Grupo 16
 
-* **Linguagem do projeto:** C/C++
-* **Grupo:** Grupo 16
-* **Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
-* **Objetivo geral:** projetar e implementar um interpretador para uma linguagem simples definida pelo grupo, usando Flex/Bison para a etapa léxica/sintática e Python para a implementação da AST, análise semântica e interpretador.
+**Linguagem do projeto:** C  
+**Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
 
 ---
 
-# 1. Por que usamos C/C++?
+## Sumário
 
-* **Protótipo rápido:** A Linguagrem C permite desenvolver e iterar rapidamente estruturas de dados (AST, tabela de símbolos) e componentes do interpretador.
-* **Leitura e manutenção:** sintaxe clara e menor boilerplate facilitam o trabalho em equipe.
-* **Bibliotecas e ferramentas:** opção de usar bibliotecas de parsing (ex.: PLY, lark) caso se deseje, além de utilitários para testes e logging.
-* **Integração com Flex/Bison:** Flex/Bison podem gerar a etapa léxica/sintática tradicional; Python é ideal para implementar a camada de execução (AST/interpreter) sem precisar compilar todo o backend em C/C++.
-* **Educação:** facilita a compreensão de conceitos como AST, análise semântica e avaliação.
+* [Visão Geral](#visão-geral)
+* [Estrutura do repositório](#estrutura-do-repositório)
+* [Pré-requisitos](#pré-requisitos)
+* [Build — Como compilar (Makefile)](#build---como-compilar-makefile)
+* [Uso — Como rodar](#uso---como-rodar)
+* [Tokens, tipos e construções iniciais](#tokens-tipos-e-construções-iniciais)
+* [Testes e boas práticas](#testes-e-boas-práticas)
+* [Erros e reporting](#erros-e-reporting)
+* [Sprints / Cronograma](#sprints--cronograma)
+* [Contribuição](#contribuição)
+* [Contato](#contato)
 
 ---
 
-# 2. Estrutura inicial do repositório
+## Visão Geral
+
+Este repositório contém a implementação de um **interpretador** para uma linguagem simples definida pelo grupo. A análise léxica e sintática é feita com **Flex** e **Bison**; a AST, análise semântica e o interpretador estão implementados em **C**.
+
+Pipeline alvo:
+`arquivo fonte → lexer (Flex) → parser (Bison) → AST → checagem semântica → interpretação/execução`.
+
+---
+
+## Estrutura do repositório (atual)
 
 ```
 interpretador-grupo16/
-├── README.md
-├── LICENSE
-├── Makefile
-├── requirements.txt
-├── .gitignore
-├── docs/
-│   └── especificacao_linguagem.md
-├── examples/
-│   ├── hello_world.lang
-│   └── exemplos_varios/
+├── build/                    # artefatos de build (opcional)
+├── lexer/
+│   ├── lex.yy.c              # gerado (Flex)
+│   └── lexer.l
+├── parser/
+│   ├── parser.tab.c          # gerado (Bison)
+│   ├── parser.tab.h          # gerado (Bison)
+│   └── parser.y
 ├── src/
-│   ├── lexer/
-│   │   ├── lexer.l
-│   │   └── build_lexer.sh
-│   ├── parser/
-│   │   ├── parser.y
-│   │   └── build_parser.sh
-│   ├── py/
-│   │   ├── ast.py
-│   │   ├── interpreter.py
-│   │   ├── semantica.py
-│   │   ├── runtime.py
-│   │   └── utils.py
-│   └── tests/
-│       ├── test_lexer/
-│       ├── test_parser/
-│       └── test_interpreter/
-└── ci/
+│   ├── ast.c
+│   ├── ast.h
+│   ├── interpretador.c
+│   ├── main.c
+│   └── simbolo.h
+├── Makefile
+└── README.md
 ```
 
-**Descrição rápida dos principais arquivos**
-
-* `lexer/lexer.l` — especificação lexical (Flex).
-* `parser/parser.y` — gramática e ações iniciais (Bison).
-* `src/py/ast.py` — definição das classes de nós da AST.
-* `src/py/semantica.py` — verificação semântica (tabela de símbolos, checagem simples).
-* `src/py/interpreter.py` — lógica para percorrer e executar a AST.
-* `examples/` — exemplos de programas da linguagem.
+> **Observação:** os arquivos gerados pelo Flex/Bison (`lex.yy.c`, `parser.tab.c`, `parser.tab.h`) aparecem no repositório como artefatos. Se preferirem, adicionem-nos ao `.gitignore` e gerem durante o build.
 
 ---
 
-# 3. Tokens, tipos e construções iniciais
+## Pré-requisitos
 
-## Tokens (sugestão inicial)
-
-* `IDENT` — identificadores
-* `NUMBER` — inteiros (ex.: `123`)
-* `FLOAT` — números com ponto (opcional)
-* `STRING` — literais (`"texto"`)
-* Palavras-chave: `if`, `else`, `while`, `func`, `return`, `var`, `print`
-* Operadores: `+`, `-`, `*`, `/`, `=`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `&&`, `||`
-* Delimitadores: `;`, `,`, `(`, `)`, `{`, `}`
-
-## Tipos iniciais (sugeridos)
-
-* `int`, `float` (opcional), `bool`, `string`
-* Decisão sobre tipagem: inicialmente tipagem dinâmica simples; avaliar tipagem estática mínima conforme evolução.
-
-## Construções básicas
-
-* Atribuição: `x = 3;`
-* Condicional:
-
-  ```lang
-  if (x > 0) {
-      print(x);
-  } else {
-      print(0);
-  }
-  ```
-* Loop:
-
-  ```lang
-  while (i < 10) {
-      i = i + 1;
-  }
-  ```
-* Funções (opcional em fases posteriores):
-
-  ```lang
-  func soma(a, b) {
-      return a + b;
-  }
-  ```
-
-## Exemplo (examples/hello\_world.lang)
-
-```lang
-var x = 10;
-var y = 20;
-var z = x + y;
-print(z);
-```
-
----
-
-# 4. Plano de Sprints
-
-## Sprint 1
-
-**Objetivos**
-
-* Formar equipes e organizar ambiente (repositório, ferramentas, Flex/Bison).
-* Definir linguagem-fonte e gramática inicial.
-
-**Entregas**
-
-* Documento inicial com tokens e exemplos.
-* Protótipo de gramática para Bison.
-* Ambiente configurado (hello world Flex/Bison).
-
-**Tarefas**
-
-* Criar repositório e adicionar membros (incluir `sergioaafreitas`).
-* Criar `.l` e `.y` mínimos.
-* Definir sintaxe básica em `docs/especificacao_linguagem.md`.
-
-**Observações**
-
-* Daily rápida nas quartas-feiras; familiarizar-se com Git/GitHub.
-
----
-
-## Sprint 2
-
-**Objetivos**
-
-* Completar análise léxica (Flex).
-* Implementar regras básicas do parser (Bison).
-* Preparar apresentação P1.
-
-**Entregas**
-
-* `.l` completo; primeiras regras em `.y`; formulário P1.
-
-**Tarefas**
-
-* Finalizar regexs no `.l` (espaços, comentários).
-* Regras sintáticas básicas em `.y`.
-* Testes léxicos/sintáticos com exemplos.
-
-**Observações**
-
-* O Sprint fecha com a apresentação do P1 (máximo de 5 minutos por equipe).
-
----
-
-## Sprint 3
-
-**Objetivos**
-
-* Construir AST; iniciar análise semântica básica; melhorar mensagens de erro.
-
-**Entregas**
-
-* Estruturas/classes da AST; módulo semântico inicial; parser que constrói AST.
-
-**Tarefas**
-
-* Implementar ações no `.y` para criar nós da AST.
-* Criar tabela de símbolos; tratar erros básicos.
-
-**Observações**
-
-* Quartas-feiras dedicadas ao desenvolvimento prático e integração.
-
----
-
-## Sprint 4
-
-**Objetivos**
-
-* Implementar interpretação da AST (execução direta).
-* Aprimorar a análise semântica, tratando construções mais complexas.
-* Preparar o Ponto de Controle P2.
-
-**Entregas**
-
-* Módulo interpretador capaz de executar instruções.
-* Análise semântica mais robusta.
-* Formulário de P2 preenchido e apresentação realizada.
-
-**Tarefas**
-
-* Criar a lógica de interpretação recursiva (`interpretNode()` / métodos `eval()` dos nós).
-* Consolidar estruturas de controle (if, while, etc.).
-* Testar o interpretador com programas de exemplo.
-* Preparar a apresentação P2.
-
-**Observações**
-
-* Use as aulas práticas para integrar e corrigir bugs.
-* O Sprint termina com a apresentação P2.
-
----
-
-## Sprint 5
-
-**Objetivos**
-
-* Adicionar otimizações opcionais (ex.: simplificação de expressões constantes).
-* Incluir recursos adicionais (funções, arrays, strings).
-* Realizar testes integrados e preparar entrega final.
-
-**Entregas**
-
-* Interpretador ampliado, com otimizações e funcionalidades extras.
-* Testes de integração.
-* Versão final pronta para entrega via Teams.
-
-**Tarefas**
-
-* Implementar otimizações simples (constant folding, remoção de nós redundantes).
-* Estender a linguagem com novos recursos, se houver tempo.
-* Testar intensivamente e entregar o projeto final.
-
-**Observações**
-
-* Planejar a entrega para evitar imprevistos.
-
----
-
-## Sprint 6
-
-**Objetivos**
-
-* Participar das entrevistas finais com o professor.
-* Corrigir pendências/bugs emergentes.
-* Concluir a documentação e encerrar a disciplina.
-
-**Entregas**
-
-* Entrevistas de entrega do projeto final.
-* Documentação completa (README, manual de uso, explicações sobre a AST e a execução).
-* Ajustes finais (caso o professor detecte problemas).
-
-**Tarefas**
-
-* Preparar-se para as entrevistas: cada membro domina parser, AST, semântica e interpretador.
-* Corrigir falhas apontadas.
-* Finalizar documentação e organizar exemplos de uso.
-
-**Observações**
-
-* Consulte o plano de ensino para verificar as datas das entrevistas. Falta de comparecimento pode zerar a nota da apresentação final.
-
----
-
-# 5. Instalação de dependências e comandos úteis
-
-## Flex / Bison (Debian/Ubuntu)
+No Ubuntu/Debian:
 
 ```bash
 sudo apt-get update
-sudo apt-get install flex bison
+sudo apt-get install build-essential flex bison
 ```
 
-## Python (ambiente virtual)
+Opcional (testes/unit):
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+sudo apt-get install cmocka
 ```
 
-## `requirements.txt` (sugestão)
+Recomendações de desenvolvimento:
 
-```
-pytest
-mypy   # opcional
-black  # opcional
-```
+* `gcc` ou `clang`
+* `clang-format` (padronização de estilo)
+* usar sanitizers em builds de debug: `-fsanitize=address,undefined`
 
-## Makefile (exemplo)
+---
+
+## Build — Como compilar (Makefile)
+
+Abaixo está o **Makefile** atual usado no projeto (cole-o no `Makefile` se ainda não estiver):
 
 ```makefile
-.PHONY: all build-lexer build-parser run test clean
+# Makefile para Estrutura de Pastas Organizada
 
-build-lexer:
-	flex -o src/lexer/lex.yy.c src/lexer/lexer.l
+# --- Variáveis de Compilação ---
+CC = gcc
+# Flags do compilador:
+# -g para informações de debug (para usar com gdb)
+# -Wall para mostrar todos os avisos
+# -Isrc para procurar headers na pasta src/
+# -Iparser para procurar o parser.tab.h na pasta parser/
+CFLAGS = -g -Wall -Isrc -Iparser
+# Flags do Linker: -lfl para a biblioteca do Flex
+LDFLAGS = -lfl
 
-build-parser:
-	bison -d -o src/parser/parser.tab.c src/parser/parser.y
+# --- Variáveis de Projeto ---
+TARGET = interpretador
+BUILD_DIR = build
 
-run:
-	python src/py/interpreter.py examples/hello_world.lang
+# --- Definição dos Arquivos ---
+# Fontes .c escritos à mão
+C_SOURCES   = $(wildcard src/*.c)
+# Arquivos de parser e lexer
+LEXER_SRC   = lexer/lexer.l
+PARSER_SRC  = parser/parser.y
 
-test:
-	pytest -q
+# Arquivos que serão gerados pelo Flex e Bison
+PARSER_GEN_C = parser/parser.tab.c
+PARSER_GEN_H = parser/parser.tab.h
+LEXER_GEN_C  = lexer/lex.yy.c
 
+# Lista de todos os arquivos objeto que serão criados na pasta build/
+C_OBJS      = $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(C_SOURCES))
+PARSER_OBJ  = $(BUILD_DIR)/parser.tab.o
+LEXER_OBJ   = $(BUILD_DIR)/lex.yy.o
+OBJECTS     = $(C_OBJS) $(PARSER_OBJ) $(LEXER_OBJ)
+
+# --- Regras do Make ---
+
+# Regra padrão: executada ao digitar "make"
+# Depende do executável final.
+all: $(BUILD_DIR)/$(TARGET)
+
+# Regra para linkar e criar o executável final
+$(BUILD_DIR)/$(TARGET): $(OBJECTS)
+	@echo "===> LINKANDO PROJETO..."
+	$(CC) -o $@ $^ $(LDFLAGS)
+	@echo "===> PROJETO CONSTRUÍDO: $@"
+
+# Regra para compilar os arquivos .c da pasta src/ para .o na pasta build/
+# Depende do header do Bison para garantir a ordem correta de compilação.
+$(BUILD_DIR)/%.o: src/%.c $(PARSER_GEN_H)
+	@echo "===> COMPILANDO (C): $<"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regra para compilar o parser.tab.c gerado
+$(PARSER_OBJ): $(PARSER_GEN_C)
+	@echo "===> COMPILANDO (PARSER): $<"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regra para compilar o lex.yy.c gerado
+$(LEXER_OBJ): $(LEXER_GEN_C)
+	@echo "===> COMPILANDO (LEXER): $<"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regra para gerar os arquivos do Parser (.tab.c e .tab.h) a partir do .y
+$(PARSER_GEN_C) $(PARSER_GEN_H): $(PARSER_SRC)
+	@echo "===> GERANDO PARSER (BISON)..."
+	bison -d -o $(PARSER_GEN_C) $(PARSER_SRC)
+
+# Regra para gerar o arquivo do Lexer (.yy.c) a partir do .l
+# Depende do header do Bison, garantindo que o Bison rode primeiro.
+$(LEXER_GEN_C): $(LEXER_SRC) $(PARSER_GEN_H)
+	@echo "===> GERANDO LEXER (FLEX)..."
+	flex -o $(LEXER_GEN_C) $(LEXER_SRC)
+
+# Regra para garantir que a pasta build/ exista antes de criar arquivos .o nela
+$(OBJECTS): | $(BUILD_DIR)
+
+$(BUILD_DIR):
+	@echo "===> CRIANDO DIRETÓRIO DE BUILD..."
+	mkdir -p $(BUILD_DIR)
+
+# Regra para limpar todos os arquivos gerados
+.PHONY: clean
 clean:
-	rm -f src/lexer/lex.yy.c src/parser/parser.tab.c src/parser/parser.tab.h
+	@echo "===> LIMPANDO PROJETO..."
+	rm -rf $(BUILD_DIR)
+	rm -f $(PARSER_GEN_C) $(PARSER_GEN_H) $(LEXER_GEN_C)
 ```
 
----
+### Comandos Make mais usados
 
-# 6. Fluxo de trabalho com Git
+```bash
+# Compilar tudo (regra padrão 'all')
+make
 
-* **Repositório:** GitHub (adicionar todos os membros e o professor).
-* **Branches:** `main` (estável), `dev` (integração), `feature/<nome>`.
-* **Pull Requests:** revisão por pelo menos 1 membro antes de merge em `dev`.
-* **Commits:** mensagens claras (`feat: adicionar lexer`; `fix: parser while`).
-* **CI (opcional):** rodar `pytest` em PRs.
+# Ou explicitamente
+make all
 
----
+# Limpar artefatos gerados
+make clean
+```
 
-# 7. Boas práticas
+**O executável final** ficará em `build/interpretador` (conforme `BUILD_DIR` e `TARGET`).
 
-* Documentar decisões em `docs/especificacao_linguagem.md`.
-* Criar issues/milestones por sprint.
-* Testes automatizados para lexer, parser e interpreter.
-* Mensagens de erro com indicação de linha/coluna.
-* Commits pequenos e frequentes; PRs revisados.
+> Se precisar ativar sanitizers em debug, modifique `CFLAGS` adicionando `-fsanitize=address,undefined` ou crie um `target` `debug` no Makefile.
 
 ---
 
-# 8. Próximos passos imediatos (Sprint 1 — checklist)
+## Uso — Como rodar
 
-1. Criar repositório e adicionar membros (incluir `sergioaafreitas`).
-2. Configurar `.gitignore` e `README.md` inicial.
-3. Instalar Flex/Bison e testar localmente.
-4. Escrever `.l` mínimo que reconheça IDENT, NUMBER e símbolos; testar com `flex`.
-5. Escrever `.y` mínimo para expressões e `print`; testar com `bison`.
-6. Definir e documentar a sintaxe básica em `docs/especificacao_linguagem.md`.
-7. Agendar reuniões rápidas (quartas-feiras) e criar issues iniciais.
+Supondo que `make` já foi executado com sucesso:
 
----
+```bash
+./build/interpretador caminhos/para/exemplo.lang
+```
 
-# 9. Responsabilidades (sugestão)
+Observações:
 
-* **Líder do grupo:** (nome) — coordenação geral.
-* **Lexer/Parser:** (nome) — Flex/Bison e testes.
-* **AST/Semântica:** (nome) — design da AST e análise semântica.
-* **Intérprete/Runtime:** (nome) — execução e testes.
-* **Todos:** documentação, testes, revisão de código.
+* Verifique `src/main.c` para confirmar o formato de invocação (argumentos esperados).
+* Se o projeto não receber um arquivo por argumento, talvez rode em modo interativo — veja `main.c`.
 
 ---
 
-# 10. Observações finais
+## Tokens, tipos e construções iniciais
 
-* Quartas-feiras sugeridas para daily meetings/integração.
-* Mantenham commits estáveis e documentem bem a AST e decisões de design.
-* Em caso de dúvidas técnicas sobre Flex/Bison ou integração com Python, documentem e criem issues para rastrear a solução.
+**Tokens (exemplos):**
+`IDENT`, `NUMBER`, `FLOAT`, `STRING`, palavras-chave (`if`, `else`, `while`, `func`, `return`, `var`, `print`), operadores (`+ - * / = == != < > <= >= && ||`), delimitadores (`; , ( ) { }`).
+
+**Tipos iniciais (sugeridos):** `int`, `float` (opcional), `bool`, `string`.  
+**Construções básicas:** atribuições, expressões aritméticas e lógicas, `if/else`, `while`, `print`. Funções podem ser adicionadas nas sprints posteriores.
 
 ---
 
-## Anexos possíveis (se desejar que eu gere)
+## Testes e boas práticas
 
-* `README.md` pronto para o repositório.
-* Esqueleto `lexer.l` e `parser.y` para começar.
-* Esqueleto `ast.py` e `interpreter.py` em Python.
+* **Unit tests:** escrever testes para AST, semântica e runtime (sugestão: `cmocka`/`CUnit`).
+* **Integration tests:** criar scripts que rodem o interpretador sobre exemplos e comparem saída.
+* **Mensagens de erro:** reportar `linha:coluna` e fornecer contexto.
+* **Estilo:** usar `clang-format`; mantenham regras comuns no time.
+* **Sanitizers:** use `-fsanitize=address,undefined` em builds de desenvolvimento para detectar vazamentos/uso inválido de memória.
 
-> Se quiser, eu já gero qualquer um dos anexos acima em Markdown/código — diga qual você quer agora.
+---
+
+## Erros e reporting
+
+* **Lexer/Parser:** reportem a posição do erro e trecho de código; considerem usar a recuperação de erros do Bison para testes de robustez.
+* **Semântica:** verificação de variáveis não declaradas, coerência mínima de tipos, número de parâmetros em funções (se houver).
+* **Runtime:** mensagens claras para erros de execução (divisão por zero, índice inválido, etc.).
+
+---
+
+## Sprints / Cronograma (resumo)
+
+As sprints previstas são:
+
+* **Sprint 1** — formar equipes, configurar ambiente, definir linguagem e gramática inicial.
+* **Sprint 2** — concluir lexer e primeiras regras do parser; preparar P1.
+* **Sprint 3** — criar AST, iniciar análise semântica e melhorar mensagens de erro.
+* **Sprint 4** — implementar interpretador que percorre a AST; preparar P2.
+* **Sprint 5** — otimizações, recursos extras, testes integrados e entrega final.
+* **Sprint 6** — entrevistas finais com o professor, correções e documentação final.
+
+> O planejamento detalhado (tarefas/entregas por sprint) deve ficar em `docs/especificacao_linguagem.md` ou outro arquivo de planejamento do grupo.
+
+---
