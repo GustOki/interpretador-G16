@@ -1,25 +1,19 @@
-# Interpretador — Grupo 16
+# Documentação Inicial — Interpretador (Grupo 16)
 
-**Linguagem do projeto:** C  
-**Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
-
----
-
-## Sumário
-
-* [Visão Geral](#visão-geral)
-* [Estrutura do repositório](#estrutura-do-repositório)
-* [Pré-requisitos](#pré-requisitos)
-* [Build — Como compilar (Makefile)](#build---como-compilar-makefile)
-* [Uso — Como rodar](#uso---como-rodar)
-* [Tokens, tipos e construções iniciais](#tokens-tipos-e-construções-iniciais)
-* [Testes e boas práticas](#testes-e-boas-práticas)
-* [Erros e reporting](#erros-e-reporting)
-* [Sprints / Cronograma](#sprints--cronograma)
-* [Contribuição](#contribuição)
-* [Contato](#contato)
+* **Linguagem do projeto:** C
+* **Grupo:** Grupo 16
+* **Professor:** `sergioaafreitas` / `sergiofreitas@unb.br`
 
 ---
+
+# Por que usamos C?
+
+* **Protótipo rápido:** A Linguagrem C permite desenvolver e iterar rapidamente estruturas de dados (AST, tabela de símbolos) e componentes do interpretador.
+* **Leitura e manutenção:** sintaxe clara e menor boilerplate facilitam o trabalho em equipe.
+* **Bibliotecas e ferramentas:** opção de usar bibliotecas de parsing (ex.: PLY, lark) caso se deseje, além de utilitários para testes e logging.
+* **Integração com Flex/Bison:** Flex/Bison podem gerar a etapa léxica/sintática tradicional; Python é ideal para implementar a camada de execução (AST/interpreter) sem precisar compilar todo o backend em C.
+* **Educação:** facilita a compreensão de conceitos como AST, análise semântica e avaliação.
+
 
 ## Visão Geral
 
@@ -51,8 +45,6 @@ interpretador-grupo16/
 ├── Makefile
 └── README.md
 ```
-
-> **Observação:** os arquivos gerados pelo Flex/Bison (`lex.yy.c`, `parser.tab.c`, `parser.tab.h`) aparecem no repositório como artefatos. Se preferirem, adicionem-nos ao `.gitignore` e gerem durante o build.
 
 ---
 
@@ -188,8 +180,6 @@ make clean
 
 **O executável final** ficará em `build/interpretador` (conforme `BUILD_DIR` e `TARGET`).
 
-> Se precisar ativar sanitizers em debug, modifique `CFLAGS` adicionando `-fsanitize=address,undefined` ou crie um `target` `debug` no Makefile.
-
 ---
 
 ## Uso — Como rodar
@@ -246,6 +236,11 @@ As sprints previstas são:
 * **Sprint 5** — otimizações, recursos extras, testes integrados e entrega final.
 * **Sprint 6** — entrevistas finais com o professor, correções e documentação final.
 
-> O planejamento detalhado (tarefas/entregas por sprint) deve ficar em `docs/especificacao_linguagem.md` ou outro arquivo de planejamento do grupo.
-
 ---
+
+# Fluxo de trabalho com Git
+
+* **Repositório:** GitHub (adicionar todos os membros e o professor).
+* **Branches:** `main` (estável), `dev` (integração), `feature/<nome>`.
+* **Pull Requests:** revisão por pelo menos 1 membro antes de merge em `dev`.
+* **Commits:** mensagens claras (`feat: adicionar lexer`; `fix: parser while`).
