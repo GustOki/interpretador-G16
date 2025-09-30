@@ -73,8 +73,6 @@ Recomendações de desenvolvimento:
 
 ## Build — Como compilar (Makefile)
 
-Abaixo está o **Makefile** atual usado no projeto:
-
 ```makefile
 # Makefile para Estrutura de Pastas Organizada
 
