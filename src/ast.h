@@ -1,20 +1,18 @@
-// Arquivo: src/ast.h
-
 #ifndef AST_H
 #define AST_H
 
 // Enum para identificar o tipo de cada nó na árvore
 typedef enum {
-    NODE_TYPE_NUM,      // Nó para um número literal 
-    NODE_TYPE_ID,       // Nó para um identificador
-    NODE_TYPE_OP,       // Nó para uma operação binária 
-    NODE_TYPE_ASSIGN    // Nó para uma atribuição 
+    NODE_TYPE_NUM, // Nó para um número
+    NODE_TYPE_ID, // Nó identificador
+    NODE_TYPE_OP, // Nó de operacao
+    NODE_TYPE_ASSIGN // Nó de atribuição 
 } NodeType;
 
 typedef struct AstNode {
     NodeType type;
     char op;
-    int lineno;   /* NOVO: linha aproximada onde o nó foi criado */
+    int lineno; 
     union {
         int valor;
         char* nome;
@@ -25,9 +23,9 @@ typedef struct AstNode {
     } data;
 } AstNode;
 
-// --- PROTÓTIPOS DAS FUNÇÕES ---
+//  PROTÓTIPOS DAS FUNÇÕES 
 
-// Funções para criar nós (serão implementadas em ast.c)
+// Funções criadora de nós (serão implementadas em ast.c)
 AstNode* create_num_node(int valor);
 AstNode* create_id_node(char* nome);
 AstNode* create_op_node(char op, AstNode* left, AstNode* right);

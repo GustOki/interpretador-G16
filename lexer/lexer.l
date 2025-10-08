@@ -13,6 +13,7 @@ extern int yylineno;
 %%
 
 [0-9]+                  { yylval.valor = atoi(yytext); return NUM; }
+
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }
 "*"                     { return TIMES; }
@@ -20,6 +21,7 @@ extern int yylineno;
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
 "\n"                    { return NEWLINE; }
+
 [ \t]+                  { /* ignora espaços e tabs */ }
 [a-zA-Z][a-zA-Z0-9_]*   { yylval.str = strdup(yytext); return ID; }
 "="                     { return IGUAL; }
