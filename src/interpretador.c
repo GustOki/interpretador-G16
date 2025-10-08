@@ -1,12 +1,12 @@
-// Arquivo: src/interpretador.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
-#include "simbolo.h"
-#include "parser.tab.h"
+#include "simbolo.h" // <<< PASSO CRUCIAL: Inclui a definição da struct!
 
-int interpret_error = 0;
+// Precisamos acessar a tabela de símbolos que está no parser
+extern struct simbolo tabelaSimbolos[];
+extern int procurar_simbolo(char* nome);
+extern int inserir_simbolo(char* nome, int valor);
 
 int interpretar(AstNode* no) {
     if (!no) return 0; // Um bloco {} vazio ou o fim da lista não retorna nada
@@ -28,7 +28,6 @@ int interpretar(AstNode* no) {
         case NODE_TYPE_ASSIGN: {
             char* var_nome = no->data.children.left->data.nome;
             int valor_expr = interpretar(no->data.children.right);
-            if (interpret_error) return 0;
             inserir_simbolo(var_nome, valor_expr);
             return valor_expr;
         }
@@ -55,44 +54,12 @@ int interpretar(AstNode* no) {
                 case '-': return val_esq - val_dir;
                 case '*': return val_esq * val_dir;
                 case '/':
-                    if (val_dir == 0) {
-                        interpret_error = 1;
-                        fprintf(stderr, "Linha %d: Erro semântico: divisão por zero\n", no->lineno);
-                        return 0;
-                    }
+                    // ... (código da divisão)
                     return val_esq / val_dir;
-                
-                // Comparadores
-                case '>':  return val_esq > val_dir;
-                case '<':  return val_esq < val_dir;
-                case 1:    return val_esq >= val_dir; // GE
-                case 2:    return val_esq <= val_dir; // LE
-                case 3:    return val_esq == val_dir; // EQ
-                case 4:    return val_esq != val_dir; // NE
-
-                default:
-                    interpret_error = 1;
-                    fprintf(stderr, "Linha %d: Erro semântico: operador desconhecido '%c'\n", no->lineno, no->op);
-                    return 0;
             }
+            // <<< O PROBLEMA ESTÁ AQUI
         }
-        
-        case NODE_TYPE_IF: {
-            int condicao_val = interpretar(no->data.if_details.condicao);
-            if (interpret_error) return 0;
-
-            if (condicao_val) {
-                return interpretar(no->data.if_details.bloco_then);
-            } 
-            else if (no->data.if_details.bloco_else != NULL) {
-                return interpretar(no->data.if_details.bloco_else);
-            }
-            return 0;
-        }
-
-        default:
-            interpret_error = 1;
-            fprintf(stderr, "Erro interno: nó inválido na AST (tipo %d)\n", no->type);
-            return 0;
     }
+    return 0; // Se chegar aqui, algo deu errado
 }
+

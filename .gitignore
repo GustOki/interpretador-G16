@@ -1,0 +1,17 @@
+/build/
+
+/parser/parser.tab.c
+/parser/parser.tab.h
+/lexer/lex.yy.c
+
+core
+core.*
+
+.vscode/
+*.swp
+*~
+*.sublime-workspace
+
+.DS_Store
+
+Thumbs.db
