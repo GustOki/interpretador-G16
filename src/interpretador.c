@@ -1,21 +1,15 @@
-// src/interpretador.c
+// Arquivo: src/interpretador.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
 #include "simbolo.h"
+#include "parser.tab.h"
 
-extern int yylineno; /* só se quiser usar linha do lexer nas mensagens (opcional) */
-
-/* Flag global que indica se houve um erro durante a interpretação.
-   Definida aqui (definição única). O parser declara 'extern' para consultar. */
 int interpret_error = 0;
 
-extern struct simbolo tabelaSimbolos[];
-extern int procurar_simbolo(char* nome);
-extern int inserir_simbolo(char* nome, int valor);
-
 int interpretar(AstNode* no) {
-    if (!no) return 0;
+    if (!no) return 0; // Um bloco {} vazio ou o fim da lista não retorna nada
 
     switch (no->type) {
         case NODE_TYPE_NUM:
@@ -34,37 +28,71 @@ int interpretar(AstNode* no) {
         case NODE_TYPE_ASSIGN: {
             char* var_nome = no->data.children.left->data.nome;
             int valor_expr = interpretar(no->data.children.right);
-            if (interpret_error) return 0; /* se já houve erro dentro da expressão, propaga sem sobrescrever tabela */
+            if (interpret_error) return 0;
             inserir_simbolo(var_nome, valor_expr);
             return valor_expr;
         }
 
         case NODE_TYPE_OP: {
+            // --- LÓGICA ADICIONADA PARA O PONTO-E-VÍRGULA ---
+            // Se o operador for ';', tratamos como uma sequência de comandos
+            if (no->op == ';') {
+                interpretar(no->data.children.left); // Executa o primeiro comando (lado esquerdo)
+                if (interpret_error) return 0;
+                return interpretar(no->data.children.right); // Executa o próximo e retorna seu valor
+            }
+            // --- FIM DA LÓGICA ADICIONADA ---
+
+            // A lógica abaixo, para os outros operadores, continua a mesma
             int val_esq = interpretar(no->data.children.left);
             if (interpret_error) return 0;
             int val_dir = interpretar(no->data.children.right);
             if (interpret_error) return 0;
 
             switch (no->op) {
+                // Aritméticos
                 case '+': return val_esq + val_dir;
                 case '-': return val_esq - val_dir;
                 case '*': return val_esq * val_dir;
                 case '/':
                     if (val_dir == 0) {
                         interpret_error = 1;
-                        fprintf(stderr, "Linha %d: Erro semântico: divisão por zero\n", yylineno);
+                        fprintf(stderr, "Linha %d: Erro semântico: divisão por zero\n", no->lineno);
                         return 0;
                     }
                     return val_esq / val_dir;
+                
+                // Comparadores
+                case '>':  return val_esq > val_dir;
+                case '<':  return val_esq < val_dir;
+                case 1:    return val_esq >= val_dir; // GE
+                case 2:    return val_esq <= val_dir; // LE
+                case 3:    return val_esq == val_dir; // EQ
+                case 4:    return val_esq != val_dir; // NE
+
                 default:
                     interpret_error = 1;
-                    fprintf(stderr, "Linha %d: Erro semântico: operador desconhecido '%c'\n", yylineno, no->op);
+                    fprintf(stderr, "Linha %d: Erro semântico: operador desconhecido '%c'\n", no->lineno, no->op);
                     return 0;
             }
         }
+        
+        case NODE_TYPE_IF: {
+            int condicao_val = interpretar(no->data.if_details.condicao);
+            if (interpret_error) return 0;
+
+            if (condicao_val) {
+                return interpretar(no->data.if_details.bloco_then);
+            } 
+            else if (no->data.if_details.bloco_else != NULL) {
+                return interpretar(no->data.if_details.bloco_else);
+            }
+            return 0;
+        }
+
+        default:
+            interpret_error = 1;
+            fprintf(stderr, "Erro interno: nó inválido na AST (tipo %d)\n", no->type);
+            return 0;
     }
-    /* Nó inválido */
-    interpret_error = 1;
-    fprintf(stderr, "Linha %d: Erro interno: nó inválido na AST\n", yylineno);
-    return 0;
 }
