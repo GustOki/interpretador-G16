@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 3 "parser/parser.y"
+#line 1 "parser/parser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,27 +78,30 @@
 int yylex(void);
 void yyerror(const char *s);
 
-/* --- DECLARAÇÕES EXTERNAS DO LEXER (Flex) --- */
-extern int yylineno;   /* número da linha fornecido pelo lexer */
-extern char *yytext;   /* texto do token atual */
+/* DECLARAÇÕES LEXER */
+extern int yylineno; /* linha fornecida pelo lexer */
+extern char *yytext; /* texto do token atual */
 extern int interpret_error;
 
-/* Variável para lembrar a linha em que o último erro sintático foi detectado */
+/* varivael quem lembra a linha em que o último erro sintático foi detectado */
 int last_error_lineno = 0;
 
-/* Implementação única de yyerror - salva a linha no momento do erro */
+/* funcao que salva a linha no momento do erro */
 void yyerror(const char *s) {
     last_error_lineno = yylineno;
 
-    if (yytext && yytext[0] != '\0') {
+    if (yytext && yytext[0] != '\0') 
+    {
         fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n",
                 last_error_lineno, s, yytext);
-    } else {
+    } 
+    else 
+    {
         fprintf(stderr, "Linha %d: Erro sintático: %s\n", last_error_lineno, s);
     }
 }
 
-#line 102 "parser/parser.tab.c"
+#line 105 "parser/parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -530,8 +533,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    56,    56,    57,    61,    69,    77,    78,    86,    96,
-      97,    98,    99,   100,   101,   102
+       0,    57,    57,    58,    62,    70,    78,    80,    88,    98,
+      99,   100,   101,   102,   103,   104
 };
 #endif
 
@@ -1373,7 +1376,7 @@ yyreduce:
   switch (yyn)
     {
   case 4: /* linha: expressao NEWLINE  */
-#line 61 "parser/parser.y"
+#line 62 "parser/parser.y"
                         {
                             interpret_error = 0; /* zera antes de interpretar */
                             int resultado = interpretar((yyvsp[-1].no));
@@ -1382,11 +1385,11 @@ yyreduce:
                             }
                             liberar_ast((yyvsp[-1].no));
                         }
-#line 1386 "parser/parser.tab.c"
+#line 1389 "parser/parser.tab.c"
     break;
 
   case 5: /* linha: atribuicao NEWLINE  */
-#line 69 "parser/parser.y"
+#line 70 "parser/parser.y"
                           {
                             interpret_error = 0;
                             int resultado = interpretar((yyvsp[-1].no));
@@ -1395,79 +1398,79 @@ yyreduce:
                             }
                             liberar_ast((yyvsp[-1].no));
                         }
-#line 1399 "parser/parser.tab.c"
+#line 1402 "parser/parser.tab.c"
     break;
 
   case 6: /* linha: NEWLINE  */
-#line 77 "parser/parser.y"
-                          { /* Nao faz nada com uma linha em branco */ }
-#line 1405 "parser/parser.tab.c"
+#line 78 "parser/parser.y"
+                          { /* em casos de nao acontecer nada na linha */ }
+#line 1408 "parser/parser.tab.c"
     break;
 
   case 7: /* linha: error NEWLINE  */
-#line 78 "parser/parser.y"
-                          { /* Mensagem amigável e recuperação até o fim da linha */
+#line 80 "parser/parser.y"
+                          { /* mensagem de erro */
                             fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
                             yyerrok;
                           }
-#line 1414 "parser/parser.tab.c"
+#line 1417 "parser/parser.tab.c"
     break;
 
   case 8: /* atribuicao: ID IGUAL expressao  */
-#line 86 "parser/parser.y"
+#line 88 "parser/parser.y"
                        {
         AstNode* left = create_id_node((yyvsp[-2].str));
-        left->lineno = yylineno;   /* linha do ID token */
+        left->lineno = yylineno; /* linha do ID token */
         (yyval.no) = create_assign_node(left, (yyvsp[0].no));
         (yyval.no)->lineno = left->lineno; /* linha da atribuição = linha do id */
     }
-#line 1425 "parser/parser.tab.c"
+#line 1428 "parser/parser.tab.c"
     break;
 
   case 9: /* expressao: NUM  */
-#line 96 "parser/parser.y"
-                        { (yyval.no) = create_num_node((yyvsp[0].valor)); (yyval.no)->lineno = yylineno; }
-#line 1431 "parser/parser.tab.c"
+#line 98 "parser/parser.y"
+                                 { (yyval.no) = create_num_node((yyvsp[0].valor)); (yyval.no)->lineno = yylineno; }
+#line 1434 "parser/parser.tab.c"
     break;
 
   case 10: /* expressao: ID  */
-#line 97 "parser/parser.y"
-                        { (yyval.no) = create_id_node((yyvsp[0].str)); (yyval.no)->lineno = yylineno; }
-#line 1437 "parser/parser.tab.c"
+#line 99 "parser/parser.y"
+                                 { (yyval.no) = create_id_node((yyvsp[0].str)); (yyval.no)->lineno = yylineno; }
+#line 1440 "parser/parser.tab.c"
     break;
 
   case 11: /* expressao: expressao PLUS expressao  */
-#line 98 "parser/parser.y"
+#line 100 "parser/parser.y"
                                  { (yyval.no) = create_op_node('+', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1443 "parser/parser.tab.c"
+#line 1446 "parser/parser.tab.c"
     break;
 
   case 12: /* expressao: expressao MINUS expressao  */
-#line 99 "parser/parser.y"
+#line 101 "parser/parser.y"
                                  { (yyval.no) = create_op_node('-', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1449 "parser/parser.tab.c"
+#line 1452 "parser/parser.tab.c"
     break;
 
   case 13: /* expressao: expressao TIMES expressao  */
-#line 100 "parser/parser.y"
+#line 102 "parser/parser.y"
                                  { (yyval.no) = create_op_node('*', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1455 "parser/parser.tab.c"
+#line 1458 "parser/parser.tab.c"
     break;
 
   case 14: /* expressao: expressao DIVIDE expressao  */
-#line 101 "parser/parser.y"
+#line 103 "parser/parser.y"
                                  { (yyval.no) = create_op_node('/', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1461 "parser/parser.tab.c"
+#line 1464 "parser/parser.tab.c"
     break;
 
   case 15: /* expressao: LPAREN expressao RPAREN  */
-#line 102 "parser/parser.y"
-                                 { (yyval.no) = (yyvsp[-1].no); /* já tem lineno do $2 */ }
-#line 1467 "parser/parser.tab.c"
+#line 104 "parser/parser.y"
+                                 { (yyval.no) = (yyvsp[-1].no); }
+#line 1470 "parser/parser.tab.c"
     break;
 
 
-#line 1471 "parser/parser.tab.c"
+#line 1474 "parser/parser.tab.c"
 
       default: break;
     }
@@ -1694,32 +1697,34 @@ yyreturnlab:
 #line 109 "parser/parser.y"
 
 
-/*
- * Implementacoes de funcoes e definicoes de variaveis globais vem aqui.
- * Isso garante que elas sejam globais e visiveis para o linker.
- */
-
 // Definicoes globais da tabela de simbolos
 struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
 int proximoSimbolo = 0;
 
 int inserir_simbolo(char *nome, int valor) {
     int indice = procurar_simbolo(nome);
-    if (indice != -1) {
+
+    if (indice != -1) 
+    {
         tabelaSimbolos[indice].valor = valor;
         return indice;
     }
-    if (proximoSimbolo >= MAX_SIMBOLOS) {
+
+    if (proximoSimbolo >= MAX_SIMBOLOS) 
+    {
         fprintf(stderr, "Tabela de simbolos cheia!\n");
         exit(1);
     }
+
     strcpy(tabelaSimbolos[proximoSimbolo].nome, nome);
     tabelaSimbolos[proximoSimbolo].valor = valor;
     return proximoSimbolo++;
 }
 
-int procurar_simbolo(char *nome) {
-    for (int i = 0; i < proximoSimbolo; i++) {
+int procurar_simbolo(char *nome) 
+    {
+    for (int i = 0; i < proximoSimbolo; i++) 
+    {
         if (strcmp(tabelaSimbolos[i].nome, nome) == 0) return i;
     }
     return -1;

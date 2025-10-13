@@ -777,58 +777,58 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 16 "lexer/lexer.l"
+#line 17 "lexer/lexer.l"
 { return PLUS; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 17 "lexer/lexer.l"
+#line 18 "lexer/lexer.l"
 { return MINUS; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 18 "lexer/lexer.l"
+#line 19 "lexer/lexer.l"
 { return TIMES; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 19 "lexer/lexer.l"
+#line 20 "lexer/lexer.l"
 { return DIVIDE; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 20 "lexer/lexer.l"
+#line 21 "lexer/lexer.l"
 { return LPAREN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 21 "lexer/lexer.l"
+#line 22 "lexer/lexer.l"
 { return RPAREN; }
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 22 "lexer/lexer.l"
+#line 23 "lexer/lexer.l"
 { return NEWLINE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 23 "lexer/lexer.l"
+#line 25 "lexer/lexer.l"
 { /* ignora espaços e tabs */ }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 24 "lexer/lexer.l"
+#line 26 "lexer/lexer.l"
 { yylval.str = strdup(yytext); return ID; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 25 "lexer/lexer.l"
+#line 27 "lexer/lexer.l"
 { return IGUAL; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 27 "lexer/lexer.l"
+#line 29 "lexer/lexer.l"
 {
                             /* yytext contém o caractere inválido (terminado em '\0') */
                             fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext);
@@ -836,7 +836,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 32 "lexer/lexer.l"
+#line 34 "lexer/lexer.l"
 ECHO;
 	YY_BREAK
 #line 843 "lexer/lex.yy.c"
@@ -1856,6 +1856,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 32 "lexer/lexer.l"
+#line 34 "lexer/lexer.l"
 
 
