@@ -1,6 +1,9 @@
 #ifndef SIMBOLO_H
 #define SIMBOLO_H
 
+void tabela_iniciar();
+void tabela_liberar();
+
 #define MAX_SIMBOLOS 100 
 #define MAX_NOME 100     
 struct simbolo {
