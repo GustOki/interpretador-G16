@@ -1,18 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
-#include "simbolo.h" 
+#include "simbolo.h" // <<< PASSO CRUCIAL: Inclui a definição da struct!
 
-extern int yylineno; 
-
-int interpret_error = 0;
-
+// Precisamos acessar a tabela de símbolos que está no parser
 extern struct simbolo tabelaSimbolos[];
 extern int procurar_simbolo(char* nome);
 extern int inserir_simbolo(char* nome, int valor);
+extern int interpret_error;
 
 int interpretar(AstNode* no) {
-    if (!no) return 0;
+    if (!no) return 0; // Um bloco {} vazio ou o fim da lista não retorna nada
 
     switch (no->type) {
         case NODE_TYPE_NUM:
@@ -31,37 +29,42 @@ int interpretar(AstNode* no) {
         case NODE_TYPE_ASSIGN: {
             char* var_nome = no->data.children.left->data.nome;
             int valor_expr = interpretar(no->data.children.right);
-            if (interpret_error) return 0; /* se já houve erro dentro da expressão, propaga sem sobrescrever tabela */
             inserir_simbolo(var_nome, valor_expr);
             return valor_expr;
         }
 
+      case NODE_TYPE_IF:
+    if (interpretar(no->data.if_details.condicao)) {
+        interpretar(no->data.if_details.bloco_then);
+    } else if (no->data.if_details.bloco_else) {
+        interpretar(no->data.if_details.bloco_else);
+    }
+    break;
+
+
         case NODE_TYPE_OP: {
+       
+            if (no->op == ';') {
+                interpretar(no->data.children.left); 
+                if (interpret_error) return 0;
+                return interpretar(no->data.children.right); 
+            }
+  
             int val_esq = interpretar(no->data.children.left);
             if (interpret_error) return 0;
             int val_dir = interpretar(no->data.children.right);
             if (interpret_error) return 0;
 
             switch (no->op) {
+                // Aritméticos
                 case '+': return val_esq + val_dir;
                 case '-': return val_esq - val_dir;
                 case '*': return val_esq * val_dir;
                 case '/':
-                    if (val_dir == 0) {
-                        interpret_error = 1;
-                        fprintf(stderr, "Linha %d: Erro semântico: divisão por zero\n", yylineno);
-                        return 0;
-                    }
                     return val_esq / val_dir;
-                default:
-                    interpret_error = 1;
-                    fprintf(stderr, "Linha %d: Erro semântico: operador desconhecido '%c'\n", yylineno, no->op);
-                    return 0;
             }
         }
     }
-    interpret_error = 1;
-    fprintf(stderr, "Linha %d: Erro interno: nó inválido na AST\n", yylineno);
-    return 0;
+    return 0; 
 }
 

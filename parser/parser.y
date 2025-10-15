@@ -11,10 +11,11 @@ void yyerror(const char *s);
 /* DECLARAÇÕES LEXER */
 extern int yylineno; /* linha fornecida pelo lexer */
 extern char *yytext; /* texto do token atual */
-extern int interpret_error;
 
 /* varivael quem lembra a linha em que o último erro sintático foi detectado */
 int last_error_lineno = 0;
+int interpret_error = 0;
+
 
 /* funcao que salva a linha no momento do erro */
 void yyerror(const char *s) {
@@ -42,10 +43,16 @@ void yyerror(const char *s) {
 
 %token <valor> NUM
 %token <str> ID
-%type <no> linha expressao atribuicao
 
-%token NEWLINE PLUS MINUS TIMES DIVIDE LPAREN RPAREN IGUAL
+%token IF ELSE LBRACE RBRACE LPAREN RPAREN
+%token EQ NE LT GT LE GE
+%token PONTO_VIRGULA 
+%token NEWLINE PLUS MINUS TIMES DIVIDE IGUAL
 
+%type <no> linha expressao atribuicao comando_if comando lista_comandos
+
+%right IF ELSE
+%left GT LT GE LE EQ NE
 %left PLUS MINUS
 %left TIMES DIVIDE
 
@@ -53,7 +60,6 @@ void yyerror(const char *s) {
 /* SECAO DE REGRAS */
 
 %%
-
 programa:
     | programa linha
     ;
@@ -75,6 +81,12 @@ linha:
                             }
                             liberar_ast($1);
                         }
+    | comando_if NEWLINE {
+                            interpret_error = 0;
+                            interpretar($1);
+                            liberar_ast($1);
+                        }
+                        
     | NEWLINE             { /* em casos de nao acontecer nada na linha */ }
 
     | error NEWLINE       { /* mensagem de erro */
@@ -82,7 +94,6 @@ linha:
                             yyerrok;
                           }
     ;
-
 
 atribuicao:
     ID IGUAL expressao {
@@ -103,6 +114,26 @@ expressao:
     | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); $$->lineno = $1->lineno; }
     | LPAREN expressao RPAREN    { $$ = $2; }
 ;
+comando:
+    atribuicao PONTO_VIRGULA  { $$ = $1; }
+    | comando_if              { $$ = $1; }
+    ;
+
+comando_if:
+    IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
+        $$ = create_if_node($3, $6, NULL);
+        $$->lineno = yylineno;
+    }
+    | IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE {
+        $$ = create_if_node($3, $6, $10);
+        $$->lineno = yylineno;
+    }
+    ;
+
+lista_comandos:
+    comando                      { $$ = $1; }
+    | lista_comandos comando     { $$ = $2; }
+    ;
 
 
 /* IMPLEMENTACOES EM C*/

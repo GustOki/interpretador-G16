@@ -56,6 +56,21 @@ AstNode* create_assign_node(AstNode* left, AstNode* right) {
     return no;
 }
 
+// Função para criar um nó de condição
+AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_else) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+    }
+    no->type = NODE_TYPE_IF;
+    no->op = 0; // Não aplicável
+    no->data.if_details.condicao = condicao;
+    no->data.if_details.bloco_then = bloco_then;
+    no->data.if_details.bloco_else = bloco_else;
+    return no;
+}
+
 // Função para liberar a memória da AST
 void liberar_ast(AstNode* no) {
     if (!no) return;
