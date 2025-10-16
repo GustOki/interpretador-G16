@@ -1,3 +1,5 @@
+// Arquivo: parser/parser.y (VERSÃO FINAL E PADRONIZADA)
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,30 +9,8 @@
 
 int yylex(void);
 void yyerror(const char *s);
-
-/* DECLARAÇÕES LEXER */
-extern int yylineno; /* linha fornecida pelo lexer */
-extern char *yytext; /* texto do token atual */
-
-/* varivael quem lembra a linha em que o último erro sintático foi detectado */
-int last_error_lineno = 0;
-int interpret_error = 0;
-
-
-/* funcao que salva a linha no momento do erro */
-void yyerror(const char *s) {
-    last_error_lineno = yylineno;
-
-    if (yytext && yytext[0] != '\0') 
-    {
-        fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n",
-                last_error_lineno, s, yytext);
-    } 
-    else 
-    {
-        fprintf(stderr, "Linha %d: Erro sintático: %s\n", last_error_lineno, s);
-    }
-}
+extern int yylineno;
+extern int interpret_error;
 %}
 
 %define parse.error verbose
@@ -44,20 +24,20 @@ void yyerror(const char *s) {
 %token <valor> NUM
 %token <str> ID
 
+// Tokens importantes que precisam de nomes
 %token IF ELSE LBRACE RBRACE LPAREN RPAREN
 %token EQ NE LT GT LE GE
-%token PONTO_VIRGULA 
-%token NEWLINE PLUS MINUS TIMES DIVIDE IGUAL
+%token PONTO_VIRGULA
 
 %type <no> linha expressao atribuicao comando_if comando lista_comandos
 
-%right IF ELSE
+%token NEWLINE PLUS MINUS TIMES DIVIDE IGUAL
+
+%nonassoc IFX
+%nonassoc ELSE
 %left GT LT GE LE EQ NE
 %left PLUS MINUS
 %left TIMES DIVIDE
-
-
-/* SECAO DE REGRAS */
 
 %%
 programa:
@@ -65,109 +45,98 @@ programa:
     ;
 
 linha:
-    expressao NEWLINE   {
-                            interpret_error = 0; /* zera antes de interpretar */
-                            int resultado = interpretar($1);
-                            if (!interpret_error) {
-                                printf("Resultado: %d\n", resultado);
-                            }
-                            liberar_ast($1);
-                        }
-    | atribuicao NEWLINE  {
-                            interpret_error = 0;
-                            int resultado = interpretar($1);
-                            if (!interpret_error) {
-                                printf("Resultado: %d\n", resultado);
-                            }
-                            liberar_ast($1);
-                        }
-    | comando_if NEWLINE {
-                            interpret_error = 0;
-                            interpretar($1);
-                            liberar_ast($1);
-                        }
-                        
-    | NEWLINE             { /* em casos de nao acontecer nada na linha */ }
+    NEWLINE { /* ignora linha vazia */ }
+  | comando NEWLINE {
+        interpret_error = 0;
+        int resultado = interpretar($1);
+        if ($1 && !interpret_error) {
+            switch ($1->type) {
+                case NODE_TYPE_ASSIGN:
+                    printf("OK. Variável '%s' agora é %d\n", $1->data.children.left->data.nome, resultado);
+                    break;
+                case NODE_TYPE_OP:
+                case NODE_TYPE_NUM:
+                case NODE_TYPE_ID:
+                    printf("Resultado: %d\n", resultado);
+                    break;
+                case NODE_TYPE_IF:
+                    break;
+            }
+        }
+        liberar_ast($1);
+    }
+  | error NEWLINE   { yyerrok; }
+  ;
 
-    | error NEWLINE       { /* mensagem de erro */
-                            fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
-                            yyerrok;
-                          }
-    ;
+lista_comandos:
+    /* a lista de comandos pode ser vazia */ { $$ = NULL; }
+  | lista_comandos comando        {
+                                    if ($1 == NULL) $$ = $2;
+                                    else $$ = create_op_node(';', $1, $2);
+                                  }
+  ;
+
+comando:
+    expressao PONTO_VIRGULA    { $$ = $1; }
+  | atribuicao PONTO_VIRGULA   { $$ = $1; }
+  | comando_if                 { $$ = $1; }
+  ;
+
+comando_if:
+    // <<< CORREÇÃO AQUI: Usando LPAREN e RPAREN em vez de '(' e ')'
+    IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE %prec IFX {
+        $$ = create_if_node($3, $6, NULL);
+        $$->lineno = yylineno;
+    }
+  | IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE {
+        $$ = create_if_node($3, $6, $10);
+        $$->lineno = yylineno;
+    }
+;
 
 atribuicao:
     ID IGUAL expressao {
         AstNode* left = create_id_node($1);
-        left->lineno = yylineno; /* linha do ID token */
+        left->lineno = yylineno;
         $$ = create_assign_node(left, $3);
-        $$->lineno = left->lineno; /* linha da atribuição = linha do id */
+        $$->lineno = left->lineno;
     }
 ;
-
 
 expressao:
-    NUM                          { $$ = create_num_node($1); $$->lineno = yylineno; }
-    | ID                         { $$ = create_id_node($1); $$->lineno = yylineno; }
-    | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3); $$->lineno = $1->lineno; }
-    | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3); $$->lineno = $1->lineno; }
-    | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3); $$->lineno = $1->lineno; }
-    | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); $$->lineno = $1->lineno; }
-    | LPAREN expressao RPAREN    { $$ = $2; }
+    NUM { $$ = create_num_node($1); $$->lineno = yylineno; }
+  | ID  { $$ = create_id_node($1); $$->lineno = yylineno; }
+  | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3); $$->lineno = $1->lineno; }
+  | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3); $$->lineno = $1->lineno; }
+  | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3); $$->lineno = $1->lineno; }
+  | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); $$->lineno = $1->lineno; }
+  | expressao GT expressao     { $$ = create_op_node('>', $1, $3); $$->lineno = $1->lineno; }
+  | expressao LT expressao     { $$ = create_op_node('<', $1, $3); $$->lineno = $1->lineno; }
+  | expressao GE expressao     { $$ = create_op_node(1, $1, $3); $$->lineno = $1->lineno; }
+  | expressao LE expressao     { $$ = create_op_node(2, $1, $3); $$->lineno = $1->lineno; }
+  | expressao EQ expressao     { $$ = create_op_node(3, $1, $3); $$->lineno = $1->lineno; }
+  | expressao NE expressao     { $$ = create_op_node(4, $1, $3); $$->lineno = $1->lineno; }
+  // <<< CORREÇÃO AQUI: Usando LPAREN e RPAREN em vez de '(' e ')'
+  | LPAREN expressao RPAREN    { $$ = $2; }
 ;
-comando:
-    atribuicao PONTO_VIRGULA  { $$ = $1; }
-    | comando_if              { $$ = $1; }
-    ;
 
-comando_if:
-    IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
-        $$ = create_if_node($3, $6, NULL);
-        $$->lineno = yylineno;
-    }
-    | IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE {
-        $$ = create_if_node($3, $6, $10);
-        $$->lineno = yylineno;
-    }
-    ;
-
-lista_comandos:
-    comando                      { $$ = $1; }
-    | lista_comandos comando     { $$ = $2; }
-    ;
-
-
-/* IMPLEMENTACOES EM C*/
 %%
-
-// Definicoes globais da tabela de simbolos
+/* SEÇÃO DE CÓDIGO C FINAL */
 struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
 int proximoSimbolo = 0;
 
+void yyerror(const char *s) {
+    fprintf(stderr, "Erro na linha %d: erro de sintaxe: %s\n", yylineno, s);
+}
 int inserir_simbolo(char *nome, int valor) {
     int indice = procurar_simbolo(nome);
-
-    if (indice != -1) 
-    {
-        tabelaSimbolos[indice].valor = valor;
-        return indice;
-    }
-
-    if (proximoSimbolo >= MAX_SIMBOLOS) 
-    {
-        fprintf(stderr, "Tabela de simbolos cheia!\n");
-        exit(1);
-    }
-
+    if (indice != -1) { tabelaSimbolos[indice].valor = valor; return indice; }
+    if (proximoSimbolo >= MAX_SIMBOLOS) { fprintf(stderr, "Tabela de simbolos cheia!\n"); exit(1); }
     strcpy(tabelaSimbolos[proximoSimbolo].nome, nome);
     tabelaSimbolos[proximoSimbolo].valor = valor;
     return proximoSimbolo++;
 }
-
-int procurar_simbolo(char *nome) 
-    {
-    for (int i = 0; i < proximoSimbolo; i++) 
-    {
-        if (strcmp(tabelaSimbolos[i].nome, nome) == 0) return i;
-    }
+int procurar_simbolo(char *nome) {
+    for (int i = 0; i < proximoSimbolo; i++) { if (strcmp(tabelaSimbolos[i].nome, nome) == 0) return i; }
     return -1;
 }
