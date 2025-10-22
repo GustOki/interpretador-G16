@@ -54,7 +54,6 @@ void yyerror(const char *s) {
 %right IF ELSE
 %left GT LT GE LE EQ NE
 %left PLUS MINUS
-%left TIMES DIVIDE
 
 
 /* SECAO DE REGRAS */

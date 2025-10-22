@@ -10,7 +10,7 @@ int main(void) {
 
   while(!feof(stdin)) {
       printf("> ");
-      fflush(stdout); // <<< ADICIONE ESTA LINHA
+      fflush(stdout); 
       yyparse();
   }
   tabela_liberar();

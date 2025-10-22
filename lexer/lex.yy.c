@@ -386,8 +386,8 @@ struct yy_trans_info
 static const flex_int16_t yy_accept[36] =
     {   0,
         0,    0,   25,   23,   21,   20,   23,   18,   19,   16,
-       14,   15,   17,   13,    5,   10,   12,   11,   22,   22,
-       22,    3,    4,   21,    7,   13,    8,    6,    9,   22,
+       14,   15,   17,   13,    5,    9,   11,   10,   22,   22,
+       22,    3,    4,   21,    6,   13,    7,   12,    8,   22,
        22,    1,   22,    2,    0
     } ;
 
@@ -811,37 +811,37 @@ YY_RULE_SETUP
 case 6:
 YY_RULE_SETUP
 #line 19 "lexer/lexer.l"
-{ return EQ; }
+{ return NE; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 20 "lexer/lexer.l"
-{ return NE; }
+{ return LE; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 21 "lexer/lexer.l"
-{ return LE; }
+{ return GE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 22 "lexer/lexer.l"
-{ return GE; }
+{ return LT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 23 "lexer/lexer.l"
-{ return LT; }
+{ return GT; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 24 "lexer/lexer.l"
-{ return GT; }
+{ return IGUAL; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 25 "lexer/lexer.l"
-{ return IGUAL; }
+{ return EQ; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP

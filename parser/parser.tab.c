@@ -549,9 +549,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    63,    63,    64,    68,    76,    84,    90,    92,    99,
-     109,   110,   111,   112,   113,   114,   115,   118,   119,   123,
-     127,   134,   135
+       0,    62,    62,    63,    67,    75,    83,    89,    91,    98,
+     108,   109,   110,   111,   112,   113,   114,   117,   118,   122,
+     126,   133,   134
 };
 #endif
 
@@ -598,7 +598,7 @@ static const yytype_int8 yypact[] =
      -37,     0,   -37,   -11,   -37,    -6,     3,     7,   -37,   -37,
       28,    18,    34,   -37,     7,     7,   -37,     5,   -37,   -37,
        7,     7,     7,     7,   -37,     9,    13,   -37,    27,    27,
-     -37,   -37,    47,    46,    -6,    36,   -37,   -37,    37,   -37,
+       9,     9,    47,    46,    -6,    36,   -37,   -37,    37,   -37,
       49,   -37,    50,    46,    39,   -37
 };
 
@@ -1407,7 +1407,7 @@ yyreduce:
   switch (yyn)
     {
   case 4: /* linha: expressao NEWLINE  */
-#line 68 "parser/parser.y"
+#line 67 "parser/parser.y"
                         {
                             interpret_error = 0; /* zera antes de interpretar */
                             int resultado = interpretar((yyvsp[-1].no));
@@ -1420,7 +1420,7 @@ yyreduce:
     break;
 
   case 5: /* linha: atribuicao NEWLINE  */
-#line 76 "parser/parser.y"
+#line 75 "parser/parser.y"
                           {
                             interpret_error = 0;
                             int resultado = interpretar((yyvsp[-1].no));
@@ -1433,7 +1433,7 @@ yyreduce:
     break;
 
   case 6: /* linha: comando_if NEWLINE  */
-#line 84 "parser/parser.y"
+#line 83 "parser/parser.y"
                          {
                             interpret_error = 0;
                             interpretar((yyvsp[-1].no));
@@ -1443,13 +1443,13 @@ yyreduce:
     break;
 
   case 7: /* linha: NEWLINE  */
-#line 90 "parser/parser.y"
+#line 89 "parser/parser.y"
                           { /* em casos de nao acontecer nada na linha */ }
 #line 1449 "parser/parser.tab.c"
     break;
 
   case 8: /* linha: error NEWLINE  */
-#line 92 "parser/parser.y"
+#line 91 "parser/parser.y"
                           { /* mensagem de erro */
                             fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
                             yyerrok;
@@ -1458,7 +1458,7 @@ yyreduce:
     break;
 
   case 9: /* atribuicao: ID IGUAL expressao  */
-#line 99 "parser/parser.y"
+#line 98 "parser/parser.y"
                        {
         AstNode* left = create_id_node((yyvsp[-2].str));
         left->lineno = yylineno; /* linha do ID token */
@@ -1469,61 +1469,61 @@ yyreduce:
     break;
 
   case 10: /* expressao: NUM  */
-#line 109 "parser/parser.y"
+#line 108 "parser/parser.y"
                                  { (yyval.no) = create_num_node((yyvsp[0].valor)); (yyval.no)->lineno = yylineno; }
 #line 1475 "parser/parser.tab.c"
     break;
 
   case 11: /* expressao: ID  */
-#line 110 "parser/parser.y"
+#line 109 "parser/parser.y"
                                  { (yyval.no) = create_id_node((yyvsp[0].str)); (yyval.no)->lineno = yylineno; }
 #line 1481 "parser/parser.tab.c"
     break;
 
   case 12: /* expressao: expressao PLUS expressao  */
-#line 111 "parser/parser.y"
+#line 110 "parser/parser.y"
                                  { (yyval.no) = create_op_node('+', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
 #line 1487 "parser/parser.tab.c"
     break;
 
   case 13: /* expressao: expressao MINUS expressao  */
-#line 112 "parser/parser.y"
+#line 111 "parser/parser.y"
                                  { (yyval.no) = create_op_node('-', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
 #line 1493 "parser/parser.tab.c"
     break;
 
   case 14: /* expressao: expressao TIMES expressao  */
-#line 113 "parser/parser.y"
+#line 112 "parser/parser.y"
                                  { (yyval.no) = create_op_node('*', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
 #line 1499 "parser/parser.tab.c"
     break;
 
   case 15: /* expressao: expressao DIVIDE expressao  */
-#line 114 "parser/parser.y"
+#line 113 "parser/parser.y"
                                  { (yyval.no) = create_op_node('/', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
 #line 1505 "parser/parser.tab.c"
     break;
 
   case 16: /* expressao: LPAREN expressao RPAREN  */
-#line 115 "parser/parser.y"
+#line 114 "parser/parser.y"
                                  { (yyval.no) = (yyvsp[-1].no); }
 #line 1511 "parser/parser.tab.c"
     break;
 
   case 17: /* comando: atribuicao PONTO_VIRGULA  */
-#line 118 "parser/parser.y"
+#line 117 "parser/parser.y"
                               { (yyval.no) = (yyvsp[-1].no); }
 #line 1517 "parser/parser.tab.c"
     break;
 
   case 18: /* comando: comando_if  */
-#line 119 "parser/parser.y"
+#line 118 "parser/parser.y"
                               { (yyval.no) = (yyvsp[0].no); }
 #line 1523 "parser/parser.tab.c"
     break;
 
   case 19: /* comando_if: IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE  */
-#line 123 "parser/parser.y"
+#line 122 "parser/parser.y"
                                                             {
         (yyval.no) = create_if_node((yyvsp[-4].no), (yyvsp[-1].no), NULL);
         (yyval.no)->lineno = yylineno;
@@ -1532,7 +1532,7 @@ yyreduce:
     break;
 
   case 20: /* comando_if: IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE  */
-#line 127 "parser/parser.y"
+#line 126 "parser/parser.y"
                                                                                                 {
         (yyval.no) = create_if_node((yyvsp[-8].no), (yyvsp[-5].no), (yyvsp[-1].no));
         (yyval.no)->lineno = yylineno;
@@ -1541,13 +1541,13 @@ yyreduce:
     break;
 
   case 21: /* lista_comandos: comando  */
-#line 134 "parser/parser.y"
+#line 133 "parser/parser.y"
                                  { (yyval.no) = (yyvsp[0].no); }
 #line 1547 "parser/parser.tab.c"
     break;
 
   case 22: /* lista_comandos: lista_comandos comando  */
-#line 135 "parser/parser.y"
+#line 134 "parser/parser.y"
                                  { (yyval.no) = (yyvsp[0].no); }
 #line 1553 "parser/parser.tab.c"
     break;
@@ -1777,7 +1777,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 140 "parser/parser.y"
+#line 139 "parser/parser.y"
 
 
 // Definicoes globais da tabela de simbolos

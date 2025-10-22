@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
-#include "simbolo.h" // <<< PASSO CRUCIAL: Inclui a definição da struct!
+#include "simbolo.h" 
 
-// Precisamos acessar a tabela de símbolos que está no parser
 extern struct simbolo tabelaSimbolos[];
 extern int procurar_simbolo(char* nome);
 extern int inserir_simbolo(char* nome, int valor);

@@ -16,13 +16,13 @@ extern int yylineno;
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
 ";"         { return PONTO_VIRGULA; }
-"=="        { return EQ; }
 "!="        { return NE; }
 "<="        { return LE; }
 ">="        { return GE; }
 "<"         { return LT; }
 ">"         { return GT; }
 "="         { return IGUAL; }
+"=="        { return EQ; }
 
 
 [0-9]+                  { yylval.valor = atoi(yytext); return NUM; }
