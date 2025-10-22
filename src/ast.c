@@ -71,6 +71,33 @@ AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_e
     return no;
 }
 
+AstNode* create_relop_node(char op, AstNode* left, AstNode* right) {
+    AstNode* node = malloc(sizeof(AstNode));
+    node->type = NODE_TYPE_OP;
+    node->op = op;
+    node->data.children.left = left;
+    node->data.children.right = right;
+    return node;
+}
+
+AstNode* create_command_list(AstNode* first, AstNode* next) {
+    AstNode* node = malloc(sizeof(AstNode));
+    node->type = NODE_TYPE_CMD_LIST;
+    node->data.cmd_list.first = first;
+    node->data.cmd_list.next = next;
+    return node;
+}
+
+AstNode* append_command_list(AstNode* list, AstNode* cmd) {
+    if (!list) return create_command_list(cmd, NULL);
+    AstNode* temp = list;
+    while (temp->data.cmd_list.next)
+        temp = temp->data.cmd_list.next;
+    temp->data.cmd_list.next = create_command_list(cmd, NULL);
+    return list;
+}
+
+
 // Função para liberar a memória da AST
 void liberar_ast(AstNode* no) {
     if (!no) return;

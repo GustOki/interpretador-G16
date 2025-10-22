@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 3 "parser/parser.y"
+#line 1 "parser/parser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,35 +77,32 @@
 
 int yylex(void);
 void yyerror(const char *s);
-<<<<<<< HEAD
-extern int yylineno;
-extern int interpret_error;
 
-#line 84 "parser/parser.tab.c"
-=======
+/* DECLARAÇÕES LEXER */
+extern int yylineno; /* linha fornecida pelo lexer */
+extern char *yytext; /* texto do token atual */
 
-/* --- DECLARAÇÕES EXTERNAS DO LEXER (Flex) --- */
-extern int yylineno;   /* número da linha fornecido pelo lexer */
-extern char *yytext;   /* texto do token atual */
-extern int interpret_error;
-
-/* Variável para lembrar a linha em que o último erro sintático foi detectado */
+/* varivael quem lembra a linha em que o último erro sintático foi detectado */
 int last_error_lineno = 0;
+int interpret_error = 0;
 
-/* Implementação única de yyerror - salva a linha no momento do erro */
+
+/* funcao que salva a linha no momento do erro */
 void yyerror(const char *s) {
     last_error_lineno = yylineno;
 
-    if (yytext && yytext[0] != '\0') {
+    if (yytext && yytext[0] != '\0') 
+    {
         fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n",
                 last_error_lineno, s, yytext);
-    } else {
+    } 
+    else 
+    {
         fprintf(stderr, "Linha %d: Erro sintático: %s\n", last_error_lineno, s);
     }
 }
 
-#line 102 "parser/parser.tab.c"
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+#line 106 "parser/parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -138,7 +135,6 @@ enum yysymbol_kind_t
   YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
   YYSYMBOL_NUM = 3,                        /* NUM  */
   YYSYMBOL_ID = 4,                         /* ID  */
-<<<<<<< HEAD
   YYSYMBOL_IF = 5,                         /* IF  */
   YYSYMBOL_ELSE = 6,                       /* ELSE  */
   YYSYMBOL_LBRACE = 7,                     /* LBRACE  */
@@ -158,30 +154,14 @@ enum yysymbol_kind_t
   YYSYMBOL_TIMES = 21,                     /* TIMES  */
   YYSYMBOL_DIVIDE = 22,                    /* DIVIDE  */
   YYSYMBOL_IGUAL = 23,                     /* IGUAL  */
-  YYSYMBOL_IFX = 24,                       /* IFX  */
-  YYSYMBOL_YYACCEPT = 25,                  /* $accept  */
-  YYSYMBOL_programa = 26,                  /* programa  */
-  YYSYMBOL_linha = 27,                     /* linha  */
-  YYSYMBOL_lista_comandos = 28,            /* lista_comandos  */
+  YYSYMBOL_YYACCEPT = 24,                  /* $accept  */
+  YYSYMBOL_programa = 25,                  /* programa  */
+  YYSYMBOL_linha = 26,                     /* linha  */
+  YYSYMBOL_atribuicao = 27,                /* atribuicao  */
+  YYSYMBOL_expressao = 28,                 /* expressao  */
   YYSYMBOL_comando = 29,                   /* comando  */
   YYSYMBOL_comando_if = 30,                /* comando_if  */
-  YYSYMBOL_atribuicao = 31,                /* atribuicao  */
-  YYSYMBOL_expressao = 32                  /* expressao  */
-=======
-  YYSYMBOL_NEWLINE = 5,                    /* NEWLINE  */
-  YYSYMBOL_PLUS = 6,                       /* PLUS  */
-  YYSYMBOL_MINUS = 7,                      /* MINUS  */
-  YYSYMBOL_TIMES = 8,                      /* TIMES  */
-  YYSYMBOL_DIVIDE = 9,                     /* DIVIDE  */
-  YYSYMBOL_LPAREN = 10,                    /* LPAREN  */
-  YYSYMBOL_RPAREN = 11,                    /* RPAREN  */
-  YYSYMBOL_IGUAL = 12,                     /* IGUAL  */
-  YYSYMBOL_YYACCEPT = 13,                  /* $accept  */
-  YYSYMBOL_programa = 14,                  /* programa  */
-  YYSYMBOL_linha = 15,                     /* linha  */
-  YYSYMBOL_atribuicao = 16,                /* atribuicao  */
-  YYSYMBOL_expressao = 17                  /* expressao  */
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+  YYSYMBOL_lista_comandos = 31             /* lista_comandos  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -509,35 +489,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  2
 /* YYLAST -- Last index in YYTABLE.  */
-<<<<<<< HEAD
-#define YYLAST   109
+#define YYLAST   92
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  25
+#define YYNTOKENS  24
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  8
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  29
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  58
+#define YYNSTATES  57
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   279
-=======
-#define YYLAST   39
-
-/* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  13
-/* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  5
-/* YYNRULES -- Number of rules.  */
-#define YYNRULES  15
-/* YYNSTATES -- Number of states.  */
-#define YYNSTATES  27
-
-/* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   267
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+#define YYMAXUTOK   278
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -577,26 +541,17 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-<<<<<<< HEAD
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20,    21,    22,    23,    24
-=======
-       5,     6,     7,     8,     9,    10,    11,    12
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+      15,    16,    17,    18,    19,    20,    21,    22,    23
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-<<<<<<< HEAD
-       0,    41,    41,    42,    46,    54,    62,    67,    68,    73,
-      74,    81,    82,    83,    89,    94,   102,   111,   112,   113,
-     114,   115,   116,   117,   118,   119,   120,   121,   122,   123
-=======
-       0,    56,    56,    57,    61,    69,    77,    78,    86,    96,
-      97,    98,    99,   100,   101,   102
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       0,    62,    62,    63,    66,    67,    77,    87,    94,    95,
+     107,   118,   119,   120,   121,   122,   123,   124,   125,   126,
+     127,   128,   129,   130,   134,   135,   139,   143,   150,   151
 };
 #endif
 
@@ -612,17 +567,11 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-<<<<<<< HEAD
   "\"end of file\"", "error", "\"invalid token\"", "NUM", "ID", "IF",
   "ELSE", "LBRACE", "RBRACE", "LPAREN", "RPAREN", "EQ", "NE", "LT", "GT",
   "LE", "GE", "PONTO_VIRGULA", "NEWLINE", "PLUS", "MINUS", "TIMES",
-  "DIVIDE", "IGUAL", "IFX", "$accept", "programa", "linha",
-  "lista_comandos", "comando", "comando_if", "atribuicao", "expressao", YY_NULLPTR
-=======
-  "\"end of file\"", "error", "\"invalid token\"", "NUM", "ID", "NEWLINE",
-  "PLUS", "MINUS", "TIMES", "DIVIDE", "LPAREN", "RPAREN", "IGUAL",
-  "$accept", "programa", "linha", "atribuicao", "expressao", YY_NULLPTR
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+  "DIVIDE", "IGUAL", "$accept", "programa", "linha", "atribuicao",
+  "expressao", "comando", "comando_if", "lista_comandos", YY_NULLPTR
 };
 
 static const char *
@@ -632,11 +581,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-<<<<<<< HEAD
-#define YYPACT_NINF (-21)
-=======
-#define YYPACT_NINF (-8)
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+#define YYPACT_NINF (-45)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -650,18 +595,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-<<<<<<< HEAD
-     -21,     7,   -21,   -13,   -21,    -8,     8,     0,   -21,   -21,
-      19,    32,    45,   -21,     0,     0,   -21,    20,   -21,   -21,
-       0,     0,     0,     0,     0,     0,   -21,     0,     0,     0,
-       0,    69,    33,   -21,    87,    87,    87,    87,    87,    87,
-     -20,   -20,   -21,   -21,    11,   -21,    89,    56,   -21,   -21,
-      21,    57,    44,   -21,   -21,   -21,    96,   -21
-=======
-      -8,    14,    -8,     1,    -8,    -3,    -8,    -2,    -8,     2,
-      26,    -8,    -2,    -8,    19,    -8,    -8,    -2,    -2,    -2,
-      -2,    30,    -8,    -5,    -5,    -8,    -8
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+     -45,    23,   -45,   -12,   -45,   -13,     9,     0,   -45,   -45,
+       8,    49,   -45,   -45,     0,     0,   -45,    24,   -45,     0,
+       0,     0,     0,     0,     0,   -45,     0,     0,     0,     0,
+      61,    37,   -45,    70,    70,    70,    70,    70,    70,   -20,
+     -20,    61,    61,    35,    50,   -13,    14,   -45,   -45,    25,
+     -45,    72,   -45,    60,    50,    80,   -45
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -669,38 +608,24 @@ static const yytype_int8 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-<<<<<<< HEAD
-       2,     0,     1,     0,    17,    18,     0,     0,     7,     3,
-       0,     0,     0,     8,     0,     0,    18,     0,     6,     5,
-       0,     0,     0,     0,     0,     0,     4,     0,     0,     0,
-       0,    16,     0,    29,    27,    28,    24,    23,    26,    25,
-      19,    20,    21,    22,     0,     9,     0,    14,    10,    13,
-       0,     0,     0,    11,    12,     9,     0,    15
-=======
-       2,     0,     1,     0,     9,    10,     6,     0,     3,     0,
-       0,     7,     0,    10,     0,     5,     4,     0,     0,     0,
-       0,     8,    15,    11,    12,    13,    14
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       2,     0,     1,     0,    11,    12,     0,     0,     8,     3,
+       0,     0,     7,     9,     0,     0,    12,     0,     6,     0,
+       0,     0,     0,     0,     0,     5,     0,     0,     0,     0,
+      10,     0,    17,    22,    23,    18,    19,    20,    21,    13,
+      14,    15,    16,     0,     0,     0,     0,    28,    25,     0,
+      24,    26,    29,     0,     0,     0,    27
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-<<<<<<< HEAD
-     -21,   -21,   -21,    31,   -21,    74,    86,    -1
-=======
-      -8,    -8,    -8,    -8,    -7
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+     -45,   -45,   -45,    78,    -7,   -44,    85,    33
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-<<<<<<< HEAD
-       0,     1,     9,    46,    48,    49,    50,    51
-=======
-       0,     1,     8,     9,    10
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       0,     1,     9,    46,    11,    47,    48,    49
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -708,90 +633,58 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-<<<<<<< HEAD
-      12,    29,    30,     4,    16,    13,    17,     2,     3,     7,
-       4,     5,     6,    31,    32,    14,     7,    15,    45,    34,
-      35,    36,    37,    38,    39,     8,    40,    41,    42,    43,
-      33,    20,    21,    22,    23,    24,    25,    18,    53,    27,
-      28,    29,    30,    44,    20,    21,    22,    23,    24,    25,
-      19,    55,    27,    28,    29,    30,    20,    21,    22,    23,
-      24,    25,    52,    26,    27,    28,    29,    30,    20,    21,
-      22,    23,    24,    25,    54,    10,    27,    28,    29,    30,
-      20,    21,    22,    23,    24,    25,    56,    11,    27,    28,
-      29,    30,     4,     5,     6,     0,     0,    47,     7,     4,
-       5,     6,     0,     0,    57,     7,    27,    28,    29,    30
-=======
-      14,     4,    13,    19,    20,    21,    11,    15,     7,    12,
-      23,    24,    25,    26,     2,     3,     0,     4,     5,     6,
-       0,     0,     0,     0,     7,    17,    18,    19,    20,     0,
-      22,    16,    17,    18,    19,    20,    17,    18,    19,    20
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+      17,    28,    29,     4,    16,    52,    13,    30,    31,     7,
+      14,    52,    33,    34,    35,    36,    37,    38,    15,    39,
+      40,    41,    42,     2,     3,    18,     4,     5,     6,    45,
+       6,    50,     7,    51,    32,    19,    20,    21,    22,    23,
+      24,     8,    44,    26,    27,    28,    29,    43,    19,    20,
+      21,    22,    23,    24,    45,     6,    26,    27,    28,    29,
+      19,    20,    21,    22,    23,    24,    25,    54,    26,    27,
+      28,    29,    19,    20,    21,    22,    23,    24,    53,    10,
+      26,    27,    28,    29,    45,     6,    12,    55,    56,    26,
+      27,    28,    29
 };
 
 static const yytype_int8 yycheck[] =
 {
-<<<<<<< HEAD
-       1,    21,    22,     3,     4,    18,     7,     0,     1,     9,
-       3,     4,     5,    14,    15,    23,     9,     9,     7,    20,
-      21,    22,    23,    24,    25,    18,    27,    28,    29,    30,
-      10,    11,    12,    13,    14,    15,    16,    18,    17,    19,
-      20,    21,    22,    10,    11,    12,    13,    14,    15,    16,
-      18,     7,    19,    20,    21,    22,    11,    12,    13,    14,
-      15,    16,     6,    18,    19,    20,    21,    22,    11,    12,
-      13,    14,    15,    16,    17,     1,    19,    20,    21,    22,
-      11,    12,    13,    14,    15,    16,    55,     1,    19,    20,
-      21,    22,     3,     4,     5,    -1,    -1,     8,     9,     3,
-       4,     5,    -1,    -1,     8,     9,    19,    20,    21,    22
-=======
-       7,     3,     4,     8,     9,    12,     5,     5,    10,    12,
-      17,    18,    19,    20,     0,     1,    -1,     3,     4,     5,
-      -1,    -1,    -1,    -1,    10,     6,     7,     8,     9,    -1,
-      11,     5,     6,     7,     8,     9,     6,     7,     8,     9
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       7,    21,    22,     3,     4,    49,    18,    14,    15,     9,
+      23,    55,    19,    20,    21,    22,    23,    24,     9,    26,
+      27,    28,    29,     0,     1,    17,     3,     4,     5,     4,
+       5,    17,     9,     8,    10,    11,    12,    13,    14,    15,
+      16,    18,     7,    19,    20,    21,    22,    10,    11,    12,
+      13,    14,    15,    16,     4,     5,    19,    20,    21,    22,
+      11,    12,    13,    14,    15,    16,    17,     7,    19,    20,
+      21,    22,    11,    12,    13,    14,    15,    16,     6,     1,
+      19,    20,    21,    22,     4,     5,     1,    54,     8,    19,
+      20,    21,    22
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-<<<<<<< HEAD
-       0,    26,     0,     1,     3,     4,     5,     9,    18,    27,
-      30,    31,    32,    18,    23,     9,     4,    32,    18,    18,
-      11,    12,    13,    14,    15,    16,    18,    19,    20,    21,
-      22,    32,    32,    10,    32,    32,    32,    32,    32,    32,
-      32,    32,    32,    32,    10,     7,    28,     8,    29,    30,
-      31,    32,     6,    17,    17,     7,    28,     8
-=======
-       0,    14,     0,     1,     3,     4,     5,    10,    15,    16,
-      17,     5,    12,     4,    17,     5,     5,     6,     7,     8,
-       9,    17,    11,    17,    17,    17,    17
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       0,    25,     0,     1,     3,     4,     5,     9,    18,    26,
+      27,    28,    30,    18,    23,     9,     4,    28,    17,    11,
+      12,    13,    14,    15,    16,    17,    19,    20,    21,    22,
+      28,    28,    10,    28,    28,    28,    28,    28,    28,    28,
+      28,    28,    28,    10,     7,     4,    27,    29,    30,    31,
+      17,     8,    29,     6,     7,    31,     8
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-<<<<<<< HEAD
-       0,    25,    26,    26,    27,    27,    27,    27,    27,    28,
-      28,    29,    29,    29,    30,    30,    31,    32,    32,    32,
-      32,    32,    32,    32,    32,    32,    32,    32,    32,    32
-=======
-       0,    13,    14,    14,    15,    15,    15,    15,    16,    17,
-      17,    17,    17,    17,    17,    17
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       0,    24,    25,    25,    26,    26,    26,    26,    26,    26,
+      27,    28,    28,    28,    28,    28,    28,    28,    28,    28,
+      28,    28,    28,    28,    29,    29,    30,    30,    31,    31
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-<<<<<<< HEAD
-       0,     2,     0,     2,     2,     2,     2,     1,     2,     0,
-       2,     2,     2,     1,     7,    11,     3,     1,     1,     3,
-       3,     3,     3,     3,     3,     3,     3,     3,     3,     3
-=======
-       0,     2,     0,     2,     2,     2,     1,     2,     3,     1,
-       1,     3,     3,     3,     3,     3
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+       0,     2,     0,     2,     0,     2,     2,     1,     1,     2,
+       3,     1,     1,     3,     3,     3,     3,     3,     3,     3,
+       3,     3,     3,     3,     2,     1,     7,    11,     1,     2
 };
 
 
@@ -1524,296 +1417,193 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 4: /* linha: expressao NEWLINE  */
-<<<<<<< HEAD
-#line 46 "parser/parser.y"
-                      {
-                          interpret_error = 0;
-                          int resultado = interpretar((yyvsp[-1].no));
-                          if (!interpret_error) {
-                              printf("Resultado: %d\n", resultado);
-                          }
-                          liberar_ast((yyvsp[-1].no));
-                      }
-#line 1412 "parser/parser.tab.c"
-    break;
-
-  case 5: /* linha: atribuicao NEWLINE  */
-#line 54 "parser/parser.y"
-                       {
-                          interpret_error = 0;
-                          int resultado = interpretar((yyvsp[-1].no));
-                          if (!interpret_error) {
-                              printf("OK. '%s' agora é %d\n", (yyvsp[-1].no)->data.children.left->data.nome, resultado);
-                          }
-                          liberar_ast((yyvsp[-1].no));
-                       }
-#line 1425 "parser/parser.tab.c"
-    break;
-
-  case 6: /* linha: comando_if NEWLINE  */
-#line 62 "parser/parser.y"
-                       {
-                          interpret_error = 0;
-                          interpretar((yyvsp[-1].no));
-                          liberar_ast((yyvsp[-1].no));
-                       }
-#line 1435 "parser/parser.tab.c"
-    break;
-
-  case 7: /* linha: NEWLINE  */
+  case 5: /* linha: expressao PONTO_VIRGULA  */
 #line 67 "parser/parser.y"
-                       { /* Nao faz nada */ }
-#line 1441 "parser/parser.tab.c"
+                              {
+            interpret_error = 0;
+            int resultado = interpretar((yyvsp[-1].no));
+            if (!interpret_error) {
+                printf("Resultado: %d\n", resultado);
+            }
+            liberar_ast((yyvsp[-1].no));
+            (yyval.no) = NULL;
+        }
+#line 1432 "parser/parser.tab.c"
     break;
 
-  case 8: /* linha: error NEWLINE  */
-#line 68 "parser/parser.y"
-                       { yyerrok; }
-#line 1447 "parser/parser.tab.c"
-    break;
-
-  case 9: /* lista_comandos: %empty  */
-#line 73 "parser/parser.y"
-                                             { (yyval.no) = NULL; }
-#line 1453 "parser/parser.tab.c"
-    break;
-
-  case 10: /* lista_comandos: lista_comandos comando  */
-#line 74 "parser/parser.y"
-                                  {
-                                    if ((yyvsp[-1].no) == NULL) (yyval.no) = (yyvsp[0].no);
-                                    else (yyval.no) = create_op_node(';', (yyvsp[-1].no), (yyvsp[0].no));
-                                  }
-#line 1462 "parser/parser.tab.c"
-    break;
-
-  case 11: /* comando: atribuicao PONTO_VIRGULA  */
-#line 81 "parser/parser.y"
-                               { (yyval.no) = (yyvsp[-1].no); }
-#line 1468 "parser/parser.tab.c"
-    break;
-
-  case 12: /* comando: expressao PONTO_VIRGULA  */
-#line 82 "parser/parser.y"
-                               { (yyval.no) = (yyvsp[-1].no); }
-#line 1474 "parser/parser.tab.c"
-    break;
-
-  case 13: /* comando: comando_if  */
-#line 83 "parser/parser.y"
-                               { (yyval.no) = (yyvsp[0].no); }
-#line 1480 "parser/parser.tab.c"
-    break;
-
-  case 14: /* comando_if: IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE  */
-#line 89 "parser/parser.y"
-                                                                      {
-        AstNode* if_node = create_if_node((yyvsp[-4].no), (yyvsp[-1].no), NULL);
-        if_node->lineno = yylineno;
-        (yyval.no) = if_node;
-    }
-#line 1490 "parser/parser.tab.c"
-    break;
-
-  case 15: /* comando_if: IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE  */
-#line 94 "parser/parser.y"
-                                                                                              {
-        AstNode* if_node = create_if_node((yyvsp[-8].no), (yyvsp[-5].no), (yyvsp[-1].no));
-        if_node->lineno = yylineno;
-        (yyval.no) = if_node;
-    }
-#line 1500 "parser/parser.tab.c"
-    break;
-
-  case 16: /* atribuicao: ID IGUAL expressao  */
-#line 102 "parser/parser.y"
-                       {
-        AstNode* left = create_id_node((yyvsp[-2].str));
-        left->lineno = yylineno;
-        (yyval.no) = create_assign_node(left, (yyvsp[0].no));
-        (yyval.no)->lineno = left->lineno;
-    }
-#line 1511 "parser/parser.tab.c"
-    break;
-
-  case 17: /* expressao: NUM  */
-#line 111 "parser/parser.y"
-                        { (yyval.no) = create_num_node((yyvsp[0].valor)); (yyval.no)->lineno = yylineno; }
-#line 1517 "parser/parser.tab.c"
-    break;
-
-  case 18: /* expressao: ID  */
-#line 112 "parser/parser.y"
-                      { (yyval.no) = create_id_node((yyvsp[0].str)); (yyval.no)->lineno = yylineno; }
-#line 1523 "parser/parser.tab.c"
-    break;
-
-  case 19: /* expressao: expressao PLUS expressao  */
-#line 113 "parser/parser.y"
-                               { (yyval.no) = create_op_node('+', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1529 "parser/parser.tab.c"
-    break;
-
-  case 20: /* expressao: expressao MINUS expressao  */
-#line 114 "parser/parser.y"
-                               { (yyval.no) = create_op_node('-', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1535 "parser/parser.tab.c"
-    break;
-
-  case 21: /* expressao: expressao TIMES expressao  */
-#line 115 "parser/parser.y"
-                               { (yyval.no) = create_op_node('*', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1541 "parser/parser.tab.c"
-    break;
-
-  case 22: /* expressao: expressao DIVIDE expressao  */
-#line 116 "parser/parser.y"
-                               { (yyval.no) = create_op_node('/', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1547 "parser/parser.tab.c"
-    break;
-
-  case 23: /* expressao: expressao GT expressao  */
-#line 117 "parser/parser.y"
-                               { (yyval.no) = create_op_node('>', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1553 "parser/parser.tab.c"
-    break;
-
-  case 24: /* expressao: expressao LT expressao  */
-#line 118 "parser/parser.y"
-                               { (yyval.no) = create_op_node('<', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1559 "parser/parser.tab.c"
-    break;
-
-  case 25: /* expressao: expressao GE expressao  */
-#line 119 "parser/parser.y"
-                               { (yyval.no) = create_op_node(1, (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1565 "parser/parser.tab.c"
-    break;
-
-  case 26: /* expressao: expressao LE expressao  */
-#line 120 "parser/parser.y"
-                               { (yyval.no) = create_op_node(2, (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1571 "parser/parser.tab.c"
-    break;
-
-  case 27: /* expressao: expressao EQ expressao  */
-#line 121 "parser/parser.y"
-                               { (yyval.no) = create_op_node(3, (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1577 "parser/parser.tab.c"
-    break;
-
-  case 28: /* expressao: expressao NE expressao  */
-#line 122 "parser/parser.y"
-                               { (yyval.no) = create_op_node(4, (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1583 "parser/parser.tab.c"
-    break;
-
-  case 29: /* expressao: LPAREN expressao RPAREN  */
-#line 123 "parser/parser.y"
-                               { (yyval.no) = (yyvsp[-1].no); }
-#line 1589 "parser/parser.tab.c"
-    break;
-
-
-#line 1593 "parser/parser.tab.c"
-=======
-#line 61 "parser/parser.y"
-                        {
-                            interpret_error = 0; /* zera antes de interpretar */
-                            int resultado = interpretar((yyvsp[-1].no));
-                            if (!interpret_error) {
-                                printf("Resultado: %d\n", resultado);
-                            }
-                            liberar_ast((yyvsp[-1].no));
-                        }
-#line 1386 "parser/parser.tab.c"
-    break;
-
-  case 5: /* linha: atribuicao NEWLINE  */
-#line 69 "parser/parser.y"
-                          {
-                            interpret_error = 0;
-                            int resultado = interpretar((yyvsp[-1].no));
-                            if (!interpret_error) {
-                                printf("Resultado: %d\n", resultado);
-                            }
-                            liberar_ast((yyvsp[-1].no));
-                        }
-#line 1399 "parser/parser.tab.c"
-    break;
-
-  case 6: /* linha: NEWLINE  */
+  case 6: /* linha: atribuicao PONTO_VIRGULA  */
 #line 77 "parser/parser.y"
-                          { /* Nao faz nada com uma linha em branco */ }
-#line 1405 "parser/parser.tab.c"
+                               {
+            interpret_error = 0;
+            int resultado = interpretar((yyvsp[-1].no));
+            if (!interpret_error) {
+                printf("Resultado: %d\n", resultado);
+            }
+            liberar_ast((yyvsp[-1].no));
+
+        }
+#line 1446 "parser/parser.tab.c"
     break;
 
-  case 7: /* linha: error NEWLINE  */
-#line 78 "parser/parser.y"
-                          { /* Mensagem amigável e recuperação até o fim da linha */
+  case 7: /* linha: comando_if  */
+#line 87 "parser/parser.y"
+                 {
+        interpret_error = 0;
+        interpretar((yyvsp[0].no));
+        liberar_ast((yyvsp[0].no));
+
+      }
+#line 1457 "parser/parser.tab.c"
+    break;
+
+  case 8: /* linha: NEWLINE  */
+#line 94 "parser/parser.y"
+              { }
+#line 1463 "parser/parser.tab.c"
+    break;
+
+  case 9: /* linha: error NEWLINE  */
+#line 95 "parser/parser.y"
+                          { 
                             fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
-                            yyerrok;
+                            yyerrok; 
                           }
-#line 1414 "parser/parser.tab.c"
+#line 1472 "parser/parser.tab.c"
     break;
 
-  case 8: /* atribuicao: ID IGUAL expressao  */
-#line 86 "parser/parser.y"
+  case 10: /* atribuicao: ID IGUAL expressao  */
+#line 107 "parser/parser.y"
                        {
         AstNode* left = create_id_node((yyvsp[-2].str));
-        left->lineno = yylineno;   /* linha do ID token */
+        left->lineno = yylineno; /* linha do ID token */
         (yyval.no) = create_assign_node(left, (yyvsp[0].no));
         (yyval.no)->lineno = left->lineno; /* linha da atribuição = linha do id */
     }
-#line 1425 "parser/parser.tab.c"
+#line 1483 "parser/parser.tab.c"
     break;
 
-  case 9: /* expressao: NUM  */
-#line 96 "parser/parser.y"
-                        { (yyval.no) = create_num_node((yyvsp[0].valor)); (yyval.no)->lineno = yylineno; }
-#line 1431 "parser/parser.tab.c"
+  case 11: /* expressao: NUM  */
+#line 118 "parser/parser.y"
+                                 { (yyval.no) = create_num_node((yyvsp[0].valor)); (yyval.no)->lineno = yylineno; }
+#line 1489 "parser/parser.tab.c"
     break;
 
-  case 10: /* expressao: ID  */
-#line 97 "parser/parser.y"
-                        { (yyval.no) = create_id_node((yyvsp[0].str)); (yyval.no)->lineno = yylineno; }
-#line 1437 "parser/parser.tab.c"
+  case 12: /* expressao: ID  */
+#line 119 "parser/parser.y"
+                                 { (yyval.no) = create_id_node((yyvsp[0].str)); (yyval.no)->lineno = yylineno; }
+#line 1495 "parser/parser.tab.c"
     break;
 
-  case 11: /* expressao: expressao PLUS expressao  */
-#line 98 "parser/parser.y"
+  case 13: /* expressao: expressao PLUS expressao  */
+#line 120 "parser/parser.y"
                                  { (yyval.no) = create_op_node('+', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1443 "parser/parser.tab.c"
+#line 1501 "parser/parser.tab.c"
     break;
 
-  case 12: /* expressao: expressao MINUS expressao  */
-#line 99 "parser/parser.y"
+  case 14: /* expressao: expressao MINUS expressao  */
+#line 121 "parser/parser.y"
                                  { (yyval.no) = create_op_node('-', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1449 "parser/parser.tab.c"
+#line 1507 "parser/parser.tab.c"
     break;
 
-  case 13: /* expressao: expressao TIMES expressao  */
-#line 100 "parser/parser.y"
+  case 15: /* expressao: expressao TIMES expressao  */
+#line 122 "parser/parser.y"
                                  { (yyval.no) = create_op_node('*', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1455 "parser/parser.tab.c"
+#line 1513 "parser/parser.tab.c"
     break;
 
-  case 14: /* expressao: expressao DIVIDE expressao  */
-#line 101 "parser/parser.y"
+  case 16: /* expressao: expressao DIVIDE expressao  */
+#line 123 "parser/parser.y"
                                  { (yyval.no) = create_op_node('/', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
-#line 1461 "parser/parser.tab.c"
+#line 1519 "parser/parser.tab.c"
     break;
 
-  case 15: /* expressao: LPAREN expressao RPAREN  */
-#line 102 "parser/parser.y"
-                                 { (yyval.no) = (yyvsp[-1].no); /* já tem lineno do $2 */ }
-#line 1467 "parser/parser.tab.c"
+  case 17: /* expressao: LPAREN expressao RPAREN  */
+#line 124 "parser/parser.y"
+                                 { (yyval.no) = (yyvsp[-1].no); }
+#line 1525 "parser/parser.tab.c"
+    break;
+
+  case 18: /* expressao: expressao LT expressao  */
+#line 125 "parser/parser.y"
+                                 { (yyval.no) = create_op_node('<', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
+#line 1531 "parser/parser.tab.c"
+    break;
+
+  case 19: /* expressao: expressao GT expressao  */
+#line 126 "parser/parser.y"
+                                 { (yyval.no) = create_op_node('>', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
+#line 1537 "parser/parser.tab.c"
+    break;
+
+  case 20: /* expressao: expressao LE expressao  */
+#line 127 "parser/parser.y"
+                                 { (yyval.no) = create_op_node('L', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
+#line 1543 "parser/parser.tab.c"
+    break;
+
+  case 21: /* expressao: expressao GE expressao  */
+#line 128 "parser/parser.y"
+                                 { (yyval.no) = create_op_node('G', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
+#line 1549 "parser/parser.tab.c"
+    break;
+
+  case 22: /* expressao: expressao EQ expressao  */
+#line 129 "parser/parser.y"
+                                 { (yyval.no) = create_op_node('E', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
+#line 1555 "parser/parser.tab.c"
+    break;
+
+  case 23: /* expressao: expressao NE expressao  */
+#line 130 "parser/parser.y"
+                                 { (yyval.no) = create_op_node('N', (yyvsp[-2].no), (yyvsp[0].no)); (yyval.no)->lineno = (yyvsp[-2].no)->lineno; }
+#line 1561 "parser/parser.tab.c"
+    break;
+
+  case 24: /* comando: atribuicao PONTO_VIRGULA  */
+#line 134 "parser/parser.y"
+                              { (yyval.no) = (yyvsp[-1].no); }
+#line 1567 "parser/parser.tab.c"
+    break;
+
+  case 25: /* comando: comando_if  */
+#line 135 "parser/parser.y"
+                              { (yyval.no) = (yyvsp[0].no); }
+#line 1573 "parser/parser.tab.c"
+    break;
+
+  case 26: /* comando_if: IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE  */
+#line 139 "parser/parser.y"
+                                                            {
+        (yyval.no) = create_if_node((yyvsp[-4].no), (yyvsp[-1].no), NULL);
+        (yyval.no)->lineno = yylineno;
+    }
+#line 1582 "parser/parser.tab.c"
+    break;
+
+  case 27: /* comando_if: IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE  */
+#line 143 "parser/parser.y"
+                                                                                                {
+        (yyval.no) = create_if_node((yyvsp[-8].no), (yyvsp[-5].no), (yyvsp[-1].no));
+        (yyval.no)->lineno = yylineno;
+    }
+#line 1591 "parser/parser.tab.c"
+    break;
+
+  case 28: /* lista_comandos: comando  */
+#line 150 "parser/parser.y"
+                             { (yyval.no) = create_command_list((yyvsp[0].no), NULL); }
+#line 1597 "parser/parser.tab.c"
+    break;
+
+  case 29: /* lista_comandos: lista_comandos comando  */
+#line 151 "parser/parser.y"
+                             { (yyval.no) = append_command_list((yyvsp[-1].no), (yyvsp[0].no)); }
+#line 1603 "parser/parser.tab.c"
     break;
 
 
-#line 1471 "parser/parser.tab.c"
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+#line 1607 "parser/parser.tab.c"
 
       default: break;
     }
@@ -2037,48 +1827,37 @@ yyreturnlab:
   return yyresult;
 }
 
-<<<<<<< HEAD
-#line 126 "parser/parser.y"
+#line 157 "parser/parser.y"
 
-/* SECAO DE CODIGO C FINAL */
-struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
-int proximoSimbolo = 0;
-
-void yyerror(const char *s) {
-    fprintf(stderr, "Linha %d: Erro sintático: %s\n", yylineno, s);
-}
-
-=======
-#line 109 "parser/parser.y"
-
-
-/*
- * Implementacoes de funcoes e definicoes de variaveis globais vem aqui.
- * Isso garante que elas sejam globais e visiveis para o linker.
- */
 
 // Definicoes globais da tabela de simbolos
 struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
 int proximoSimbolo = 0;
 
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
 int inserir_simbolo(char *nome, int valor) {
     int indice = procurar_simbolo(nome);
-    if (indice != -1) {
+
+    if (indice != -1) 
+    {
         tabelaSimbolos[indice].valor = valor;
         return indice;
     }
-    if (proximoSimbolo >= MAX_SIMBOLOS) {
+
+    if (proximoSimbolo >= MAX_SIMBOLOS) 
+    {
         fprintf(stderr, "Tabela de simbolos cheia!\n");
         exit(1);
     }
+
     strcpy(tabelaSimbolos[proximoSimbolo].nome, nome);
     tabelaSimbolos[proximoSimbolo].valor = valor;
     return proximoSimbolo++;
 }
 
-int procurar_simbolo(char *nome) {
-    for (int i = 0; i < proximoSimbolo; i++) {
+int procurar_simbolo(char *nome) 
+    {
+    for (int i = 0; i < proximoSimbolo; i++) 
+    {
         if (strcmp(tabelaSimbolos[i].nome, nome) == 0) return i;
     }
     return -1;

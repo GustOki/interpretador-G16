@@ -1,66 +1,61 @@
 #ifndef AST_H
 #define AST_H
 
-// Enum para identificar o tipo de cada nó na árvore
 typedef enum {
-<<<<<<< HEAD
-    NODE_TYPE_NUM,      // Nó para um número literal 
-    NODE_TYPE_ID,       // Nó para um identificador
-    NODE_TYPE_OP,       // Nó para uma operação binária 
-    NODE_TYPE_ASSIGN,    // Nó para uma atribuicao
-    NODE_TYPE_IF // Nó para uma condicao
-=======
-    NODE_TYPE_NUM, // Nó para um número
-    NODE_TYPE_ID, // Nó identificador
-    NODE_TYPE_OP, // Nó de operacao
-    NODE_TYPE_ASSIGN // Nó de atribuição 
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+    NODE_TYPE_NUM,      // Nó para um número
+    NODE_TYPE_ID,       // Nó identificador
+    NODE_TYPE_OP,       // Nó de operação aritmética
+    NODE_TYPE_ASSIGN,   // Nó de atribuição 
+    NODE_TYPE_IF,       // Nó de if
+    // NODE_TYPE_RELOP,    // Nó de operação relacional (==, <, >, etc.)
+    NODE_TYPE_CMD_LIST  // Nó para lista de comandos (blocos { })
 } NodeType;
 
 typedef struct AstNode {
     NodeType type;
-    char op;
-<<<<<<< HEAD
-    int lineno;   /* NOVO: linha aproximada onde o nó foi criado */
-    union {
-        int valor;
-        char* nome;
+    char op;         // operador (ex: '+', '-', '<', etc.)
+    int lineno;      // linha do código
 
-=======
-    int lineno; 
     union {
-        int valor;
-        char* nome;
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
-        struct {
+        int valor;         // usado por NODE_TYPE_NUM
+        char* nome;        // usado por NODE_TYPE_ID
+
+        struct {           // usado por operações (NODE_TYPE_OP e NODE_TYPE_RELOP)
             struct AstNode* left;
             struct AstNode* right;
         } children;
-<<<<<<< HEAD
 
-        struct {
+        struct {           // usado por atribuições
+            struct AstNode* left;
+            struct AstNode* right;
+        } assign;
+
+        struct {           // usado pelo IF
             struct AstNode* condicao;
             struct AstNode* bloco_then;
-            struct AstNode* bloco_else; // Pode ser NULL se não houver 'else'
+            struct AstNode* bloco_else;
         } if_details;
 
-=======
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+        struct {           // usado para blocos de comandos { ... }
+            struct AstNode* first;
+            struct AstNode* next;
+        } cmd_list;
     } data;
 } AstNode;
 
-//  PROTÓTIPOS DAS FUNÇÕES 
 
-// Funções criadora de nós (serão implementadas em ast.c)
+/* Funções de criação */
 AstNode* create_num_node(int valor);
 AstNode* create_id_node(char* nome);
 AstNode* create_op_node(char op, AstNode* left, AstNode* right);
 AstNode* create_assign_node(AstNode* left, AstNode* right);
 AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_else);
+// AstNode* create_relop_node(char op, AstNode* left, AstNode* right);
+AstNode* create_command_list(AstNode* first, AstNode* next);
+AstNode* append_command_list(AstNode* list, AstNode* cmd);
 
+/* Funções gerais */
 void liberar_ast(AstNode* no);
-
-// Função do interpretador (será implementada em interpretador.c)
 int interpretar(AstNode* no);
 
 #endif
