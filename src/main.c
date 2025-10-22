@@ -10,6 +10,7 @@ int main(void) {
 
   while(!feof(stdin)) {
       printf("> ");
+      fflush(stdout); 
       yyparse();
   }
   tabela_liberar();
