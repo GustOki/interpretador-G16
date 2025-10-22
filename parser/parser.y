@@ -49,12 +49,12 @@ void yyerror(const char *s) {
 %token PONTO_VIRGULA 
 %token NEWLINE PLUS MINUS TIMES DIVIDE IGUAL
 
-%type <no> linha expressao atribuicao comando_if comando lista_comandos
 
 %right IF ELSE
 %left GT LT GE LE EQ NE
 %left PLUS MINUS
 
+%type <no> linha expressao atribuicao comando_if comando lista_comandos
 
 /* SECAO DE REGRAS */
 
@@ -64,35 +64,44 @@ programa:
     ;
 
 linha:
-    expressao NEWLINE   {
-                            interpret_error = 0; /* zera antes de interpretar */
-                            int resultado = interpretar($1);
-                            if (!interpret_error) {
-                                printf("Resultado: %d\n", resultado);
-                            }
-                            liberar_ast($1);
-                        }
-    | atribuicao NEWLINE  {
-                            interpret_error = 0;
-                            int resultado = interpretar($1);
-                            if (!interpret_error) {
-                                printf("Resultado: %d\n", resultado);
-                            }
-                            liberar_ast($1);
-                        }
-    | comando_if NEWLINE {
-                            interpret_error = 0;
-                            interpretar($1);
-                            liberar_ast($1);
-                        }
-                        
-    | NEWLINE             { /* em casos de nao acontecer nada na linha */ }
+    | expressao PONTO_VIRGULA {
+            interpret_error = 0;
+            int resultado = interpretar($1);
+            if (!interpret_error) {
+                printf("Resultado: %d\n", resultado);
+            }
+            liberar_ast($1);
+            $$ = NULL;
+        }
 
-    | error NEWLINE       { /* mensagem de erro */
+    | atribuicao PONTO_VIRGULA {
+            interpret_error = 0;
+            int resultado = interpretar($1);
+            if (!interpret_error) {
+                printf("Resultado: %d\n", resultado);
+            }
+            liberar_ast($1);
+
+        }
+
+    | comando_if {
+        interpret_error = 0;
+        interpretar($1);
+        liberar_ast($1);
+
+      }
+ 
+    | NEWLINE { }
+    | error NEWLINE       { 
                             fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
-                            yyerrok;
+                            yyerrok; 
                           }
     ;
+
+opcional_ponto_virgula:
+      /* vazio */       { /* nada */ }
+    | PONTO_VIRGULA     { /* consome ; se existir */ }
+;
 
 atribuicao:
     ID IGUAL expressao {
@@ -104,6 +113,7 @@ atribuicao:
 ;
 
 
+
 expressao:
     NUM                          { $$ = create_num_node($1); $$->lineno = yylineno; }
     | ID                         { $$ = create_id_node($1); $$->lineno = yylineno; }
@@ -112,6 +122,13 @@ expressao:
     | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3); $$->lineno = $1->lineno; }
     | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); $$->lineno = $1->lineno; }
     | LPAREN expressao RPAREN    { $$ = $2; }
+    | expressao LT expressao     { $$ = create_op_node('<', $1, $3); $$->lineno = $1->lineno; }
+    | expressao GT expressao     { $$ = create_op_node('>', $1, $3); $$->lineno = $1->lineno; }
+    | expressao LE expressao     { $$ = create_op_node('L', $1, $3); $$->lineno = $1->lineno; } /* <= */
+    | expressao GE expressao     { $$ = create_op_node('G', $1, $3); $$->lineno = $1->lineno; } /* >= */
+    | expressao EQ expressao     { $$ = create_op_node('E', $1, $3); $$->lineno = $1->lineno; } /* == */
+    | expressao NE expressao     { $$ = create_op_node('N', $1, $3); $$->lineno = $1->lineno; } /* != */
+
 ;
 comando:
     atribuicao PONTO_VIRGULA  { $$ = $1; }
@@ -130,8 +147,9 @@ comando_if:
     ;
 
 lista_comandos:
-    comando                      { $$ = $1; }
-    | lista_comandos comando     { $$ = $2; }
+      comando                { $$ = create_command_list($1, NULL); }
+    | lista_comandos comando { $$ = append_command_list($1, $2); }
+
     ;
 
 
