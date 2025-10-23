@@ -48,9 +48,15 @@ interpretador-grupo16/
 
 ---
 
+<<<<<<< HEAD
+# 4. Instalação de dependências e comandos úteis
+
+## Flex / Bison (Debian/Ubuntu)
+=======
 ## Pré-requisitos
 
 No Ubuntu/Debian:
+>>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
 
 ```bash
 sudo apt-get update
@@ -72,6 +78,8 @@ Recomendações de desenvolvimento:
 ---
 
 ## Build — Como compilar (Makefile)
+
+Abaixo está o **Makefile** atual usado no projeto (cole-o no `Makefile` se ainda não estiver):
 
 ```makefile
 # Makefile para Estrutura de Pastas Organizada

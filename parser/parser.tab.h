@@ -56,14 +56,25 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     NUM = 258,                     /* NUM  */
     ID = 259,                      /* ID  */
-    NEWLINE = 260,                 /* NEWLINE  */
-    PLUS = 261,                    /* PLUS  */
-    MINUS = 262,                   /* MINUS  */
-    TIMES = 263,                   /* TIMES  */
-    DIVIDE = 264,                  /* DIVIDE  */
-    LPAREN = 265,                  /* LPAREN  */
-    RPAREN = 266,                  /* RPAREN  */
-    IGUAL = 267                    /* IGUAL  */
+    IF = 260,                      /* IF  */
+    ELSE = 261,                    /* ELSE  */
+    LBRACE = 262,                  /* LBRACE  */
+    RBRACE = 263,                  /* RBRACE  */
+    LPAREN = 264,                  /* LPAREN  */
+    RPAREN = 265,                  /* RPAREN  */
+    EQ = 266,                      /* EQ  */
+    NE = 267,                      /* NE  */
+    LT = 268,                      /* LT  */
+    GT = 269,                      /* GT  */
+    LE = 270,                      /* LE  */
+    GE = 271,                      /* GE  */
+    PONTO_VIRGULA = 272,           /* PONTO_VIRGULA  */
+    NEWLINE = 273,                 /* NEWLINE  */
+    PLUS = 274,                    /* PLUS  */
+    MINUS = 275,                   /* MINUS  */
+    TIMES = 276,                   /* TIMES  */
+    DIVIDE = 277,                  /* DIVIDE  */
+    IGUAL = 278                    /* IGUAL  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -72,13 +83,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 36 "parser/parser.y"
+#line 38 "parser/parser.y"
 
     int valor;
     char *str;
     struct AstNode* no;
 
-#line 82 "parser/parser.tab.h"
+#line 93 "parser/parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
