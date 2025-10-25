@@ -4,6 +4,8 @@
 #include "ast.h"
 #include "simbolo.h"
 
+void interpretar_printf(AstNode* expr);
+
 extern int interpret_error;
 
 void erro_tipo(const char* msg) {
@@ -11,7 +13,7 @@ void erro_tipo(const char* msg) {
     interpret_error = 1;
 }
 
-// Retorna valor numérico (int) ou 0
+// Interpretar nó da AST
 int interpretar(AstNode* no) {
     if (!no || interpret_error) return 0;
 
@@ -74,7 +76,7 @@ int interpretar(AstNode* no) {
                 case '+': return esq + dir;
                 case '-': return esq - dir;
                 case '*': return esq * dir;
-                case '/': 
+                case '/':
                     if (dir == 0) { erro_tipo("divisão por zero"); return 0; }
                     return esq / dir;
                 case '<': return esq < dir;
@@ -89,36 +91,23 @@ int interpretar(AstNode* no) {
         case NODE_TYPE_VAR_DECL: {
             ValorSimbolo v;
             v.tipo = no->data.var_decl.tipo;
-            v.inicializado = 0;
+            v.inicializado = no->data.var_decl.valor != NULL; // Inicializada se houver valor
 
             switch (v.tipo) {
-                case TIPO_INT: v.valor.i = 0; break;
-                case TIPO_FLOAT: v.valor.f = 0.0; break;
-                case TIPO_CHAR: v.valor.c = '\0'; break;
+                case TIPO_INT: v.valor.i = v.inicializado ? interpretar(no->data.var_decl.valor) : 0; break;
+                case TIPO_FLOAT: v.valor.f = v.inicializado ? (float)interpretar(no->data.var_decl.valor) : 0.0; break;
+                case TIPO_CHAR: v.valor.c = v.inicializado ? (char)interpretar(no->data.var_decl.valor) : '\0'; break;
                 case TIPO_STRING: v.valor.s = NULL; break;
             }
 
             tabela_inserir(no->data.var_decl.nome, v);
-
-            if (no->data.var_decl.valor) {
-                // Cria nó temporário para atribuição, duplicando o nome para evitar double free
-                AstNode* assign = create_assign_node(
-                    create_id_node(strdup(no->data.var_decl.nome)),
-                    no->data.var_decl.valor
-                );
-                interpretar(assign);
-                liberar_ast(assign);
-                no->data.var_decl.valor = NULL; // evita liberar duas vezes
-            }
-
             return 0;
         }
 
         case NODE_TYPE_CMD_LIST: {
             AstNode* temp = no;
-            while (temp) {
+            while (temp && !interpret_error) {
                 interpretar(temp->data.cmd_list.first);
-                if (interpret_error) return 0;
                 temp = temp->data.cmd_list.next;
             }
             return 0;
@@ -127,8 +116,15 @@ int interpretar(AstNode* no) {
         case NODE_TYPE_IF: {
             int cond = interpretar(no->data.if_details.condicao);
             if (interpret_error) return 0;
+
             if (cond) interpretar(no->data.if_details.bloco_then);
             else if (no->data.if_details.bloco_else) interpretar(no->data.if_details.bloco_else);
+
+            return 0;
+        }
+
+        case NODE_TYPE_PRINTF: {
+            interpretar_printf(no->data.children.left);
             return 0;
         }
 
@@ -138,27 +134,42 @@ int interpretar(AstNode* no) {
     }
 }
 
-// Função para printf
+// Função printf segura
 void interpretar_printf(AstNode* expr) {
     if (!expr) return;
 
-    if (expr->type == NODE_TYPE_ID) {
-        ValorSimbolo v;
-        if (!tabela_procurar(expr->data.nome, &v)) {
-            erro_tipo("variável não declarada");
-            return;
+    interpret_error = 0; // resetar para esta execução
+
+    int val = 0;
+
+    switch(expr->type) {
+        case NODE_TYPE_ID: {
+            ValorSimbolo v;
+            if (!tabela_procurar(expr->data.nome, &v)) {
+                erro_tipo("variável não declarada");
+                return;
+            }
+            if (!v.inicializado) {
+                erro_tipo("variável não inicializada");
+                return;
+            }
+
+            switch (v.tipo) {
+                case TIPO_INT: printf("%d\n", v.valor.i); break;
+                case TIPO_FLOAT: printf("%f\n", v.valor.f); break;
+                case TIPO_CHAR: printf("%c\n", v.valor.c); break;
+                case TIPO_STRING: printf("%s\n", v.valor.s ? v.valor.s : "(null)"); break;
+            }
+            break;
         }
 
-        switch (v.tipo) {
-            case TIPO_INT: printf("%d\n", v.valor.i); break;
-            case TIPO_FLOAT: printf("%f\n", v.valor.f); break;
-            case TIPO_CHAR: printf("%c\n", v.valor.c); break;
-            case TIPO_STRING: printf("%s\n", v.valor.s ? v.valor.s : "(null)"); break;
-        }
-    } else if (expr->type == NODE_TYPE_NUM) {
-        printf("%d\n", expr->data.valor);
-    } else {
-        int val = interpretar(expr);
-        if (!interpret_error) printf("%d\n", val);
+        case NODE_TYPE_NUM:
+            printf("%d\n", expr->data.valor);
+            break;
+
+        default:
+            val = interpretar(expr);
+            if (!interpret_error) printf("%d\n", val);
+            break;
     }
 }

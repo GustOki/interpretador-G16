@@ -53,7 +53,6 @@ typedef struct AstNode {
 } AstNode;
 
 
-/* Funções de criação */
 AstNode* create_num_node(int valor);
 AstNode* create_id_node(char* nome);
 AstNode* create_op_node(char op, AstNode* left, AstNode* right);
@@ -63,9 +62,10 @@ AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_e
 AstNode* create_command_list(AstNode* first, AstNode* next);
 AstNode* append_command_list(AstNode* list, AstNode* cmd);
 AstNode* create_var_decl_node(int tipo, char* nome, AstNode* valor);
+AstNode* create_printf_node(AstNode* expr);
 
 
-/* Funções gerais */
+
 void liberar_ast(AstNode* no);
 int interpretar(AstNode* no);
 

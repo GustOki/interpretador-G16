@@ -5,7 +5,6 @@
 #include "ast.h"
 #include "simbolo.h"
 
-
 void yyerror(const char *s);
 void interpretar_printf(struct AstNode* expr);
 
@@ -48,7 +47,8 @@ void yyerror(const char *s) {
 %left GT LT GE LE EQ NE
 %left PLUS MINUS
 
-%type <no> linha expressao atribuicao comando_if lista_comandos declaracao
+/* ADICADO: stmt é a regra que constrói nós (não executa) */
+%type <no> linha stmt expressao atribuicao comando_if lista_comandos declaracao
 %type <tipo> tipo
 
 %%
@@ -57,41 +57,27 @@ programa:
     | programa linha
     ;
 
+/* ---------- linha: nível REPL/interativo (aqui interpretamos) ---------- */
 linha:
-      expressao PONTO_VIRGULA {
-          interpret_error = 0;
-          int resultado = interpretar($1);
-          if (!interpret_error) {
-              printf("Resultado: %d\n", resultado);
+    /* uma statement terminada por ; -> interpretamos aqui */
+      stmt {
+          if ($1) {
+              interpret_error = 0;
+              interpretar ($1);
+            //   int resultado = interpretar($1);
+            //   if (!interpret_error) {
+            //       /* Só mostre "Resultado" para expressões/assign se quiser;
+            //          se preferir não mostrar nada remova esta impressão. */
+            //       printf("Resultado: %d\n", resultado);
+            //   }
+              liberar_ast($1);
           }
-          liberar_ast($1);
           $$ = NULL;
       }
-    | atribuicao PONTO_VIRGULA {
-          interpret_error = 0;
-          int resultado = interpretar($1);
-          if (!interpret_error) {
-              printf("Resultado: %d\n", resultado);
-          }
-          liberar_ast($1);
-          $$ = NULL;
-      }
-    | declaracao {
-          interpretar($1);
-          liberar_ast($1);
-          $$ = NULL;
-      }
-    | comando_if {
-          interpretar($1);
-          liberar_ast($1);
-          $$ = NULL;
-      }
-    | PRINTF LPAREN expressao RPAREN PONTO_VIRGULA {
-          interpretar_printf($3);
-          liberar_ast($3);
-          $$ = NULL;
-      }
+
+    /* aceitar linhas vazias / newline */
     | NEWLINE { $$ = NULL; }
+
     | error NEWLINE {
           fprintf(stderr, "Linha %d: erro sintático — recuperado até fim da linha\n", last_error_lineno);
           yyerrok;
@@ -99,6 +85,27 @@ linha:
       }
     ;
 
+/* ---------- stmt: constrói nós (NÃO interpretam nada aqui) ---------- */
+stmt:
+      /* expressão ; -> nó de expressão */
+      expressao PONTO_VIRGULA { $$ = $1; }
+
+    /* atribuição ; -> nó de atribuição */
+    | atribuicao PONTO_VIRGULA { $$ = $1; }
+
+    /* declaração (já é uma stmt, sem ;) */
+    | declaracao { $$ = $1; }
+
+    /* if/else (cria nó IF com blocos independentes) */
+    | comando_if { $$ = $1; }
+
+    /* printf como stmt (cria nó PRINTF) */
+    | PRINTF LPAREN expressao RPAREN PONTO_VIRGULA {
+          $$ = create_printf_node($3);
+      }
+    ;
+
+/* ---------- atribuição, declaração, tipo (sem mudanças lógicas) ---------- */
 atribuicao:
       ID IGUAL expressao {
           AstNode* left = create_id_node($1);
@@ -124,6 +131,7 @@ tipo:
     | STRING  { $$ = TIPO_STRING; }
     ;
 
+/* ---------- expressões ---------- */
 expressao:
       NUM { $$ = create_num_node($1); $$->lineno = yylineno; }
     | ID  { $$ = create_id_node($1); $$->lineno = yylineno; }
@@ -140,6 +148,7 @@ expressao:
     | expressao NE expressao     { $$ = create_op_node('N', $1, $3); $$->lineno = $1->lineno; }
     ;
 
+/* ---------- if/else: blocos construídos por lista_comandos (que usa stmt) ---------- */
 comando_if:
       IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
           $$ = create_if_node($3, $6, NULL);
@@ -151,13 +160,15 @@ comando_if:
       }
     ;
 
+/* ---------- lista_comandos agora usa 'stmt' (não 'linha') ---------- */
 lista_comandos:
-      linha { $$ = $1; }
-    | lista_comandos linha { $$ = append_command_list($1, $2); }
+      stmt                 { $$ = create_command_list($1, NULL); }
+    | lista_comandos stmt  { $$ = append_command_list($1, $2); }
     ;
 
 %%
 
+/* --- resto (implementações auxiliares da tabela de símbolos) --- */
 #define MAX_SIMBOLOS 1000
 
 struct simbolo {
