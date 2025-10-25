@@ -5,74 +5,71 @@
 
 #define TAMANHO_TABELA 256
 
-
 typedef struct NoSimbolo {
     char* nome;
-    double valor;
+    ValorSimbolo valor;
     struct NoSimbolo* proximo;
 } NoSimbolo;
-
 
 static NoSimbolo* tabela[TAMANHO_TABELA];
 
 static unsigned long hash(char* str) {
     unsigned long hash = 5381;
     int c;
-    while ((c = *str++)) {
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    }
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c;
     return hash % TAMANHO_TABELA;
 }
 
 void tabela_iniciar() {
-    for (int i = 0; i < TAMANHO_TABELA; i++) {
+    for (int i = 0; i < TAMANHO_TABELA; i++)
         tabela[i] = NULL;
-    }
 }
 
-void tabela_inserir(char* nome, double valor) {
+void tabela_inserir(char* nome, ValorSimbolo valor) {
     unsigned long indice = hash(nome);
     NoSimbolo* atual = tabela[indice];
 
-    while (atual != NULL) {
+    while (atual) {
         if (strcmp(atual->nome, nome) == 0) {
+            if (atual->valor.tipo == TIPO_STRING && atual->valor.valor.s)
+                free(atual->valor.valor.s);
             atual->valor = valor;
-            free(nome); 
             return;
         }
         atual = atual->proximo;
     }
 
-    // Se não encontrou, cria um novo nó e insere no início da lista
-    NoSimbolo* novo_no = (NoSimbolo*)malloc(sizeof(NoSimbolo));
-    novo_no->nome = nome; 
-    novo_no->valor = valor;
-    novo_no->proximo = tabela[indice];
-    tabela[indice] = novo_no;
+    NoSimbolo* novo = malloc(sizeof(NoSimbolo));
+    novo->nome = strdup(nome);
+    novo->valor = valor;
+    novo->proximo = tabela[indice];
+    tabela[indice] = novo;
 }
 
-int tabela_procurar(char* nome, double* valor_encontrado) {
+int tabela_procurar(char* nome, ValorSimbolo* valor_encontrado) {
     unsigned long indice = hash(nome);
     NoSimbolo* atual = tabela[indice];
 
-    while (atual != NULL) {
+    while (atual) {
         if (strcmp(atual->nome, nome) == 0) {
             *valor_encontrado = atual->valor;
-            return 1; // Encontrou
+            return 1;
         }
         atual = atual->proximo;
     }
-
-    return 0; // Não encontrou
+    return 0;
 }
 
 void tabela_liberar() {
     for (int i = 0; i < TAMANHO_TABELA; i++) {
         NoSimbolo* atual = tabela[i];
-        while (atual != NULL) {
+        while (atual) {
             NoSimbolo* temp = atual;
-            atual = atual->proximo;
+            if (temp->valor.tipo == TIPO_STRING && temp->valor.valor.s)
+                free(temp->valor.valor.s);
             free(temp->nome);
+            atual = atual->proximo;
             free(temp);
         }
         tabela[i] = NULL;

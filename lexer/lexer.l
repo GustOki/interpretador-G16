@@ -11,11 +11,19 @@ extern int yylineno;
 %}
 
 %%
+"int"       { return INT; }
+"float"     { return FLOAT; }
+"char"      { return CHAR; }
+"string"    { return STRING; }
+"printf"    { return PRINTF; }
+
 "if"        { return IF; }
 "else"      { return ELSE; }
+
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
 ";"         { return PONTO_VIRGULA; }
+
 "!="        { return NE; }
 "<="        { return LE; }
 ">="        { return GE; }
