@@ -77,9 +77,6 @@ Recomendações de desenvolvimento:
 
 ---
 
-<<<<<<< HEAD
-# 5. Fluxo de trabalho com Git
-=======
 ## Build — Como compilar (Makefile)
 
 Abaixo está o **Makefile** atual usado no projeto (cole-o no `Makefile` se ainda não estiver):
@@ -248,33 +245,8 @@ As sprints previstas são:
 ---
 
 # Fluxo de trabalho com Git
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
 
 * **Repositório:** GitHub (adicionar todos os membros e o professor).
 * **Branches:** `main` (estável), `dev` (integração), `feature/<nome>`.
 * **Pull Requests:** revisão por pelo menos 1 membro antes de merge em `dev`.
 * **Commits:** mensagens claras (`feat: adicionar lexer`; `fix: parser while`).
-<<<<<<< HEAD
-* **CI (opcional):** rodar `pytest` em PRs.
-
----
-
-# 6. Boas práticas
-
-* Documentar decisões em `docs/especificacao_linguagem.md`.
-* Criar issues/milestones por sprint.
-* Testes automatizados para lexer, parser e interpreter.
-* Mensagens de erro com indicação de linha/coluna.
-* Commits pequenos e frequentes; PRs revisados.
-
----
-
-# 7. Observações finais
-
-* Quartas-feiras sugeridas para daily meetings/integração.
-* Mantenham commits estáveis e documentem bem a AST e decisões de design.
-* Em caso de dúvidas técnicas sobre Flex/Bison ou integração com Python, documentem e criem issues para rastrear a solução.
-
----
-=======
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
