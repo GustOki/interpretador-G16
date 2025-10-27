@@ -167,6 +167,31 @@ AstNode* append_case_list(AstNode* head, AstNode* new_case) {
     temp->data.case_details.proximo = new_case;
     return head; 
 }
+AstNode* create_while_node(AstNode* condicao, AstNode* corpo) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+    }
+    no->type = NODE_TYPE_WHILE;
+    no->op = 0;
+    no->data.while_details.condicao = condicao;
+    no->data.while_details.corpo = corpo;
+    return no;
+}
+AstNode* create_do_while_node(AstNode* corpo, AstNode* condicao) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+    }
+    no->type = NODE_TYPE_DO_WHILE;
+    no->op = 0;
+    no->data.do_while_details.corpo = corpo;
+    no->data.do_while_details.condicao = condicao;
+    return no;
+}
+
 
 void liberar_ast(AstNode* no) {
     if (!no) return;
@@ -205,6 +230,16 @@ void liberar_ast(AstNode* no) {
             liberar_ast(no->data.var_decl.valor);
             break;
 
+        case NODE_TYPE_WHILE:
+            liberar_ast(no->data.while_details.condicao);
+            liberar_ast(no->data.while_details.corpo);
+            break;
+
+        case NODE_TYPE_DO_WHILE:
+            liberar_ast(no->data.do_while_details.corpo);
+            liberar_ast(no->data.do_while_details.condicao);
+            break;
+            
         case NODE_TYPE_SWITCH:
             liberar_ast(no->data.switch_details.condicao);
             liberar_ast(no->data.switch_details.casos); 
@@ -225,3 +260,5 @@ void liberar_ast(AstNode* no) {
     }
     free(no);
 }
+
+

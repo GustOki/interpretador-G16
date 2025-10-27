@@ -1,18 +1,7 @@
-int x;
-x = 2;
+int i;
+i = 10;
 
-switch (x) {
-    case 1: {
-        printf(100);
-        break;
-    }
-    case 2: {
-        printf(200);
-        break;
-    }
-    default: {
-        printf(999);
-    }
+while (i > 0) {
+    printf(i);
+    i = i - 2;
 }
-
-printf(50 + 50);
