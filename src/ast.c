@@ -49,8 +49,8 @@ AstNode* create_assign_node(AstNode* left, AstNode* right) {
     }
     no->type = NODE_TYPE_ASSIGN;
     no->op = '=';
-    no->data.children.left = left;
-    no->data.children.right = right;
+    no->data.assign.left = left; 
+    no->data.assign.right = right;
     return no;
 }
 
@@ -108,19 +108,92 @@ AstNode* create_printf_node(AstNode* expr) {
     if (!no) { fprintf(stderr, "Erro de memória\n"); exit(1); }
     no->type = NODE_TYPE_PRINTF;
     no->data.children.left = expr;
+    no->data.children.right = NULL;
     return no;
 }
 
+AstNode* create_switch_node(AstNode* condicao, AstNode* casos) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+    }
+    no->type = NODE_TYPE_SWITCH;
+    no->op = 0;
+    no->data.switch_details.condicao = condicao;
+    no->data.switch_details.casos = casos; 
+    return no;
+}
 
+AstNode* create_case_node(AstNode* valor, AstNode* corpo) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+    }
+    no->type = NODE_TYPE_CASE;
+    no->op = 0;
+    no->data.case_details.valor = valor;
+    no->data.case_details.corpo = corpo;
+    no->data.case_details.proximo = NULL; 
+    return no;
+}
 
+AstNode* create_default_node(AstNode* corpo) {
+    return create_case_node(NULL, corpo);
+}
+
+AstNode* create_break_node() {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+    }
+    no->type = NODE_TYPE_BREAK;
+    no->op = 0;
+    return no;
+}
+
+AstNode* append_case_list(AstNode* head, AstNode* new_case) {
+    if (!head) {
+        return new_case;
+    }
+    
+    AstNode* temp = head;
+    while (temp->data.case_details.proximo) {
+        temp = temp->data.case_details.proximo;
+    }
+    
+    temp->data.case_details.proximo = new_case;
+    return head; 
+}
 
 void liberar_ast(AstNode* no) {
     if (!no) return;
     switch (no->type) {
         case NODE_TYPE_OP:
-        case NODE_TYPE_ASSIGN:
             liberar_ast(no->data.children.left);
             liberar_ast(no->data.children.right);
+            break;
+
+        case NODE_TYPE_ASSIGN:
+            liberar_ast(no->data.assign.left);
+            liberar_ast(no->data.assign.right);
+            break;
+
+        case NODE_TYPE_IF:
+            liberar_ast(no->data.if_details.condicao);
+            liberar_ast(no->data.if_details.bloco_then);
+            liberar_ast(no->data.if_details.bloco_else);
+            break;
+
+        case NODE_TYPE_CMD_LIST:
+            liberar_ast(no->data.cmd_list.first);
+            liberar_ast(no->data.cmd_list.next);
+            break;
+            
+        case NODE_TYPE_PRINTF:
+            liberar_ast(no->data.children.left);
             break;
 
         case NODE_TYPE_ID:
@@ -132,9 +205,23 @@ void liberar_ast(AstNode* no) {
             liberar_ast(no->data.var_decl.valor);
             break;
 
+        case NODE_TYPE_SWITCH:
+            liberar_ast(no->data.switch_details.condicao);
+            liberar_ast(no->data.switch_details.casos); 
+            break;
+
+        case NODE_TYPE_CASE:
+            liberar_ast(no->data.case_details.valor);
+	    liberar_ast(no->data.case_details.corpo);
+	    liberar_ast(no->data.case_details.proximo);
+            break;
+
+        case NODE_TYPE_NUM:
+        case NODE_TYPE_BREAK:
+            break;
+
         default:
             break;
     }
     free(no);
 }
-

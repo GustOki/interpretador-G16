@@ -7,6 +7,7 @@
 void interpretar_printf(AstNode* expr);
 
 extern int interpret_error;
+static int g_break_flag = 0;
 
 void erro_tipo(const char* msg) {
     fprintf(stderr, "Erro semântico: %s\n", msg);
@@ -106,7 +107,7 @@ int interpretar(AstNode* no) {
 
         case NODE_TYPE_CMD_LIST: {
             AstNode* temp = no;
-            while (temp && !interpret_error) {
+            while (temp && !interpret_error && !g_break_flag) {
                 interpretar(temp->data.cmd_list.first);
                 temp = temp->data.cmd_list.next;
             }
@@ -125,6 +126,50 @@ int interpretar(AstNode* no) {
 
         case NODE_TYPE_PRINTF: {
             interpretar_printf(no->data.children.left);
+            return 0;
+        }
+
+        case NODE_TYPE_BREAK: {
+            g_break_flag = 1; // Ativa a flag de break
+            return 0;
+        }
+
+        case NODE_TYPE_SWITCH: {
+            int cond_valor = interpretar(no->data.switch_details.condicao);
+            if (interpret_error) return 0;
+
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0; 
+
+            int match_encontrado = 0;
+            AstNode* caso_atual = no->data.switch_details.casos;
+            AstNode* default_corpo = NULL;
+
+            while (caso_atual && !g_break_flag) {
+                if (caso_atual->data.case_details.valor == NULL) {
+                    default_corpo = caso_atual->data.case_details.corpo;
+                }
+                else if (!match_encontrado) {
+                    int case_valor = interpretar(caso_atual->data.case_details.valor);
+                    if (interpret_error) break; 
+                    
+                    if (case_valor == cond_valor) {
+                        match_encontrado = 1;
+                    }
+                }
+
+                if (match_encontrado) {
+                    interpretar(caso_atual->data.case_details.corpo);
+                }
+                
+                caso_atual = caso_atual->data.case_details.proximo;
+            }
+
+            if (!match_encontrado && default_corpo && !g_break_flag) {
+                interpretar(default_corpo);
+            }
+
+            g_break_flag = old_break_flag;
             return 0;
         }
 

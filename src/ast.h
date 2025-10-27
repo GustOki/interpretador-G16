@@ -7,6 +7,10 @@ typedef enum {
     NODE_TYPE_OP,       // Nó de operação aritmética
     NODE_TYPE_ASSIGN,   // Nó de atribuição 
     NODE_TYPE_IF,       // Nó de if
+    NODE_TYPE_SWITCH,   
+    NODE_TYPE_CASE,     
+    NODE_TYPE_BLOCK,    
+    NODE_TYPE_BREAK,     
     // NODE_TYPE_RELOP,    // Nó de operação relacional (==, <, >, etc.)
     NODE_TYPE_CMD_LIST,  // Nó para lista de comandos (blocos { })
     NODE_TYPE_VAR_DECL,
@@ -49,6 +53,17 @@ typedef struct AstNode {
             struct AstNode* valor;  
         } var_decl;
 
+        struct {
+            struct AstNode* condicao;   
+            struct AstNode* casos;      
+        } switch_details; // Para NODE_TYPE_SWITCH
+
+        struct {
+            struct AstNode* valor;      
+            struct AstNode* corpo;      
+            struct AstNode* proximo;    
+        } case_details;   // Para NODE_TYPE_CASE
+
     } data;
 } AstNode;
 
@@ -63,8 +78,12 @@ AstNode* create_command_list(AstNode* first, AstNode* next);
 AstNode* append_command_list(AstNode* list, AstNode* cmd);
 AstNode* create_var_decl_node(int tipo, char* nome, AstNode* valor);
 AstNode* create_printf_node(AstNode* expr);
-
-
+// Cria o nó principal do switch
+AstNode* create_switch_node(AstNode* condicao, AstNode* casos);
+AstNode* create_case_node(AstNode* valor, AstNode* corpo);
+AstNode* create_default_node(AstNode* corpo);
+AstNode* create_break_node();
+AstNode* append_case_list(AstNode* head, AstNode* new_case);
 
 void liberar_ast(AstNode* no);
 int interpretar(AstNode* no);
