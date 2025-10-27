@@ -1,23 +1,27 @@
-// Arquivo: src/simbolo.h
-
 #ifndef SIMBOLO_H
 #define SIMBOLO_H
 
-#define MAX_SIMBOLOS 100
+typedef enum {
+    TIPO_INT,
+    TIPO_FLOAT,
+    TIPO_CHAR,
+    TIPO_STRING
+} TipoSimbolo;
 
-// 1. A DEFINIÇÃO COMPLETA da struct fica aqui.
-struct simbolo {
-    char nome[50];
-    int valor;
-};
+typedef struct {
+    TipoSimbolo tipo;
+    union {
+        int i;
+        float f;
+        char c;
+        char* s;
+    } valor;
+    int inicializado; 
+} ValorSimbolo;
 
-// 2. As DECLARAÇÕES "extern" (promessas) ficam aqui.
-//    Elas dizem aos outros arquivos que essas variáveis existem em algum lugar.
-extern struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
-extern int proximoSimbolo;
-
-// 3. Protótipos das funções que manipulam a tabela.
-int inserir_simbolo(char *nome, int valor);
-int procurar_simbolo(char *nome);
+void tabela_iniciar();
+void tabela_inserir(char* nome, ValorSimbolo valor);
+int tabela_procurar(char* nome, ValorSimbolo* valor_encontrado);
+void tabela_liberar();
 
 #endif

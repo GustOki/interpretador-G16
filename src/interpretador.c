@@ -1,51 +1,247 @@
-// Arquivo: src/interpretador.c
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "ast.h"
-#include "simbolo.h" // <<< PASSO CRUCIAL: Inclui a definição da struct!
+#include "simbolo.h"
 
-// Precisamos acessar a tabela de símbolos que está no parser
-extern struct simbolo tabelaSimbolos[];
-extern int procurar_simbolo(char* nome);
-extern int inserir_simbolo(char* nome, int valor);
+void interpretar_printf(AstNode* expr);
 
+extern int interpret_error;
+static int g_break_flag = 0;
+
+void erro_tipo(const char* msg) {
+    fprintf(stderr, "Erro semântico: %s\n", msg);
+    interpret_error = 1;
+}
+
+// Interpretar nó da AST
 int interpretar(AstNode* no) {
-    if (!no) return 0;
+    if (!no || interpret_error) return 0;
 
     switch (no->type) {
         case NODE_TYPE_NUM:
             return no->data.valor;
 
         case NODE_TYPE_ID: {
-            int indice = procurar_simbolo(no->data.nome);
-            if (indice == -1) {
-                fprintf(stderr, "Erro semântico: Variável '%s' não declarada\n", no->data.nome);
-                exit(1);
+            ValorSimbolo v;
+            if (!tabela_procurar(no->data.nome, &v)) {
+                erro_tipo("variável não declarada");
+                return 0;
             }
-            return tabelaSimbolos[indice].valor;
+            if (!v.inicializado) {
+                erro_tipo("variável não inicializada");
+                return 0;
+            }
+
+            switch (v.tipo) {
+                case TIPO_INT: return v.valor.i;
+                case TIPO_FLOAT: return (int)v.valor.f;
+                case TIPO_CHAR: return (int)v.valor.c;
+                case TIPO_STRING:
+                    erro_tipo("não é possível usar string em expressão numérica");
+                    return 0;
+            }
         }
 
         case NODE_TYPE_ASSIGN: {
-            char* var_nome = no->data.children.left->data.nome;
-            int valor_expr = interpretar(no->data.children.right);
-            inserir_simbolo(var_nome, valor_expr);
-            return valor_expr;
+            char* nome = no->data.children.left->data.nome;
+            ValorSimbolo v;
+            if (!tabela_procurar(nome, &v)) {
+                erro_tipo("variável não declarada");
+                return 0;
+            }
+
+            int val = interpretar(no->data.children.right);
+            if (interpret_error) return 0;
+
+            switch (v.tipo) {
+                case TIPO_INT: v.valor.i = val; break;
+                case TIPO_FLOAT: v.valor.f = (float)val; break;
+                case TIPO_CHAR: v.valor.c = (char)val; break;
+                case TIPO_STRING:
+                    erro_tipo("não é possível atribuir número a string");
+                    return 0;
+            }
+
+            v.inicializado = 1;
+            tabela_inserir(nome, v);
+            return val;
         }
 
         case NODE_TYPE_OP: {
-            int val_esq = interpretar(no->data.children.left);
-            int val_dir = interpretar(no->data.children.right);
+            int esq = interpretar(no->data.children.left);
+            int dir = interpretar(no->data.children.right);
+            if (interpret_error) return 0;
+
             switch (no->op) {
-                case '+': return val_esq + val_dir;
-                case '-': return val_esq - val_dir;
-                case '*': return val_esq * val_dir;
+                case '+': return esq + dir;
+                case '-': return esq - dir;
+                case '*': return esq * dir;
                 case '/':
-                    // ... (código da divisão)
-                    return val_esq / val_dir;
+                    if (dir == 0) { erro_tipo("divisão por zero"); return 0; }
+                    return esq / dir;
+                case '<': return esq < dir;
+                case '>': return esq > dir;
+                case 'L': return esq <= dir;
+                case 'G': return esq >= dir;
+                case 'E': return esq == dir;
+                case 'N': return esq != dir;
             }
-            // <<< O PROBLEMA ESTÁ AQUI
         }
+
+        case NODE_TYPE_VAR_DECL: {
+            ValorSimbolo v;
+            v.tipo = no->data.var_decl.tipo;
+            v.inicializado = no->data.var_decl.valor != NULL; // Inicializada se houver valor
+
+            switch (v.tipo) {
+                case TIPO_INT: v.valor.i = v.inicializado ? interpretar(no->data.var_decl.valor) : 0; break;
+                case TIPO_FLOAT: v.valor.f = v.inicializado ? (float)interpretar(no->data.var_decl.valor) : 0.0; break;
+                case TIPO_CHAR: v.valor.c = v.inicializado ? (char)interpretar(no->data.var_decl.valor) : '\0'; break;
+                case TIPO_STRING: v.valor.s = NULL; break;
+            }
+
+            tabela_inserir(no->data.var_decl.nome, v);
+            return 0;
+        }
+
+        case NODE_TYPE_CMD_LIST: {
+            AstNode* temp = no;
+            while (temp && !interpret_error && !g_break_flag) {
+                interpretar(temp->data.cmd_list.first);
+                temp = temp->data.cmd_list.next;
+            }
+            return 0;
+        }
+
+        case NODE_TYPE_IF: {
+            int cond = interpretar(no->data.if_details.condicao);
+            if (interpret_error) return 0;
+
+            if (cond) interpretar(no->data.if_details.bloco_then);
+            else if (no->data.if_details.bloco_else) interpretar(no->data.if_details.bloco_else);
+
+            return 0;
+        }
+
+        case NODE_TYPE_PRINTF: {
+            interpretar_printf(no->data.children.left);
+            return 0;
+        }
+
+        case NODE_TYPE_BREAK: {
+            g_break_flag = 1; // Ativa a flag de break
+            return 0;
+        }
+
+        case NODE_TYPE_SWITCH: {
+            int cond_valor = interpretar(no->data.switch_details.condicao);
+            if (interpret_error) return 0;
+
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0; 
+
+            int match_encontrado = 0;
+            AstNode* caso_atual = no->data.switch_details.casos;
+            AstNode* default_corpo = NULL;
+
+            while (caso_atual && !g_break_flag) {
+                if (caso_atual->data.case_details.valor == NULL) {
+                    default_corpo = caso_atual->data.case_details.corpo;
+                }
+                else if (!match_encontrado) {
+                    int case_valor = interpretar(caso_atual->data.case_details.valor);
+                    if (interpret_error) break; 
+                    
+                    if (case_valor == cond_valor) {
+                        match_encontrado = 1;
+                    }
+                }
+
+                if (match_encontrado) {
+                    interpretar(caso_atual->data.case_details.corpo);
+                }
+                
+                caso_atual = caso_atual->data.case_details.proximo;
+            }
+
+            if (!match_encontrado && default_corpo && !g_break_flag) {
+                interpretar(default_corpo);
+            }
+
+            g_break_flag = old_break_flag;
+            return 0;
+        }
+        
+        case NODE_TYPE_WHILE: {
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
+            
+            while (!interpret_error && !g_break_flag) {
+                int cond = interpretar(no->data.while_details.condicao);
+                if (interpret_error || !cond) break;
+                interpretar(no->data.while_details.corpo);
+            }
+            
+            g_break_flag = old_break_flag;
+            return 0;
+        }
+        
+        case NODE_TYPE_DO_WHILE: {
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
+    
+            do {    
+                interpretar(no->data.do_while_details.corpo);
+                if (interpret_error || g_break_flag) break;
+            } while (interpretar(no->data.do_while_details.condicao) && !interpret_error);
+            
+            g_break_flag = old_break_flag;
+            return 0;
+        }        
+
+        default:
+            erro_tipo("tipo de nó desconhecido");
+            return 0;
     }
-    return 0; // Se chegar aqui, algo deu errado
+}
+
+// Função printf segura
+void interpretar_printf(AstNode* expr) {
+    if (!expr) return;
+
+    interpret_error = 0; // resetar para esta execução
+
+    int val = 0;
+
+    switch(expr->type) {
+        case NODE_TYPE_ID: {
+            ValorSimbolo v;
+            if (!tabela_procurar(expr->data.nome, &v)) {
+                erro_tipo("variável não declarada");
+                return;
+            }
+            if (!v.inicializado) {
+                erro_tipo("variável não inicializada");
+                return;
+            }
+
+            switch (v.tipo) {
+                case TIPO_INT: printf("%d\n", v.valor.i); break;
+                case TIPO_FLOAT: printf("%f\n", v.valor.f); break;
+                case TIPO_CHAR: printf("%c\n", v.valor.c); break;
+                case TIPO_STRING: printf("%s\n", v.valor.s ? v.valor.s : "(null)"); break;
+            }
+            break;
+        }
+
+        case NODE_TYPE_NUM:
+            printf("%d\n", expr->data.valor);
+            break;
+
+        default:
+            val = interpretar(expr);
+            if (!interpret_error) printf("%d\n", val);
+            break;
+    }
 }
