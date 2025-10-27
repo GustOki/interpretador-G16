@@ -172,6 +172,33 @@ int interpretar(AstNode* no) {
             g_break_flag = old_break_flag;
             return 0;
         }
+        
+        case NODE_TYPE_WHILE: {
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
+            
+            while (!interpret_error && !g_break_flag) {
+                int cond = interpretar(no->data.while_details.condicao);
+                if (interpret_error || !cond) break;
+                interpretar(no->data.while_details.corpo);
+            }
+            
+            g_break_flag = old_break_flag;
+            return 0;
+        }
+        
+        case NODE_TYPE_DO_WHILE: {
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
+    
+            do {    
+                interpretar(no->data.do_while_details.corpo);
+                if (interpret_error || g_break_flag) break;
+            } while (interpretar(no->data.do_while_details.condicao) && !interpret_error);
+            
+            g_break_flag = old_break_flag;
+            return 0;
+        }        
 
         default:
             erro_tipo("tipo de nó desconhecido");

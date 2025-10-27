@@ -19,6 +19,8 @@ extern int yylineno;
 
 "if"        { return IF; }
 "else"      { return ELSE; }
+"do"        { return DO; }
+"while"     { return WHILE; }
 "switch"    { return SWITCH; }
 "case"      { return CASE; }
 "break"     { return BREAK; }

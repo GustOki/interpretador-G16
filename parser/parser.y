@@ -46,6 +46,8 @@ void yyerror(const char *s) {
 %token PLUS MINUS TIMES DIVIDE IGUAL
 %token INT FLOAT CHAR STRING PRINTF
 %token SWITCH CASE BREAK DEFAULT COLON
+%token DO
+%token WHILE
 
 %right IF ELSE
 %left GT LT GE LE EQ NE
@@ -55,6 +57,8 @@ void yyerror(const char *s) {
 %type <no> programa stmt expressao atribuicao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
 %type <tipo> tipo
+%type <no> comando_do_while
+%type <no> comando_while
 
 %%
 
@@ -82,6 +86,8 @@ stmt:
     | atribuicao PONTO_VIRGULA { $$ = $1; }
     | declaracao { $$ = $1; }
     | comando_if { $$ = $1; }
+    | comando_while { $$ = $1; } 
+    | comando_do_while { $$ = $1; }
     | PRINTF LPAREN expressao RPAREN PONTO_VIRGULA {
         $$ = create_printf_node($3);
     }
@@ -89,6 +95,17 @@ stmt:
     | BREAK PONTO_VIRGULA { $$ = create_break_node(); $$->lineno = yylineno; }
     /* --- Permite blocos { ... } como um statement --- */
     | LBRACE lista_comandos RBRACE { $$ = $2; }
+    | comando_while:
+    |WHILE LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
+        $$ = create_while_node($3, $6);
+        $$->lineno = yylineno;
+    }
+    ;
+    | comando_do_while:
+    DO LBRACE lista_comandos RBRACE WHILE LPAREN expressao RPAREN PONTO_VIRGULA {
+        $$ = create_do_while_node($3, $7);
+        $$->lineno = yylineno;
+    }
     ;
 
 /* ---------- atribuição, declaração, tipo ---------- */
