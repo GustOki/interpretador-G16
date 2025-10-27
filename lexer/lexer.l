@@ -19,9 +19,14 @@ extern int yylineno;
 
 "if"        { return IF; }
 "else"      { return ELSE; }
+"switch"    { return SWITCH; }
+"case"      { return CASE; }
+"break"     { return BREAK; }
+"default"   { return DEFAULT; }
 
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
+":"         { return COLON; }
 ";"         { return PONTO_VIRGULA; }
 
 "!="        { return NE; }
@@ -41,9 +46,8 @@ extern int yylineno;
 "/"                     { return DIVIDE; }
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
-"\n"                    { return NEWLINE; }
 
-[ \t]+                  { /* ignora espaços e tabs */ }
+[ \t\n]+                  { /* ignora espaços e tabs */ }
 [a-zA-Z][a-zA-Z0-9_]*   { yylval.str = strdup(yytext); return ID; }
 
 .                       {
