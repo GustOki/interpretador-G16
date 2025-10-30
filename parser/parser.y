@@ -1,32 +1,45 @@
+/* Arquivo: parser/parser.y (Corrigido e Limpo) */
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ast.h"
-#include "simbolo.h"
-
-void yyerror(const char *s);
-void interpretar_printf(struct AstNode* expr);
-
-extern int yylineno;
-extern char *yytext;
+#include "ast.h"    
+#include "simbolo.h" // Inclui as definições e protótipos da tabela
 
 int yylex(void);
-int last_error_lineno = 0;
+
+/* --- Variáveis Globais e yyerror --- */
+extern int yylineno;
+extern char *yytext;
 int interpret_error = 0;
+int last_error_lineno = 0;
 
 /* --- Raiz global da AST --- */
-AstNode* g_ast_root = NULL;
+AstNode* g_ast_root = NULL; // <<< DECLARAÇÃO ADICIONADA AQUI
 
 void yyerror(const char *s) {
     last_error_lineno = yylineno;
-    if (yytext && yytext[0] != '\0') {
-        fprintf(stderr, "Linha %d: Erro sintático: %s perto de '%s'\n",
+    if (yytext && yytext[0] != '\0' && yytext[0] != '\n') {
+        fprintf(stderr, "Linha %d: Erro Sintático: %s perto de '%s'\n",
                 last_error_lineno, s, yytext);
     } else {
-        fprintf(stderr, "Linha %d: Erro sintático: %s\n", last_error_lineno, s);
+        fprintf(stderr, "Linha %d: Erro Sintático: %s (possivelmente no final da entrada)\n", last_error_lineno, s);
     }
 }
+
+// Protótipos das funções auxiliares (que estão no final deste arquivo)
+AstNode* append_command_list(AstNode* list, AstNode* command);
+AstNode* append_case_list(AstNode* list, AstNode* case_node);
+
+// Definição dos tipos (assumindo que estão em simbolo.h ou ast.h)
+#ifndef TIPO_INT
+#define TIPO_INT 1
+#define TIPO_FLOAT 2
+#define TIPO_CHAR 3
+#define TIPO_STRING 4
+#endif
+
 %}
 
 %define parse.error verbose
@@ -46,180 +59,145 @@ void yyerror(const char *s) {
 %token PLUS MINUS TIMES DIVIDE IGUAL
 %token INT FLOAT CHAR STRING PRINTF
 %token SWITCH CASE BREAK DEFAULT COLON
-%token DO
-%token WHILE
+%token DO WHILE
 
-%right IF ELSE
-%left GT LT GE LE EQ NE
-%left PLUS MINUS
-
-/* --- 'programa' é a nossa nova raiz --- */
 %type <no> programa stmt expressao atribuicao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
 %type <tipo> tipo
 %type <no> comando_do_while
 %type <no> comando_while
+%type <no> comando_printf // Adicionado tipo para comando_printf
+
+%nonassoc IFX
+%nonassoc ELSE
+%right UMINUS
+%left GT LT GE LE EQ NE // <<< PRECEDÊNCIA MAIS BAIXA (agora está correto)
+%left PLUS MINUS
+%left TIMES DIVIDE // <<< PRECEDÊNCIA MAIS ALTA (agora está correto)
 
 %%
 
-/* --- A regra 'programa' agora constrói a árvore inteira --- */
+/* --- Seção de Regras da Gramática --- */
+
 programa:
-    lista_comandos {
-        g_ast_root = $1; // Salva a árvore completa na variável global
-        $$ = $1;
-    }
+    lista_comandos { $$ = $1; g_ast_root = $1; } // Agora 'g_ast_root' é conhecido
     ;
 
-/* --- 'linha:' foi removida --- */
-/* Ela era para o REPL; agora 'lista_comandos' é o topo */
-
-
-/* --- 'lista_comandos' agora permite programas vazios --- */
 lista_comandos:
-    /* Vazio */           { $$ = NULL; } 
+    /* Vazio */           { $$ = NULL; }
     | lista_comandos stmt { $$ = append_command_list($1, $2); }
     ;
 
-/* ---------- stmt: constrói nós (NÃO interpretam nada aqui) ---------- */
 stmt:
-    expressao PONTO_VIRGULA { $$ = $1; }
-    | atribuicao PONTO_VIRGULA { $$ = $1; }
-    | declaracao { $$ = $1; }
-    | comando_if { $$ = $1; }
-    | comando_while { $$ = $1; } 
-    | comando_do_while { $$ = $1; }
-    | PRINTF LPAREN expressao RPAREN PONTO_VIRGULA {
-        $$ = create_printf_node($3);
-    }
-    | switch_statement { $$ = $1; }
-    | BREAK PONTO_VIRGULA { $$ = create_break_node(); $$->lineno = yylineno; }
-    /* --- Permite blocos { ... } como um statement --- */
+    expressao PONTO_VIRGULA     { $$ = $1; }
+    | atribuicao PONTO_VIRGULA  { $$ = $1; }
+    | declaracao                { $$ = $1; }
+    | comando_if                { $$ = $1; }
+    | comando_while             { $$ = $1; }
+    | comando_do_while          { $$ = $1; }
+    | comando_printf            { $$ = $1; }
+    | switch_statement          { $$ = $1; }
+    | BREAK PONTO_VIRGULA       { $$ = create_break_node(yylineno); }
     | LBRACE lista_comandos RBRACE { $$ = $2; }
-    | comando_while:
-    |WHILE LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
-        $$ = create_while_node($3, $6);
-        $$->lineno = yylineno;
-    }
     ;
-    | comando_do_while:
-    DO LBRACE lista_comandos RBRACE WHILE LPAREN expressao RPAREN PONTO_VIRGULA {
-        $$ = create_do_while_node($3, $7);
-        $$->lineno = yylineno;
+
+comando_printf:
+    PRINTF LPAREN expressao RPAREN PONTO_VIRGULA {
+        $$ = create_printf_node($3, yylineno);
     }
     ;
 
-/* ---------- atribuição, declaração, tipo ---------- */
+comando_while:
+    WHILE LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
+        $$ = create_while_node($3, $6, yylineno);
+    }
+    ;
+
+comando_do_while:
+    DO LBRACE lista_comandos RBRACE WHILE LPAREN expressao RPAREN PONTO_VIRGULA {
+        $$ = create_do_while_node($3, $7, yylineno);
+    }
+    ;
+
 atribuicao:
     ID IGUAL expressao {
-        AstNode* left = create_id_node($1);
-        left->lineno = yylineno;
-        $$ = create_assign_node(left, $3);
-        $$->lineno = left->lineno;
+        AstNode* left = create_id_node($1, yylineno);
+        $$ = create_assign_node(left, $3, yylineno);
     }
     ;
 
 declaracao:
     tipo ID PONTO_VIRGULA {
-        $$ = create_var_decl_node($1, $2, NULL);
+        $$ = create_var_decl_node($1, $2, NULL, yylineno);
     }
     | tipo ID IGUAL expressao PONTO_VIRGULA {
-        $$ = create_var_decl_node($1, $2, $4);
+        $$ = create_var_decl_node($1, $2, $4, yylineno);
     }
     ;
 
 tipo:
-    INT     { $$ = TIPO_INT; }
-    | FLOAT   { $$ = TIPO_FLOAT; }
-    | CHAR    { $$ = TIPO_CHAR; }
-    | STRING  { $$ = TIPO_STRING; }
+    INT      { $$ = TIPO_INT; }
+    | FLOAT    { $$ = TIPO_FLOAT; }
+    | CHAR     { $$ = TIPO_CHAR; }
+    | STRING   { $$ = TIPO_STRING; }
     ;
 
-/* ---------- expressões ---------- */
 expressao:
-    NUM { $$ = create_num_node($1); $$->lineno = yylineno; }
-    | ID  { $$ = create_id_node($1); $$->lineno = yylineno; }
-    | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3); $$->lineno = $1->lineno; }
-    | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3); $$->lineno = $1->lineno; }
-    | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3); $$->lineno = $1->lineno; }
-    | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3); $$->lineno = $1->lineno; }
-    | LPAREN expressao RPAREN    { $$ = $2; }
-    | expressao LT expressao     { $$ = create_op_node('<', $1, $3); $$->lineno = $1->lineno; }
-    | expressao GT expressao     { $$ = create_op_node('>', $1, $3); $$->lineno = $1->lineno; }
-    | expressao LE expressao     { $$ = create_op_node('L', $1, $3); $$->lineno = $1->lineno; }
-    | expressao GE expressao     { $$ = create_op_node('G', $1, $3); $$->lineno = $1->lineno; }
-    | expressao EQ expressao     { $$ = create_op_node('E', $1, $3); $$->lineno = $1->lineno; }
-    | expressao NE expressao     { $$ = create_op_node('N', $1, $3); $$->lineno = $1->lineno; }
+    NUM { $$ = create_num_node($1, yylineno); }
+    | ID  { $$ = create_id_node($1, yylineno); }
+    | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3, $1->lineno); }
+    | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3, $1->lineno); }
+    | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3, $1->lineno); }
+    | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3, $1->lineno); }
+    | LPAREN expressao RPAREN    { $$ = $2; /* Lineno vem de $2 */ }
+    | expressao LT expressao     { $$ = create_op_node('<', $1, $3, $1->lineno); }
+    | expressao GT expressao     { $$ = create_op_node('>', $1, $3, $1->lineno); }
+    | expressao LE expressao     { $$ = create_op_node('L', $1, $3, $1->lineno); } // MANTIDO 'L' (assumindo que o interpretador usa)
+    | expressao GE expressao     { $$ = create_op_node('G', $1, $3, $1->lineno); } // MANTIDO 'G'
+    | expressao EQ expressao     { $$ = create_op_node('E', $1, $3, $1->lineno); } // MANTIDO 'E'
+    | expressao NE expressao     { $$ = create_op_node('N', $1, $3, $1->lineno); } // MANTIDO 'N'
+    | MINUS expressao %prec UMINUS {
+          AstNode* zero = create_num_node(0, yylineno);
+          $$ = create_op_node('-', zero, $2, yylineno);
+      }
     ;
 
-/* ---------- if/else ---------- */
 comando_if:
-    IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE {
-        $$ = create_if_node($3, $6, NULL);
-        $$->lineno = yylineno;
+    IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE %prec IFX {
+        $$ = create_if_node($3, $6, NULL, yylineno);
     }
     | IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE ELSE LBRACE lista_comandos RBRACE {
-        $$ = create_if_node($3, $6, $10);
-        $$->lineno = yylineno;
+        $$ = create_if_node($3, $6, $10, yylineno);
     }
     ;
 
-/* ---------- Switch-Case ---------- */
 switch_statement:
     SWITCH LPAREN expressao RPAREN LBRACE case_list RBRACE {
-        $$ = create_switch_node($3, $6);
-        $$->lineno = yylineno;
+        $$ = create_switch_node($3, $6, yylineno);
     }
     ;
 
 case_list:
-    { $$ = NULL; } 
+    /* Vazio */           { $$ = NULL; }
     | case_list case_bloco { $$ = append_case_list($1, $2); }
     ;
 
 case_bloco:
     CASE NUM COLON lista_comandos {
-        $$ = create_case_node(create_num_node($2), $4);
-        $$->lineno = yylineno;
+        AstNode* num_node = create_num_node($2, yylineno);
+        $$ = create_case_node(num_node, $4, yylineno);
     }
     | DEFAULT COLON lista_comandos {
-        $$ = create_default_node($3);
-        $$->lineno = yylineno;
+        $$ = create_default_node($3, yylineno);
     }
     ;
 
 %%
 
-/* --- resto (implementações auxiliares da tabela de símbolos) --- */
-#define MAX_SIMBOLOS 1000
-
-struct simbolo {
-    char nome[64];
-    int valor;
-};
-
-struct simbolo tabelaSimbolos[MAX_SIMBOLOS];
-int proximoSimbolo = 0;
-
-int procurar_simbolo(char *nome);
-
-int inserir_simbolo(char *nome, int valor) {
-    int indice = procurar_simbolo(nome);
-    if (indice != -1) {
-        tabelaSimbolos[indice].valor = valor;
-        return indice;
-    }
-    if (proximoSimbolo >= MAX_SIMBOLOS) {
-        fprintf(stderr, "Tabela de simbolos cheia!\n");
-        exit(1);
-    }
-    strcpy(tabelaSimbolos[proximoSimbolo].nome, nome);
-    tabelaSimbolos[proximoSimbolo].valor = valor;
-    return proximoSimbolo++;
-}
-
-int procurar_simbolo(char *nome) {
-    for (int i = 0; i < proximoSimbolo; i++) {
-        if (strcmp(tabelaSimbolos[i].nome, nome) == 0) return i;
-    }
-    return -1;
-}
+/* --- Seção de Código C Final --- */
+/*
+ * As definições da tabela de símbolos (struct, array, funções)
+ * foram MOVIDAS para src/simbolo.c e src/simbolo.h
+ * para evitar erros de "definição múltipla".
+ * O parser.y agora só inclui "simbolo.h".
+ */
