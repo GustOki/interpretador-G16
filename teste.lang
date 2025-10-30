@@ -1,7 +1,180 @@
-int i;
-i = 10;
+// Arquivo: teste.lang - Teste Abrangente do Interpretador
+// ==================================================
 
-while (i > 0) {
-    printf(i);
-    i = i - 2;
+// ===========================================
+// SEÇÃO 1: DECLARAÇÕES, ATRIBUIÇÕES E PRINTF
+// ===========================================
+printf(100); // Imprime um literal. Esperado: 100
+
+int x;
+int y = 10;
+int z = 5 + 3; // Declaração com inicialização de expressão
+
+printf(y); // Esperado: 10
+printf(z); // Esperado: 8
+
+x = y + z; // x = 10 + 8 = 18
+printf(x); // Esperado: 18
+
+// ===========================================
+// SEÇÃO 2: EXPRESSÕES E PRECEDÊNCIA
+// ===========================================
+int r;
+r = 10 + 2 * 5; // Precedência: 10 + 10 = 20
+printf(r);      // Esperado: 20
+
+r = (10 + 2) * 5; // Parênteses: 12 * 5 = 60
+printf(r);        // Esperado: 60
+
+r = r - (60 / 3); // 60 - 20 = 40
+printf(r);        // Esperado: 40
+
+r = 100 / 10 / 2; // Associatividade: 10 / 2 = 5
+printf(r);        // Esperado: 5
+
+r = 5 + -3; // Menos unário (deve funcionar)
+printf(r);  // Esperado: 2
+
+// ===========================================
+// SEÇÃO 3: COMPARAÇÕES E IF / ELSE
+// ===========================================
+int res_if = 0;
+
+if (10 > 5) {
+    res_if = 1;
 }
+printf(res_if); // Esperado: 1
+
+if (10 < 5) {
+    res_if = 999; // Não deve executar
+}
+printf(res_if); // Esperado: 1 (valor antigo)
+
+if ( (10 == 10) ) {
+    res_if = 100;
+} else {
+    res_if = 200;
+}
+printf(res_if); // Esperado: 100
+
+if ( (10 != 10) ) {
+    res_if = 300;
+} else {
+    res_if = 400;
+}
+printf(res_if); // Esperado: 400
+
+// ===========================================
+// SEÇÃO 4: LOOP WHILE E BREAK
+// ===========================================
+int i = 0;
+int soma = 0;
+printf(9001); // Marcador para início do while
+
+while (i < 5) {
+    soma = soma + i;
+    i = i + 1;
+    printf(i); // Imprime 1, 2, 3, 4, 5
+}
+printf(soma); // Esperado: 10 (0+1+2+3+4)
+printf(i);    // Esperado: 5
+
+printf(9002); // Marcador para while com break
+i = 10;
+while (i > 0) {
+    if (i == 5) {
+        break; // Deve sair do loop
+    }
+    printf(i); // Imprime 10, 9, 8, 7, 6
+    i = i - 1;
+}
+printf(i); // Esperado: 5 (parou aqui)
+
+// ===========================================
+// SEÇÃO 5: LOOP DO-WHILE
+// ===========================================
+int j = 10;
+printf(9003); // Marcador para do-while
+do {
+    printf(j); // Imprime 10 (executa pelo menos uma vez)
+    j = j + 1;
+} while (j < 10); // Condição (11 < 10) é falsa
+printf(j); // Esperado: 11
+
+// ===========================================
+// SEÇÃO 6: SWITCH / CASE / DEFAULT / BREAK
+// ===========================================
+int val_switch = 2;
+int res_switch = 0;
+
+printf(9004); // Marcador para switch
+switch (val_switch) {
+    case 1: { res_switch = 10; break; }
+    case 2: { res_switch = 20; break; } // Deve entrar e parar aqui
+    case 3: { res_switch = 30; break; }
+    default: { res_switch = 99; }
+}
+printf(res_switch); // Esperado: 20
+
+// Teste de Fall-through (sem break)
+val_switch = 1;
+printf(9005);
+switch (val_switch) {
+    case 1: { res_switch = 1; } // Entra aqui
+    case 2: { res_switch = res_switch + 1; } // Cai aqui (1+1=2)
+    case 3: { res_switch = res_switch + 1; break; } // Cai aqui (2+1=3) e para
+    default: { res_switch = 99; }
+}
+printf(res_switch); // Esperado: 3
+
+// Teste de Default
+val_switch = 100;
+printf(9006);
+switch (val_switch) {
+    case 1: { res_switch = 1; break; }
+    case 2: { res_switch = 2; break; }
+    default: { res_switch = -1; } // Deve executar o default
+}
+printf(res_switch); // Esperado: -1
+
+
+// ===========================================
+// SEÇÃO 7: TESTE DE ERROS SEMÂNTICOS
+// ===========================================
+// Instrução: Descomente UM erro de cada vez para testar
+// ===========================================
+
+// --- Erro: Variável não declarada ---
+// int var_teste_decl;
+// var_teste_decl = var_nao_existe + 10;
+// Esperado: Linha X: Erro Semântico: Variável 'var_nao_existe' não foi definida...
+
+// --- Erro: Variável não inicializada ---
+ int var_nao_init;
+// var_teste_decl = var_nao_init + 5;
+// Esperado: Linha X: Erro Semântico: Variável 'var_nao_init' usada antes de ser inicializada.
+
+// --- Erro: Divisão por Zero ---
+// int zero = 0;
+// int div_erro = 100 / zero;
+// Esperado: Linha X: Erro Semântico: Tentativa de divisão por zero.
+
+// --- Erro: Variável já declarada ---
+// int x_duplicado = 1;
+// int x_duplicado = 2;
+// Esperado: Linha X: Erro Semântico: Variável 'x_duplicado' já foi declarada.
+
+
+// ===========================================
+// SEÇÃO 8: TESTE DE ERROS LÉXICOS E SINTÁTICOS
+// ===========================================
+// Instrução: Descomente UM erro de cada vez para testar
+// ===========================================
+
+// --- Erro Léxico ---
+// int erro_lex = $;
+// Esperado: Caractere inválido: $
+
+// --- Erro Sintático ---
+// int erro_sint = 10 + ;
+// Esperado: Erro: syntax error

@@ -49,12 +49,16 @@ extern int yylineno;
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
 
-[ \t\n]+                  { /* ignora espaços e tabs */ }
-[a-zA-Z][a-zA-Z0-9_]*   { yylval.str = strdup(yytext); return ID; }
+
+[ \t\r\n]+              { /* Ignora todos os espaços em branco, tabs e newlines (incluindo \r) */ }
+
+\/\/[^\r\n]* { /* Ignora comentários de linha única, parando antes de \r ou \n */ }
+
+[a-zA-Z_][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return ID; }
 
 .                       {
                             /* yytext contém o caractere inválido (terminado em '\0') */
-                            fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext);
+                            fprintf(stderr, "Linha %d: Erro Léxico: Caractere inesperado '%s'\n", yylineno, yytext);
                         }
 
 %%
