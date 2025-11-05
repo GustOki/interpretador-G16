@@ -331,6 +331,53 @@ ValorSimbolo interpretar(AstNode* no) {
             break;
         }
 
+        case NODE_TYPE_FOR: {
+    int old_break_flag = g_break_flag;
+    g_break_flag = 0;
+    
+    // Executa a inicialização (pode ser atribuição ou declaração)
+    if (no->data.for_details.inicializacao) {
+        ValorSimbolo init_result = interpretar(no->data.for_details.inicializacao);
+        if (interpret_error || !init_result.inicializado) break;
+    }
+    
+    // Loop principal
+    while (!interpret_error && !g_break_flag) {
+        // Verifica a condição
+        if (no->data.for_details.condicao) {
+            ValorSimbolo cond_result = interpretar(no->data.for_details.condicao);
+            if (interpret_error || !cond_result.inicializado) break;
+            
+            // Converte para booleano
+            int cond_valor;
+            if (cond_result.tipo == TIPO_FLOAT) {
+                cond_valor = (cond_result.valor.f != 0.0f);
+            } else {
+                cond_valor = (cond_result.valor.i != 0);
+            }
+            
+            if (!cond_valor) break;
+        }
+        
+        // Executa o corpo
+        interpretar(no->data.for_details.corpo);
+        if (interpret_error || g_break_flag) break;
+        
+        // Executa o incremento
+        if (no->data.for_details.incremento) {
+            ValorSimbolo inc_result = interpretar(no->data.for_details.incremento);
+            if (interpret_error || !inc_result.inicializado) break;
+        }
+    }
+    
+    g_break_flag = old_break_flag;
+    resultado.inicializado = 1;
+    resultado.tipo = TIPO_INT;
+    resultado.valor.i = 0;
+    break;
+}
+
+
         // Casos simples que retornam 0
         case NODE_TYPE_BREAK:
             g_break_flag = 1;

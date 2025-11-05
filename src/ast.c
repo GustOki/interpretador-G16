@@ -119,6 +119,19 @@ AstNode* create_do_while_node(AstNode* corpo, AstNode* condicao, int lineno) {
     return no;
 }
 
+AstNode* create_for_node(AstNode* inicializacao, AstNode* condicao, AstNode* incremento, AstNode* corpo, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    no->type = NODE_TYPE_FOR;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.for_details.inicializacao = inicializacao;
+    no->data.for_details.condicao = condicao;
+    no->data.for_details.incremento = incremento;
+    no->data.for_details.corpo = corpo;
+    return no;
+}
+
 AstNode* create_var_decl_node(int tipo, char* nome, AstNode* valor, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
     if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
@@ -245,6 +258,12 @@ void liberar_ast(AstNode* no) {
             liberar_ast(no->data.do_while_details.corpo);
             liberar_ast(no->data.do_while_details.condicao);
             break;
+        case NODE_TYPE_FOR:
+            liberar_ast(no->data.for_details.inicializacao);
+            liberar_ast(no->data.for_details.condicao);
+            liberar_ast(no->data.for_details.incremento);
+            liberar_ast(no->data.for_details.corpo);
+            break;    
         case NODE_TYPE_SWITCH:
             liberar_ast(no->data.switch_details.condicao);
             liberar_ast(no->data.switch_details.casos);
