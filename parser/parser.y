@@ -66,7 +66,8 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %token SWITCH CASE BREAK DEFAULT COLON
 %token DO WHILE
 %token FOR
-
+%token LBRACKET RBRACKET  // <<< ADICIONE ESTA LINHA
+%token VIRGULA            // <<< ADICIONE ESTA LINHA (para listas de valores)
 
 %type <no> programa stmt expressao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
@@ -74,7 +75,8 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %type <no> comando_do_while
 %type <no> comando_while
 %type <no> comando_for
-%type <no> comando_printf // Adicionado tipo para comando_printf
+%type <no> comando_printf
+%type <no> lista_valores  // <<< ADICIONE ESTA LINHA
 
 %nonassoc IFX
 %nonassoc ELSE
@@ -145,6 +147,21 @@ declaracao:
     | tipo ID IGUAL expressao PONTO_VIRGULA {
         $$ = create_var_decl_node($1, $2, $4, yylineno);
     }
+    | tipo ID LBRACKET NUM RBRACKET PONTO_VIRGULA {
+        $$ = create_array_decl_node($1, $2, $4, NULL, yylineno);
+    }
+    | tipo ID LBRACKET NUM RBRACKET IGUAL LBRACE lista_valores RBRACE PONTO_VIRGULA {
+        $$ = create_array_decl_node($1, $2, $4, $8, yylineno);
+    }
+    ;
+
+lista_valores:
+    expressao {
+        $$ = $1;
+    }
+    | lista_valores VIRGULA expressao {
+        $$ = create_op_node(',', $1, $3, $1->lineno);
+    }
     ;
 
 tipo:
@@ -160,26 +177,34 @@ expressao:
     | CHAR_LIT { $$ = create_char_node($1, yylineno); }
     | STRING_LIT { $$ = create_string_node($1, yylineno); } 
     | ID  { $$ = create_id_node($1, yylineno); }
+    | ID LBRACKET expressao RBRACKET {  // <<< ADICIONE ESTA LINHA
+        $$ = create_array_access_node($1, $3, yylineno);
+    }
+    | ID LBRACKET expressao RBRACKET IGUAL expressao {  // <<< ADICIONE ESTA LINHA
+        AstNode* access = create_array_access_node($1, $3, yylineno);
+        $$ = create_assign_node(access, $6, yylineno);
+    }
     | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3, $1->lineno); }
     | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3, $1->lineno); }
     | expressao TIMES expressao  { $$ = create_op_node('*', $1, $3, $1->lineno); }
     | expressao DIVIDE expressao { $$ = create_op_node('/', $1, $3, $1->lineno); }
-    | LPAREN expressao RPAREN    { $$ = $2; /* Lineno vem de $2 */ }
+    | LPAREN expressao RPAREN    { $$ = $2; }
     | expressao LT expressao     { $$ = create_op_node('<', $1, $3, $1->lineno); }
     | expressao GT expressao     { $$ = create_op_node('>', $1, $3, $1->lineno); }
-    | expressao LE expressao     { $$ = create_op_node('L', $1, $3, $1->lineno); } // MANTIDO 'L' (assumindo que o interpretador usa)
-    | expressao GE expressao     { $$ = create_op_node('G', $1, $3, $1->lineno); } // MANTIDO 'G'
-    | expressao EQ expressao     { $$ = create_op_node('E', $1, $3, $1->lineno); } // MANTIDO 'E'
-    | expressao NE expressao     { $$ = create_op_node('N', $1, $3, $1->lineno); } // MANTIDO 'N'
+    | expressao LE expressao     { $$ = create_op_node('L', $1, $3, $1->lineno); }
+    | expressao GE expressao     { $$ = create_op_node('G', $1, $3, $1->lineno); }
+    | expressao EQ expressao     { $$ = create_op_node('E', $1, $3, $1->lineno); }
+    | expressao NE expressao     { $$ = create_op_node('N', $1, $3, $1->lineno); }
     | MINUS expressao %prec UMINUS {
           AstNode* zero = create_num_node(0, yylineno);
           $$ = create_op_node('-', zero, $2, yylineno);
       }
-    | ID IGUAL expressao {  // ← ADICIONE ESTA LINHA PARA PERMITIR ATRIBUIÇÃO COMO EXPRESSÃO
+    | ID IGUAL expressao {
         AstNode* left = create_id_node($1, yylineno);
         $$ = create_assign_node(left, $3, yylineno);
     }
     ;
+
 comando_if:
     IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE %prec IFX {
         $$ = create_if_node($3, $6, NULL, yylineno);

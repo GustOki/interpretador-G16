@@ -1,0 +1,9 @@
+// TESTE RAPIDO VETORES
+
+int nums[5];
+nums[0] = 10;
+nums[1] = 20;
+printf(nums[0]);
+
+int valores[3] = {100, 200, 300};
+printf(valores[1]);

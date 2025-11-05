@@ -68,6 +68,17 @@ void tabela_liberar() {
             NoSimbolo* temp = atual;
             if (temp->valor.tipo == TIPO_STRING && temp->valor.valor.s)
                 free(temp->valor.valor.s);
+            // Libera array se existir
+            if (temp->valor.is_array && temp->valor.array_data) {
+                // Se array de strings, libera cada string
+                if (temp->valor.tipo == TIPO_STRING) {
+                    for (int j = 0; j < temp->valor.array_size; j++) {
+                        if (temp->valor.array_data[j].s)
+                            free(temp->valor.array_data[j].s);
+                    }
+                }
+                free(temp->valor.array_data);
+            }
             free(temp->nome);
             atual = atual->proximo;
             free(temp);

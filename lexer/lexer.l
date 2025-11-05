@@ -29,6 +29,9 @@ extern int yylineno;
 
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
+","         { return VIRGULA; }
+"["         { return LBRACKET; }
+"]"         { return RBRACKET; }
 ":"         { return COLON; }
 ";"         { return PONTO_VIRGULA; }
 

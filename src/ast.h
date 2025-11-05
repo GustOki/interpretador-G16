@@ -25,7 +25,10 @@ typedef enum {
     NODE_TYPE_BREAK,
     NODE_TYPE_CMD_LIST, // (Ainda aqui, mas talvez não usado)
     NODE_TYPE_VAR_DECL,
-    NODE_TYPE_PRINTF
+    NODE_TYPE_PRINTF,
+    NODE_TYPE_ARRAY_DECL,
+    NODE_TYPE_ARRAY_ACCESS,
+    NODE_TYPE_ARRAY_INIT_LIST
 } NodeType;
 
 // --- Estrutura principal de um nó da AST ---
@@ -49,6 +52,8 @@ typedef struct AstNode {
         struct { struct AstNode *condicao, *corpo; } while_details;
         struct { struct AstNode *corpo, *condicao; } do_while_details;
         struct { struct AstNode *inicializacao, *condicao, *incremento, *corpo; } for_details;
+        struct { int tipo; char* nome; int tamanho; struct AstNode* valores_iniciais; } array_decl;
+        struct { char* nome; struct AstNode* indice; } array_access;
     } data;
 } AstNode;
 
@@ -74,6 +79,8 @@ AstNode* create_case_node(AstNode* valor, AstNode* corpo, int lineno);
 AstNode* create_default_node(AstNode* corpo, int lineno);
 AstNode* create_break_node(int lineno);
 AstNode* append_case_list(AstNode* head, AstNode* new_case);
+AstNode* create_array_decl_node(int tipo, char* nome, int tamanho, AstNode* valores, int lineno);
+AstNode* create_array_access_node(char* nome, AstNode* indice, int lineno);
 
 void liberar_ast(AstNode* no);
 ValorSimbolo interpretar(AstNode* no);

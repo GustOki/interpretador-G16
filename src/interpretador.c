@@ -399,6 +399,109 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
             break;
+        
+        case NODE_TYPE_ARRAY_DECL: {
+            ValorSimbolo v_existente;
+            if (tabela_procurar(no->data.array_decl.nome, &v_existente)) {
+                fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' já foi declarada.\n", 
+                        lineno, no->data.array_decl.nome);
+                interpret_error = 1;
+                break;
+            }
+            
+            ValorSimbolo v_array;
+            v_array.tipo = no->data.array_decl.tipo;
+            v_array.is_array = 1;
+            v_array.array_size = no->data.array_decl.tamanho;
+            v_array.array_data = calloc(v_array.array_size, sizeof(ValorUnion));
+            v_array.inicializado = 1;
+            
+            // Inicializa com valores padrão
+            for (int i = 0; i < v_array.array_size; i++) {
+                switch (v_array.tipo) {
+                    case TIPO_INT: v_array.array_data[i].i = 0; break;
+                    case TIPO_FLOAT: v_array.array_data[i].f = 0.0f; break;
+                    case TIPO_CHAR: v_array.array_data[i].c = '\0'; break;
+                    case TIPO_STRING: v_array.array_data[i].s = NULL; break;
+                }
+            }
+            
+            // Se houver valores iniciais, processa a lista
+            if (no->data.array_decl.valores_iniciais) {
+                AstNode* atual = no->data.array_decl.valores_iniciais;
+                int idx = 0;
+                
+                while (atual && idx < v_array.array_size) {
+                    ValorSimbolo val;
+                    if (atual->type == NODE_TYPE_OP && atual->op == ',') {
+                        val = interpretar(atual->data.children.left);
+                        if (!interpret_error && val.inicializado) {
+                            // Atribui valor ao índice
+                            if (v_array.tipo == TIPO_INT) {
+                                v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
+                                    val.valor.i : (int)val.valor.f;
+                            } else if (v_array.tipo == TIPO_FLOAT) {
+                                v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
+                                    val.valor.f : (float)val.valor.i;
+                            }
+                            // Adicione char e string similarmente
+                        }
+                        idx++;
+                        atual = atual->data.children.right;
+                    } else {
+                        val = interpretar(atual);
+                        if (!interpret_error && val.inicializado) {
+                            if (v_array.tipo == TIPO_INT) {
+                                v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
+                                    val.valor.i : (int)val.valor.f;
+                            }
+                            // Adicione outros tipos
+                        }
+                        break;
+                    }
+                }
+            }
+        
+            tabela_inserir(no->data.array_decl.nome, v_array);
+            resultado.inicializado = 1;
+            resultado.tipo = TIPO_INT;
+            resultado.valor.i = 0;
+            break;
+        }
+
+        case NODE_TYPE_ARRAY_ACCESS: {
+            ValorSimbolo array;
+            if (!tabela_procurar(no->data.array_access.nome, &array)) {
+                fprintf(stderr, "Linha %d: Erro Semântico: Array '%s' não declarado.\n", 
+                        lineno, no->data.array_access.nome);
+                interpret_error = 1;
+                break;
+            }
+            
+            if (!array.is_array) {
+                fprintf(stderr, "Linha %d: Erro Semântico: '%s' não é um array.\n", 
+                        lineno, no->data.array_access.nome);
+                interpret_error = 1;
+                break;
+            }
+            
+            ValorSimbolo indice_val = interpretar(no->data.array_access.indice);
+            if (!indice_val.inicializado || interpret_error) break;
+            
+            int indice = (indice_val.tipo == TIPO_INT) ? indice_val.valor.i : (int)indice_val.valor.f;
+            
+            if (indice < 0 || indice >= array.array_size) {
+                fprintf(stderr, "Linha %d: Erro Semântico: Índice %d fora dos limites do array (0-%d).\n", 
+                        lineno, indice, array.array_size - 1);
+                interpret_error = 1;
+                break;
+            }
+            
+            resultado.tipo = array.tipo;
+            resultado.inicializado = 1;
+            resultado.valor = array.array_data[indice];
+            break;
+        }
 
         default:
             fprintf(stderr, "Linha %d: Erro Semântico: tipo de nó desconhecido: %d\n", lineno, no->type);

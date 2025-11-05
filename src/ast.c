@@ -225,6 +225,31 @@ AstNode* append_case_list(AstNode* head, AstNode* new_case) {
     temp->data.case_details.proximo = new_case;
     return head; // Retorna a CABEÇA original da lista
 }
+
+AstNode* create_array_decl_node(int tipo, char* nome, int tamanho, AstNode* valores, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    no->type = NODE_TYPE_ARRAY_DECL;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.array_decl.tipo = tipo;
+    no->data.array_decl.nome = nome;
+    no->data.array_decl.tamanho = tamanho;
+    no->data.array_decl.valores_iniciais = valores;
+    return no;
+}
+
+AstNode* create_array_access_node(char* nome, AstNode* indice, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    no->type = NODE_TYPE_ARRAY_ACCESS;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.array_access.nome = nome;
+    no->data.array_access.indice = indice;
+    return no;
+}
+
 /* --- Função para Liberar a AST --- */
 // (Esta função precisa ser completa para evitar leaks)
 void liberar_ast(AstNode* no) {
@@ -241,14 +266,22 @@ void liberar_ast(AstNode* no) {
             liberar_ast(no->data.if_details.bloco_else);
             break;
         case NODE_TYPE_ID:
-            free(no->data.nome); // Só libera se o lexer usou strdup
+            free(no->data.nome);
             break;
         case NODE_TYPE_VAR_DECL:
-            free(no->data.var_decl.nome); // strdup do ID
-            liberar_ast(no->data.var_decl.valor); // Libera valor inicial, se houver
+            free(no->data.var_decl.nome);
+            liberar_ast(no->data.var_decl.valor);
+            break;
+        case NODE_TYPE_ARRAY_DECL:  // <<< ADICIONE ESTE CASO
+            free(no->data.array_decl.nome);
+            liberar_ast(no->data.array_decl.valores_iniciais);
+            break;
+        case NODE_TYPE_ARRAY_ACCESS:  // <<< ADICIONE ESTE CASO
+            free(no->data.array_access.nome);
+            liberar_ast(no->data.array_access.indice);
             break;
         case NODE_TYPE_PRINTF:
-            liberar_ast(no->data.children.left); // Ou print_details.expressao
+            liberar_ast(no->data.children.left);
             break;
         case NODE_TYPE_WHILE:
             liberar_ast(no->data.while_details.condicao);
@@ -278,22 +311,20 @@ void liberar_ast(AstNode* no) {
             liberar_ast(no->data.case_details.proximo);
             break;
         case NODE_TYPE_STRING:
-            free(no->data.svalor); // Libera a string
+            free(no->data.svalor);
             break;
         case NODE_TYPE_NUM:
         case NODE_TYPE_FLOAT:
         case NODE_TYPE_CHAR:
         case NODE_TYPE_BREAK:
+        case NODE_TYPE_ARRAY_INIT_LIST:  // <<< ADICIONE ESTE CASO
             // Não têm filhos para liberar
             break;
-        
-        // Cuidado com tipos não tratados (CMD_LIST, BLOCK)
-        case NODE_TYPE_CMD_LIST: // Se você usa ';' como OP, isso pode não ser necessário
+        case NODE_TYPE_CMD_LIST:
              liberar_ast(no->data.cmd_list.first);
              liberar_ast(no->data.cmd_list.next);
              break;
         case NODE_TYPE_BLOCK:
-             // Depende de como NODE_TYPE_BLOCK é usado
              break;
     }
     free(no);
@@ -479,7 +510,28 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
         case NODE_TYPE_BREAK:
             printf("break");
             break;
-
+        case NODE_TYPE_ARRAY_DECL:
+            printf("%s %s[%d]", 
+                   get_tipo_str(no->data.array_decl.tipo), 
+                   no->data.array_decl.nome,
+                   no->data.array_decl.tamanho);
+            if (no->data.array_decl.valores_iniciais) {
+                printf(" = {");
+                imprimir_ast_recursivo(no->data.array_decl.valores_iniciais, 0);
+                printf("}");
+            }
+            break;
+            
+        case NODE_TYPE_ARRAY_ACCESS:
+            printf("%s[", no->data.array_access.nome);
+            imprimir_ast_recursivo(no->data.array_access.indice, 0);
+            printf("]");
+            break;
+            
+        case NODE_TYPE_ARRAY_INIT_LIST:
+            // Tratado como parte de array_decl
+            break;
+            
         default:
             // Ignora tipos desconhecidos ou não imprimíveis (como CMD_LIST ou BLOCK)
             break; 

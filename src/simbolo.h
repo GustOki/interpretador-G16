@@ -1,5 +1,4 @@
-/* Arquivo: src/simbolo.h (Versão Corrigida) */
-
+/* Arquivo: src/simbolo.h (Versão Corrigida com Arrays) */
 #ifndef SIMBOLO_H
 #define SIMBOLO_H
 
@@ -21,15 +20,17 @@ typedef struct {
     int tipo;
     ValorUnion valor;
     int inicializado;
+    int is_array;           // Flag para identificar array
+    int array_size;         // Tamanho do array
+    ValorUnion* array_data; // Dados do array
 } ValorSimbolo;
 
 // --- Protótipos das Funções da Tabela ---
-// (Estas são as funções que o seu interpretador.c espera)
 void tabela_iniciar();
 void tabela_liberar();
 int tabela_procurar(char* nome, ValorSimbolo* v);
 void tabela_inserir(char* nome, ValorSimbolo v);
-const char* get_tipo_str(int tipo); // Protótipo para a função auxiliar de tipo
+const char* get_tipo_str(int tipo);
 void imprimir_tabela_simbolos();
 
 #endif // SIMBOLO_H
