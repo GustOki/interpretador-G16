@@ -8,6 +8,9 @@
 // --- Enum para identificar o tipo de cada nó na árvore ---
 typedef enum {
     NODE_TYPE_NUM,
+    NODE_TYPE_FLOAT,
+    NODE_TYPE_CHAR,
+    NODE_TYPE_STRING,
     NODE_TYPE_ID,
     NODE_TYPE_OP,
     NODE_TYPE_ASSIGN,
@@ -31,6 +34,9 @@ typedef struct AstNode {
     int lineno;
     union {
         int valor;
+        float fvalor;
+        char cvalor;
+        char* svalor;
         char* nome;
         struct { struct AstNode *left, *right; } children;
         struct { struct AstNode *left, *right; } assign;
@@ -47,6 +53,9 @@ typedef struct AstNode {
 
 /* --- PROTÓTIPOS DAS FUNÇÕES (Atualizados com lineno) --- */
 AstNode* create_num_node(int valor, int lineno);
+AstNode* create_float_node(float valor, int lineno);
+AstNode* create_char_node(char valor, int lineno);
+AstNode* create_string_node(char* valor, int lineno);
 AstNode* create_id_node(char* nome, int lineno);
 AstNode* create_op_node(char op, AstNode* left, AstNode* right, int lineno);
 AstNode* create_assign_node(AstNode* left, AstNode* right, int lineno);
@@ -64,7 +73,8 @@ AstNode* create_break_node(int lineno);
 AstNode* append_case_list(AstNode* head, AstNode* new_case);
 
 void liberar_ast(AstNode* no);
-int interpretar(AstNode* no);
+ValorSimbolo interpretar(AstNode* no);
+void imprimir_ast_principal(AstNode* no);
 
 // <<< REMOVA A DEFINIÇÃO DUPLICADA DE ValorSimbolo DAQUI >>>
 /* #ifndef SIMBOLO_H
