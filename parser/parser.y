@@ -79,6 +79,7 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %nonassoc IFX
 %nonassoc ELSE
 %right UMINUS
+%right IGUAL  
 %left GT LT GE LE EQ NE // <<< PRECEDÊNCIA MAIS BAIXA (agora está correto)
 %left PLUS MINUS
 %left TIMES DIVIDE // <<< PRECEDÊNCIA MAIS ALTA (agora está correto)
