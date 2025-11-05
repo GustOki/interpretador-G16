@@ -1,6 +1,7 @@
 // TESTE RÁPIDO - TODOS OS TIPOS BÁSICOS
 
 // INT
+
 int idade = 25;
 printf(idade);
 
