@@ -39,8 +39,10 @@ extern int yylineno;
 "="         { return IGUAL; }
 "=="        { return EQ; }
 
-
 [0-9]+                  { yylval.valor = atoi(yytext); return NUM; }
+[0-9]+\.[0-9]*          { yylval.fval = atof(yytext); return FLOAT_NUM; }
+'[^']'                  { yylval.cval = yytext[1]; return CHAR_LIT; }
+\"[^\"]*\"              { yylval.str = strdup(yytext+1); yylval.str[strlen(yylval.str)-1] = '\0'; return STRING_LIT; } 
 
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }

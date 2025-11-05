@@ -29,5 +29,7 @@ void tabela_iniciar();
 void tabela_liberar();
 int tabela_procurar(char* nome, ValorSimbolo* v);
 void tabela_inserir(char* nome, ValorSimbolo v);
+const char* get_tipo_str(int tipo); // Protótipo para a função auxiliar de tipo
+void imprimir_tabela_simbolos();
 
 #endif // SIMBOLO_H

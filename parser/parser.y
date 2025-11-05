@@ -46,12 +46,17 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 
 %union {
     int valor;
+    float fval;        
+    char cval;
     char *str;
     struct AstNode* no;
     int tipo;
 }
 
 %token <valor> NUM
+%token <fval> FLOAT_NUM
+%token <cval> CHAR_LIT
+%token <str> STRING_LIT
 %token <str> ID
 %token IF ELSE LBRACE RBRACE LPAREN RPAREN
 %token EQ NE LT GT LE GE
@@ -144,6 +149,9 @@ tipo:
 
 expressao:
     NUM { $$ = create_num_node($1, yylineno); }
+    | FLOAT_NUM { $$ = create_float_node($1, yylineno); }
+    | CHAR_LIT { $$ = create_char_node($1, yylineno); }
+    | STRING_LIT { $$ = create_string_node($1, yylineno); } 
     | ID  { $$ = create_id_node($1, yylineno); }
     | expressao PLUS expressao   { $$ = create_op_node('+', $1, $3, $1->lineno); }
     | expressao MINUS expressao  { $$ = create_op_node('-', $1, $3, $1->lineno); }

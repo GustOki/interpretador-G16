@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "simbolo.h"
 #include "ast.h" 
 
@@ -9,6 +10,19 @@ extern FILE *yyin;
 extern AstNode* g_ast_root;
 extern int interpret_error;
 
+// Protótipos
+extern void imprimir_tabela_simbolos();
+extern void imprimir_ast_principal(AstNode* no);
+extern void tabela_iniciar();
+extern void tabela_liberar();
+extern ValorSimbolo interpretar(AstNode* no);
+
+// Função para capturar saída da interpretação
+void executar_e_capturar_saida(AstNode* no) {
+    printf("--------------------------------------------\n");
+    interpretar(no);
+    printf("--------------------------------------------\n");
+}
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -27,21 +41,35 @@ int main(int argc, char **argv) {
 
     printf("--- Executando script: %s ---\n\n", argv[1]);
 
-    yyparse(); 
+    int parse_result = yyparse(); 
 
-    if (g_ast_root) {
-        interpretar(g_ast_root); // ...interpreta a árvore inteira
-        liberar_ast(g_ast_root); // ...e libera a memória
+    if (parse_result == 0 && g_ast_root) {
+        // 1. Imprime a AST (as funções já imprimem seus próprios cabeçalhos)
+        imprimir_ast_principal(g_ast_root); // Já tem "Árvore Sintática Abstrata (AST):"
+
+        // 2. Executa o código (preenche a tabela)
+        printf("Execução:\n");
+        interpretar(g_ast_root);
+        printf("--------------------------------------------\n");
+    
+        // 3. Imprime a Tabela de Símbolos (as funções já imprimem seus próprios cabeçalhos)
+        imprimir_tabela_simbolos(); // Já tem "Tabela de Símbolos:"
+
+        // 4. Libera a memória
+        liberar_ast(g_ast_root);
+    
+    } else if (parse_result != 0) {
+        printf("\n--- Script interrompido por erro de sintaxe ---\n");
     }
     
     if (interpret_error) {
-         printf("\n--- Script interrompido por erro semântico ---\n");
-    } else {
-         printf("\n--- Fim do script ---\n");
+        printf("\n--- Script concluído com erros semânticos ---\n");
+    } else if (parse_result == 0) {
+        printf("\n--- Script concluído com sucesso ---\n");
     }
 
     tabela_liberar();
     fclose(arquivo);
     
-    return 0;
+    return (parse_result != 0 || interpret_error);
 }
