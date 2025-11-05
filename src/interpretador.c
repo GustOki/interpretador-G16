@@ -335,38 +335,38 @@ ValorSimbolo interpretar(AstNode* no) {
     int old_break_flag = g_break_flag;
     g_break_flag = 0;
     
-    // Executa a inicialização (pode ser atribuição ou declaração)
+    // Executa a inicialização
     if (no->data.for_details.inicializacao) {
-        ValorSimbolo init_result = interpretar(no->data.for_details.inicializacao);
-        if (interpret_error || !init_result.inicializado) break;
+        interpretar(no->data.for_details.inicializacao);
+        if (interpret_error) break;
     }
     
     // Loop principal
     while (!interpret_error && !g_break_flag) {
-        // Verifica a condição
+        // Verifica a condição (se existir)
         if (no->data.for_details.condicao) {
-            ValorSimbolo cond_result = interpretar(no->data.for_details.condicao);
-            if (interpret_error || !cond_result.inicializado) break;
+            ValorSimbolo cond = interpretar(no->data.for_details.condicao);
+            if (interpret_error || !cond.inicializado) break;
             
-            // Converte para booleano
+            // Converte condição para booleano
             int cond_valor;
-            if (cond_result.tipo == TIPO_FLOAT) {
-                cond_valor = (cond_result.valor.f != 0.0f);
+            if (cond.tipo == TIPO_FLOAT) {
+                cond_valor = (cond.valor.f != 0.0f);
             } else {
-                cond_valor = (cond_result.valor.i != 0);
+                cond_valor = (cond.valor.i != 0);
             }
             
-            if (!cond_valor) break;
+            if (!cond_valor) break; // Sai do loop se condição falsa
         }
         
-        // Executa o corpo
+        // Executa o corpo do loop
         interpretar(no->data.for_details.corpo);
         if (interpret_error || g_break_flag) break;
         
         // Executa o incremento
         if (no->data.for_details.incremento) {
-            ValorSimbolo inc_result = interpretar(no->data.for_details.incremento);
-            if (interpret_error || !inc_result.inicializado) break;
+            interpretar(no->data.for_details.incremento);
+            if (interpret_error) break;
         }
     }
     

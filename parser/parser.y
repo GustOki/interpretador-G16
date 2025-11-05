@@ -66,9 +66,9 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %token SWITCH CASE BREAK DEFAULT COLON
 %token DO WHILE
 %token FOR
-%token IGUAL
 
-%type <no> programa stmt expressao atribuicao comando_if lista_comandos declaracao
+
+%type <no> programa stmt expressao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
 %type <tipo> tipo
 %type <no> comando_do_while
@@ -79,6 +79,7 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %nonassoc IFX
 %nonassoc ELSE
 %right UMINUS
+%right IGUAL  
 %left GT LT GE LE EQ NE // <<< PRECEDÊNCIA MAIS BAIXA (agora está correto)
 %left PLUS MINUS
 %left TIMES DIVIDE // <<< PRECEDÊNCIA MAIS ALTA (agora está correto)
@@ -137,14 +138,6 @@ comando_for:
     }
     ; 
 
-
-//atribuicao:
-  //  ID IGUAL expressao {
-       // AstNode* left = create_id_node($1, yylineno);
-        //$$ = create_assign_node(left, $3, yylineno);
- //   }
- //   ;
-
 declaracao:
     tipo ID PONTO_VIRGULA {
         $$ = create_var_decl_node($1, $2, NULL, yylineno);
@@ -155,7 +148,7 @@ declaracao:
     ;
 
 tipo:
-    | INT      { $$ = TIPO_INT; }
+     INT      { $$ = TIPO_INT; }
     | FLOAT    { $$ = TIPO_FLOAT; }
     | CHAR     { $$ = TIPO_CHAR; }
     | STRING   { $$ = TIPO_STRING; }
