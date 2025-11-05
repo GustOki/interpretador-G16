@@ -65,12 +65,15 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %token INT FLOAT CHAR STRING PRINTF
 %token SWITCH CASE BREAK DEFAULT COLON
 %token DO WHILE
+%token FOR
+%token IGUAL
 
 %type <no> programa stmt expressao atribuicao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
 %type <tipo> tipo
 %type <no> comando_do_while
 %type <no> comando_while
+%type <no> comando_for
 %type <no> comando_printf // Adicionado tipo para comando_printf
 
 %nonassoc IFX
@@ -95,12 +98,12 @@ lista_comandos:
 
 stmt:
     expressao PONTO_VIRGULA     { $$ = $1; }
-    | atribuicao PONTO_VIRGULA  { $$ = $1; }
     | declaracao                { $$ = $1; }
     | comando_if                { $$ = $1; }
     | comando_while             { $$ = $1; }
     | comando_do_while          { $$ = $1; }
     | comando_printf            { $$ = $1; }
+    | comando_for               { $$ = $1; } 
     | switch_statement          { $$ = $1; }
     | BREAK PONTO_VIRGULA       { $$ = create_break_node(yylineno); }
     | LBRACE lista_comandos RBRACE { $$ = $2; }
@@ -123,13 +126,24 @@ comando_do_while:
         $$ = create_do_while_node($3, $7, yylineno);
     }
     ;
-
-atribuicao:
-    ID IGUAL expressao {
-        AstNode* left = create_id_node($1, yylineno);
-        $$ = create_assign_node(left, $3, yylineno);
+comando_for:
+    FOR LPAREN 
+        expressao PONTO_VIRGULA     // $3 - inicialização
+        expressao PONTO_VIRGULA     // $5 - condição  
+        expressao                   // $7 - incremento
+    RPAREN 
+    LBRACE lista_comandos RBRACE {  // $10 - corpo
+        $$ = create_for_node($3, $5, $7, $10, yylineno);
     }
-    ;
+    ; 
+
+
+//atribuicao:
+  //  ID IGUAL expressao {
+       // AstNode* left = create_id_node($1, yylineno);
+        //$$ = create_assign_node(left, $3, yylineno);
+ //   }
+ //   ;
 
 declaracao:
     tipo ID PONTO_VIRGULA {
@@ -141,7 +155,7 @@ declaracao:
     ;
 
 tipo:
-    INT      { $$ = TIPO_INT; }
+    | INT      { $$ = TIPO_INT; }
     | FLOAT    { $$ = TIPO_FLOAT; }
     | CHAR     { $$ = TIPO_CHAR; }
     | STRING   { $$ = TIPO_STRING; }
@@ -168,8 +182,11 @@ expressao:
           AstNode* zero = create_num_node(0, yylineno);
           $$ = create_op_node('-', zero, $2, yylineno);
       }
+    | ID IGUAL expressao {  // ← ADICIONE ESTA LINHA PARA PERMITIR ATRIBUIÇÃO COMO EXPRESSÃO
+        AstNode* left = create_id_node($1, yylineno);
+        $$ = create_assign_node(left, $3, yylineno);
+    }
     ;
-
 comando_if:
     IF LPAREN expressao RPAREN LBRACE lista_comandos RBRACE %prec IFX {
         $$ = create_if_node($3, $6, NULL, yylineno);

@@ -20,6 +20,7 @@ typedef enum {
     NODE_TYPE_DEFAULT,
     NODE_TYPE_DO_WHILE,
     NODE_TYPE_WHILE,
+    NODE_TYPE_FOR,     
     NODE_TYPE_BLOCK,    // (Ainda aqui, mas talvez não usado)
     NODE_TYPE_BREAK,
     NODE_TYPE_CMD_LIST, // (Ainda aqui, mas talvez não usado)
@@ -47,6 +48,7 @@ typedef struct AstNode {
         struct { struct AstNode *valor, *corpo, *proximo; } case_details;
         struct { struct AstNode *condicao, *corpo; } while_details;
         struct { struct AstNode *corpo, *condicao; } do_while_details;
+        struct { struct AstNode *inicializacao, *condicao, *incremento, *corpo; } for_details;
     } data;
 } AstNode;
 
@@ -62,6 +64,7 @@ AstNode* create_assign_node(AstNode* left, AstNode* right, int lineno);
 AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_else, int lineno);
 AstNode* create_while_node(AstNode* condicao, AstNode* corpo, int lineno);
 AstNode* create_do_while_node(AstNode* corpo, AstNode* condicao, int lineno);
+AstNode* create_for_node(AstNode* inicializacao, AstNode* condicao, AstNode* incremento, AstNode* corpo, int lineno);
 AstNode* create_command_list(AstNode* first, AstNode* next);
 AstNode* append_command_list(AstNode* list, AstNode* cmd);
 AstNode* create_var_decl_node(int tipo, char* nome, AstNode* valor, int lineno);
