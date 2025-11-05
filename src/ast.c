@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include "ast.h"
 #include "simbolo.h" // Inclui para TIPO_INT, etc.
+#include <string.h> 
+
+// Se strdup não estiver disponível, defina uma versão própria
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
 
 /* --- Funções de Criação de Nó --- */
 
@@ -14,6 +20,36 @@ AstNode* create_num_node(int valor, int lineno) {
     no->op = 0;
     no->lineno = lineno;
     no->data.valor = valor;
+    return no;
+}
+
+AstNode* create_float_node(float valor, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    no->type = NODE_TYPE_FLOAT;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.fvalor = valor;
+    return no;
+}
+
+AstNode* create_char_node(char valor, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    no->type = NODE_TYPE_CHAR;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.cvalor = valor;
+    return no;
+}
+
+AstNode* create_string_node(char* valor, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    no->type = NODE_TYPE_STRING;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.svalor = strdup(valor); // Faz cópia da string
     return no;
 }
 
@@ -222,7 +258,12 @@ void liberar_ast(AstNode* no) {
             liberar_ast(no->data.case_details.corpo);
             liberar_ast(no->data.case_details.proximo);
             break;
+        case NODE_TYPE_STRING:
+            free(no->data.svalor); // Libera a string
+            break;
         case NODE_TYPE_NUM:
+        case NODE_TYPE_FLOAT:
+        case NODE_TYPE_CHAR:
         case NODE_TYPE_BREAK:
             // Não têm filhos para liberar
             break;
@@ -237,4 +278,167 @@ void liberar_ast(AstNode* no) {
              break;
     }
     free(no);
+}
+
+// Declaração antecipada da função recursiva
+static void imprimir_ast_recursivo(AstNode* no, int indent);
+
+// Função auxiliar para imprimir a indentação
+static void print_indent(int indent) {
+    for (int i = 0; i < indent; i++) {
+        printf("    "); // 4 espaços por nível
+    }
+}
+
+// Função auxiliar para imprimir o operador
+static void print_op(char op) {
+    switch(op) {
+        case 'L': printf(" <= "); break; // Assumindo 'L'
+        case 'G': printf(" >= "); break; // Assumindo 'G'
+        case 'E': printf(" == "); break; // Assumindo 'E'
+        case 'N': printf(" != "); break; // Assumindo 'N'
+        default: printf(" %c ", op); // Para +, -, *, /, <, >
+    }
+}
+
+// Função recursiva principal
+static void imprimir_ast_recursivo(AstNode* no, int indent) {
+    if (!no) return;
+
+    // Imprime a indentação para a linha atual
+    print_indent(indent);
+
+    switch (no->type) {
+        case NODE_TYPE_NUM:
+            printf("%d", no->data.valor);
+            break;
+        case NODE_TYPE_FLOAT: 
+            printf("%.2f", no->data.fvalor);
+            break;
+        case NODE_TYPE_CHAR:  
+            printf("'%c'", no->data.cvalor);
+            break;
+        case NODE_TYPE_STRING:
+            printf("\"%s\"", no->data.svalor); 
+            break;
+        case NODE_TYPE_ID:
+            printf("%s", no->data.nome);
+            break;
+        
+        case NODE_TYPE_OP:
+            if (no->op == ';') { // Lista de comandos
+                imprimir_ast_recursivo(no->data.children.left, indent);
+                printf("\n"); // Nova linha para o próximo comando
+                imprimir_ast_recursivo(no->data.children.right, indent);
+            } else if (no->op == ':') { // Lista de cases
+                imprimir_ast_recursivo(no->data.children.left, indent);
+                printf("\n");
+                imprimir_ast_recursivo(no->data.children.right, indent);
+            } else { // Operador binário
+                printf("(");
+                imprimir_ast_recursivo(no->data.children.left, 0); // 0 indent
+                print_op(no->op);
+                imprimir_ast_recursivo(no->data.children.right, 0); // 0 indent
+                printf(")");
+            }
+            break;
+        
+        case NODE_TYPE_ASSIGN:
+            printf("(");
+            imprimir_ast_recursivo(no->data.children.left, 0);
+            printf(" = ");
+            imprimir_ast_recursivo(no->data.children.right, 0);
+            printf(")");
+            break;
+
+        case NODE_TYPE_VAR_DECL:
+            printf("%s %s", get_tipo_str(no->data.var_decl.tipo), no->data.var_decl.nome);
+            if (no->data.var_decl.valor) {
+                printf(" = ");
+                imprimir_ast_recursivo(no->data.var_decl.valor, 0);
+            }
+            break;
+
+        case NODE_TYPE_PRINTF: // Ou PRINT
+            printf("printf(");
+            imprimir_ast_recursivo(no->data.children.left, 0);
+            printf(")");
+            break;
+
+        case NODE_TYPE_IF:
+            printf("if (");
+            imprimir_ast_recursivo(no->data.if_details.condicao, 0);
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.if_details.bloco_then, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+            if (no->data.if_details.bloco_else) {
+                printf(" else {\n");
+                imprimir_ast_recursivo(no->data.if_details.bloco_else, indent + 1);
+                printf("\n");
+                print_indent(indent);
+                printf("}");
+            }
+            break;
+
+        case NODE_TYPE_WHILE:
+            printf("while (");
+            imprimir_ast_recursivo(no->data.while_details.condicao, 0);
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.while_details.corpo, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+            break;
+
+        case NODE_TYPE_DO_WHILE:
+            printf("do {\n");
+            imprimir_ast_recursivo(no->data.do_while_details.corpo, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("} while (");
+            imprimir_ast_recursivo(no->data.do_while_details.condicao, 0);
+            printf(")");
+            break;
+
+        case NODE_TYPE_SWITCH:
+            printf("switch (");
+            imprimir_ast_recursivo(no->data.switch_details.condicao, 0);
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.switch_details.casos, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+            break;
+
+        case NODE_TYPE_CASE:
+            printf("case ");
+            imprimir_ast_recursivo(no->data.case_details.valor, 0);
+            printf(":\n");
+            imprimir_ast_recursivo(no->data.case_details.corpo, indent + 1);
+            // O 'proximo' é tratado pela lista ligada (ver parser.y)
+            break;
+
+        case NODE_TYPE_DEFAULT:
+            printf("default:\n");
+            imprimir_ast_recursivo(no->data.case_details.corpo, indent + 1);
+            // O 'proximo' é tratado pela lista ligada (ver parser.y)
+            break;
+            
+        case NODE_TYPE_BREAK:
+            printf("break");
+            break;
+
+        default:
+            // Ignora tipos desconhecidos ou não imprimíveis (como CMD_LIST ou BLOCK)
+            break; 
+    }
+}
+
+// Função principal que o main.c chama
+void imprimir_ast_principal(AstNode* no) {
+    printf("Árvore Sintática Abstrata (AST):\n");
+    imprimir_ast_recursivo(no, 0); // Começa com indentação 0
+    printf("\n--------------------------------------------\n");
 }
