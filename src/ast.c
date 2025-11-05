@@ -420,7 +420,38 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             imprimir_ast_recursivo(no->data.do_while_details.condicao, 0);
             printf(")");
             break;
-
+        case NODE_TYPE_FOR:
+            printf("for(");
+            
+            if (no->data.for_details.inicializacao && no->data.for_details.inicializacao->type == NODE_TYPE_ASSIGN) {
+                AstNode* assign = no->data.for_details.inicializacao;
+                printf("%s = ", assign->data.children.left->data.nome);
+                imprimir_ast_recursivo(assign->data.children.right, 0);
+            }
+            
+            printf("; ");
+            
+            if (no->data.for_details.condicao && no->data.for_details.condicao->type == NODE_TYPE_OP) {
+                AstNode* cond = no->data.for_details.condicao;
+                printf("%s", cond->data.children.left->data.nome);
+                print_op(cond->op);
+                imprimir_ast_recursivo(cond->data.children.right, 0);
+            }
+            
+            printf("; ");
+            
+            if (no->data.for_details.incremento && no->data.for_details.incremento->type == NODE_TYPE_ASSIGN) {
+                AstNode* inc = no->data.for_details.incremento;
+                printf("%s = %s + 1", inc->data.children.left->data.nome, inc->data.children.left->data.nome);
+            }
+            
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.for_details.corpo, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+            break;
+            
         case NODE_TYPE_SWITCH:
             printf("switch (");
             imprimir_ast_recursivo(no->data.switch_details.condicao, 0);
