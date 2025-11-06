@@ -99,52 +99,90 @@ const char* get_tipo_str(int tipo) {
 }
 
 // Função principal para imprimir a tabela de símbolos
+/* helper para formatar o tipo (por exemplo: "int" ou "vetor<int, 5>") */
+static void tipo_format(const ValorSimbolo* v, char* out, size_t outlen) {
+    if (!v || !out) return;
+    if (v->is_array) {
+        snprintf(out, outlen, "vetor<%s, %d>", get_tipo_str(v->tipo), v->array_size);
+    } else {
+        snprintf(out, outlen, "%s", get_tipo_str(v->tipo));
+    }
+}
+
+/* imprimir_tabela_simbolos atualizado para mostrar "Tipo" com notação vetor<tipo, x> */
 void imprimir_tabela_simbolos() {
     printf("Tabela de Símbolos:\n");
+    char tipo_buf[64];
 
-    // Itera por toda a tabela hash
     for (int i = 0; i < TAMANHO_TABELA; i++) {
         NoSimbolo* atual = tabela[i];
-        // Percorre a lista ligada em cada balde do hash
         while (atual) {
-            if (atual->valor.inicializado) {
-                // Variável inicializada - mostra o valor
-                switch (atual->valor.tipo) {
-                    case TIPO_INT:
-                        printf("Nome: %s, Tipo: %s, Valor: %d\n",
-                               atual->nome,
-                               get_tipo_str(atual->valor.tipo),
-                               atual->valor.valor.i);
-                        break;
-                    case TIPO_FLOAT:
-                        printf("Nome: %s, Tipo: %s, Valor: %.2f\n",
-                               atual->nome,
-                               get_tipo_str(atual->valor.tipo),
-                               atual->valor.valor.f);
-                        break;
-                    case TIPO_CHAR:
-                        printf("Nome: %s, Tipo: %s, Valor: '%c'\n",
-                               atual->nome,
-                               get_tipo_str(atual->valor.tipo),
-                               atual->valor.valor.c);
-                        break;
-                    case TIPO_STRING:
-                        printf("Nome: %s, Tipo: %s, Valor: \"%s\"\n",
-                               atual->nome,
-                               get_tipo_str(atual->valor.tipo),
-                               atual->valor.valor.s);
-                        break;
-                    default:
-                        printf("Nome: %s, Tipo: %s, Valor: ?\n",
-                               atual->nome,
-                               get_tipo_str(atual->valor.tipo));
+            tipo_format(&atual->valor, tipo_buf, sizeof(tipo_buf));
+
+            /* ARRAY */
+            if (atual->valor.is_array) {
+                printf("Nome: %s, Tipo: %s, ", atual->nome, tipo_buf);
+
+                if (!atual->valor.inicializado || !atual->valor.array_data) {
+                    printf("Valores: NÃO INICIALIZADOS\n");
+                } else {
+                    printf("Valores: {");
+                    for (int j = 0; j < atual->valor.array_size; j++) {
+                        switch (atual->valor.tipo) {
+                            case TIPO_INT:
+                                printf("%d", atual->valor.array_data[j].i);
+                                break;
+                            case TIPO_FLOAT:
+                                printf("%g", atual->valor.array_data[j].f);
+                                break;
+                            case TIPO_CHAR:
+                                printf("'%c'", atual->valor.array_data[j].c);
+                                break;
+                            case TIPO_STRING:
+                                printf("\"%s\"", atual->valor.array_data[j].s ? atual->valor.array_data[j].s : "");
+                                break;
+                            default:
+                                printf("?");
+                        }
+                        if (j < atual->valor.array_size - 1) printf(", ");
+                    }
+                    printf("}\n");
                 }
+
+            /* ESCALAR */
             } else {
-                // Variável não inicializada
-                printf("Nome: %s, Tipo: %s, Valor: NÃO INICIALIZADA\n",
-                       atual->nome,
-                       get_tipo_str(atual->valor.tipo));
+                if (atual->valor.inicializado) {
+                    switch (atual->valor.tipo) {
+                        case TIPO_INT:
+                            printf("Nome: %s, Tipo: %s, Valor: %d\n",
+                                   atual->nome, tipo_buf,
+                                   atual->valor.valor.i);
+                            break;
+                        case TIPO_FLOAT:
+                            printf("Nome: %s, Tipo: %s, Valor: %g\n",
+                                   atual->nome, tipo_buf,
+                                   atual->valor.valor.f);
+                            break;
+                        case TIPO_CHAR:
+                            printf("Nome: %s, Tipo: %s, Valor: '%c'\n",
+                                   atual->nome, tipo_buf,
+                                   atual->valor.valor.c);
+                            break;
+                        case TIPO_STRING:
+                            printf("Nome: %s, Tipo: %s, Valor: \"%s\"\n",
+                                   atual->nome, tipo_buf,
+                                   atual->valor.valor.s ? atual->valor.valor.s : "");
+                            break;
+                        default:
+                            printf("Nome: %s, Tipo: %s, Valor: ?\n",
+                                   atual->nome, tipo_buf);
+                    }
+                } else {
+                    printf("Nome: %s, Tipo: %s, Valor: NÃO INICIALIZADA\n",
+                           atual->nome, tipo_buf);
+                }
             }
+
             atual = atual->proximo;
         }
     }
