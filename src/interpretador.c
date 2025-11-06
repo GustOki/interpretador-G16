@@ -72,61 +72,121 @@ ValorSimbolo interpretar(AstNode* no) {
         }
         
         case NODE_TYPE_ASSIGN: {
-            if (no->data.children.left->type != NODE_TYPE_ID) {
-                fprintf(stderr, "Linha %d: Erro Semântico: Lado esquerdo da atribuição deve ser uma variável.\n", lineno);
-                interpret_error = 1;
-                break;
-            }
-            
-            char* nome = no->data.children.left->data.nome;
-            ValorSimbolo var;
-            if (!tabela_procurar(nome, &var)) {
-                fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' não declarada.\n", lineno, nome);
-                interpret_error = 1;
-                break;
-            }
-            
-            ValorSimbolo valor_direita = interpretar(no->data.children.right);
-            if (interpret_error || !valor_direita.inicializado) {
-                break;
-            }
-            
-            // Atualiza o valor mantendo o tipo original da variável
-            var.inicializado = 1;
-            if (var.tipo == TIPO_FLOAT) {
-                if (valor_direita.tipo == TIPO_FLOAT) {
-                    var.valor.f = valor_direita.valor.f;
-                } else if (valor_direita.tipo == TIPO_INT) {
-                    var.valor.f = (float)valor_direita.valor.i;
+            // Verifica se é atribuição a variável simples ou acesso a array
+            if (no->data.children.left->type == NODE_TYPE_ID) {
+                // Atribuição a variável simples
+                char* nome = no->data.children.left->data.nome;
+                ValorSimbolo var;
+                if (!tabela_procurar(nome, &var)) {
+                    fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' não declarada.\n", lineno, nome);
+                    interpret_error = 1;
+                    break;
                 }
-            } else if (var.tipo == TIPO_INT) {
-                if (valor_direita.tipo == TIPO_INT) {
-                    var.valor.i = valor_direita.valor.i;
-                } else if (valor_direita.tipo == TIPO_FLOAT) {
-                    var.valor.i = (int)valor_direita.valor.f;
+                
+                ValorSimbolo valor_direita = interpretar(no->data.children.right);
+                if (interpret_error || !valor_direita.inicializado) {
+                    break;
                 }
-            } else if (var.tipo == TIPO_CHAR) {  // ← ADICIONE ESTE BLOCO
-                if (valor_direita.tipo == TIPO_CHAR) {
-                    var.valor.c = valor_direita.valor.c;
-                } else if (valor_direita.tipo == TIPO_INT) {
-                    var.valor.c = (char)valor_direita.valor.i;
+                
+                // Atualiza o valor mantendo o tipo original da variável
+                var.inicializado = 1;
+                if (var.tipo == TIPO_FLOAT) {
+                    if (valor_direita.tipo == TIPO_FLOAT) {
+                        var.valor.f = valor_direita.valor.f;
+                    } else if (valor_direita.tipo == TIPO_INT) {
+                        var.valor.f = (float)valor_direita.valor.i;
+                    }
+                } else if (var.tipo == TIPO_INT) {
+                    if (valor_direita.tipo == TIPO_INT) {
+                        var.valor.i = valor_direita.valor.i;
+                    } else if (valor_direita.tipo == TIPO_FLOAT) {
+                        var.valor.i = (int)valor_direita.valor.f;
+                    }
+                } else if (var.tipo == TIPO_CHAR) {
+                    if (valor_direita.tipo == TIPO_CHAR) {
+                        var.valor.c = valor_direita.valor.c;
+                    } else if (valor_direita.tipo == TIPO_INT) {
+                        var.valor.c = (char)valor_direita.valor.i;
+                    }
+                } else if (var.tipo == TIPO_STRING) {
+                    if (valor_direita.tipo == TIPO_STRING) {
+                        if (var.valor.s) free(var.valor.s);
+                        var.valor.s = strdup(valor_direita.valor.s);
+                    } else {
+                        fprintf(stderr, "Linha %d: Erro Semântico: Não é possível atribuir não-string a string.\n", lineno);
+                        interpret_error = 1;
+                        break;
+                    }
                 }
-            } else if (var.tipo == TIPO_STRING) {
-                if (valor_direita.tipo == TIPO_STRING) {
-                // Libera string anterior se existir
-                if (var.valor.s) free(var.valor.s);
-                    var.valor.s = strdup(valor_direita.valor.s);
+                
+                tabela_inserir(nome, var);
+                resultado = valor_direita;
+                
+            } else if (no->data.children.left->type == NODE_TYPE_ARRAY_ACCESS) {
+                // Atribuição a elemento do array
+                AstNode* array_node = no->data.children.left;
+                char* nome = array_node->data.array_access.nome;
+                
+                ValorSimbolo array;
+                if (!tabela_procurar(nome, &array)) {
+                    fprintf(stderr, "Linha %d: Erro Semântico: Array '%s' não declarado.\n", lineno, nome);
+                    interpret_error = 1;
+                    break;
+                }
+                
+                if (!array.is_array) {
+                    fprintf(stderr, "Linha %d: Erro Semântico: '%s' não é um array.\n", lineno, nome);
+                    interpret_error = 1;
+                    break;
+                }
+                
+                // Calcula o índice
+                ValorSimbolo indice_val = interpretar(array_node->data.array_access.indice);
+                if (!indice_val.inicializado || interpret_error) break;
+                
+                int indice = (indice_val.tipo == TIPO_INT) ? indice_val.valor.i : (int)indice_val.valor.f;
+                
+                if (indice < 0 || indice >= array.array_size) {
+                    fprintf(stderr, "Linha %d: Erro Semântico: Índice %d fora dos limites do array (0-%d).\n", 
+                            lineno, indice, array.array_size - 1);
+                    interpret_error = 1;
+                    break;
+                }
+                
+                // Calcula o valor a ser atribuído
+                ValorSimbolo valor_direita = interpretar(no->data.children.right);
+                if (interpret_error || !valor_direita.inicializado) break;
+                
+                // Atribui ao elemento do array
+                if (array.tipo == TIPO_INT) {
+                    array.array_data[indice].i = (valor_direita.tipo == TIPO_INT) ? 
+                        valor_direita.valor.i : (int)valor_direita.valor.f;
+                } else if (array.tipo == TIPO_FLOAT) {
+                    array.array_data[indice].f = (valor_direita.tipo == TIPO_FLOAT) ? 
+                        valor_direita.valor.f : (float)valor_direita.valor.i;
+                } else if (array.tipo == TIPO_CHAR) {
+                    array.array_data[indice].c = (valor_direita.tipo == TIPO_CHAR) ? 
+                        valor_direita.valor.c : (char)valor_direita.valor.i;
+                } else if (array.tipo == TIPO_STRING) {
+                    if (valor_direita.tipo == TIPO_STRING) {
+                        if (array.array_data[indice].s) free(array.array_data[indice].s);
+                        array.array_data[indice].s = strdup(valor_direita.valor.s);
+                    } else {
+                        fprintf(stderr, "Linha %d: Erro Semântico: Não é possível atribuir não-string a elemento string.\n", lineno);
+                        interpret_error = 1;
+                        break;
+                    }
+                }
+                
+                // Atualiza o array na tabela
+                tabela_inserir(nome, array);
+                resultado = valor_direita;
+                
             } else {
-                fprintf(stderr, "Linha %d: Erro Semântico: Não é possível atribuir não-string a string.\n", lineno);
+                fprintf(stderr, "Linha %d: Erro Semântico: Lado esquerdo da atribuição deve ser uma variável ou acesso a array.\n", lineno);
                 interpret_error = 1;
                 break;
             }
-            }
-            
-            // Para char e string, adicione similarmente
-            
-            tabela_inserir(nome, var);
-            resultado = valor_direita; // Retorna o valor atribuído
             break;
         }
 
@@ -428,15 +488,61 @@ ValorSimbolo interpretar(AstNode* no) {
             
             // Se houver valores iniciais, processa a lista
             if (no->data.array_decl.valores_iniciais) {
-                AstNode* atual = no->data.array_decl.valores_iniciais;
                 int idx = 0;
+                AstNode* lista_atual = no->data.array_decl.valores_iniciais;
                 
-                while (atual && idx < v_array.array_size) {
+                // Processa a árvore de vírgulas para extrair os valores
+                while (lista_atual && idx < v_array.array_size) {
                     ValorSimbolo val;
-                    if (atual->type == NODE_TYPE_OP && atual->op == ',') {
-                        val = interpretar(atual->data.children.left);
+                    
+                    if (lista_atual->type == NODE_TYPE_OP && lista_atual->op == ',') {
+                        // Processa o lado esquerdo primeiro (ordem correta)
+                        AstNode* temp_lista = lista_atual;
+                        
+                        // Empilha os nós à esquerda
+                        int stack_size = 0;
+                        AstNode* stack[100]; // Pilha temporária
+                        
+                        while (temp_lista && temp_lista->type == NODE_TYPE_OP && temp_lista->op == ',') {
+                            stack[stack_size++] = temp_lista->data.children.right;
+                            temp_lista = temp_lista->data.children.left;
+                        }
+                        
+                        // Processa o elemento mais à esquerda
+                        if (temp_lista) {
+                            val = interpretar(temp_lista);
+                            if (!interpret_error && val.inicializado && idx < v_array.array_size) {
+                                if (v_array.tipo == TIPO_INT) {
+                                    v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
+                                        val.valor.i : (int)val.valor.f;
+                                } else if (v_array.tipo == TIPO_FLOAT) {
+                                    v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
+                                        val.valor.f : (float)val.valor.i;
+                                }
+                                idx++;
+                            }
+                        }
+                        
+                        // Desempilha e processa
+                        for (int i = stack_size - 1; i >= 0 && idx < v_array.array_size; i--) {
+                            val = interpretar(stack[i]);
+                            if (!interpret_error && val.inicializado) {
+                                if (v_array.tipo == TIPO_INT) {
+                                    v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
+                                        val.valor.i : (int)val.valor.f;
+                                } else if (v_array.tipo == TIPO_FLOAT) {
+                                    v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
+                                        val.valor.f : (float)val.valor.i;
+                                }
+                                idx++;
+                            }
+                        }
+                        break; // Terminou de processar
+                        
+                    } else {
+                        // É um único valor
+                        val = interpretar(lista_atual);
                         if (!interpret_error && val.inicializado) {
-                            // Atribui valor ao índice
                             if (v_array.tipo == TIPO_INT) {
                                 v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
                                     val.valor.i : (int)val.valor.f;
@@ -444,24 +550,13 @@ ValorSimbolo interpretar(AstNode* no) {
                                 v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
                                     val.valor.f : (float)val.valor.i;
                             }
-                            // Adicione char e string similarmente
-                        }
-                        idx++;
-                        atual = atual->data.children.right;
-                    } else {
-                        val = interpretar(atual);
-                        if (!interpret_error && val.inicializado) {
-                            if (v_array.tipo == TIPO_INT) {
-                                v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
-                                    val.valor.i : (int)val.valor.f;
-                            }
-                            // Adicione outros tipos
+                            idx++;
                         }
                         break;
                     }
                 }
             }
-        
+            
             tabela_inserir(no->data.array_decl.nome, v_array);
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
