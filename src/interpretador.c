@@ -1,10 +1,9 @@
-// Arquivo: src/interpretador.c (COMPLETO E CORRIGIDO)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ast.h"    // Assume definição dos nós e tipos (TIPO_INT, etc.)
-#include "simbolo.h" // Assume definição de ValorSimbolo e funções da tabela
+#include "ast.h"    
+#include "simbolo.h" 
 
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
@@ -26,7 +25,6 @@ void erro_tipo(const char* msg, int lineno) {
 }
 
 
-// Interpretar nó da AST
 ValorSimbolo interpretar(AstNode* no) {
     ValorSimbolo resultado;
     resultado.inicializado = 0;
@@ -59,7 +57,7 @@ ValorSimbolo interpretar(AstNode* no) {
 
         case NODE_TYPE_STRING:
             resultado.tipo = TIPO_STRING;
-            resultado.valor.s = strdup(no->data.svalor); // Faz cópia
+            resultado.valor.s = strdup(no->data.svalor); 
             resultado.inicializado = 1;
             break;
             
@@ -72,9 +70,7 @@ ValorSimbolo interpretar(AstNode* no) {
         }
         
         case NODE_TYPE_ASSIGN: {
-            // Verifica se é atribuição a variável simples ou acesso a array
             if (no->data.children.left->type == NODE_TYPE_ID) {
-                // Atribuição a variável simples
                 char* nome = no->data.children.left->data.nome;
                 ValorSimbolo var;
                 if (!tabela_procurar(nome, &var)) {
@@ -88,7 +84,6 @@ ValorSimbolo interpretar(AstNode* no) {
                     break;
                 }
                 
-                // Atualiza o valor mantendo o tipo original da variável
                 var.inicializado = 1;
                 if (var.tipo == TIPO_FLOAT) {
                     if (valor_direita.tipo == TIPO_FLOAT) {
@@ -123,7 +118,6 @@ ValorSimbolo interpretar(AstNode* no) {
                 resultado = valor_direita;
                 
             } else if (no->data.children.left->type == NODE_TYPE_ARRAY_ACCESS) {
-                // Atribuição a elemento do array
                 AstNode* array_node = no->data.children.left;
                 char* nome = array_node->data.array_access.nome;
                 
@@ -140,7 +134,6 @@ ValorSimbolo interpretar(AstNode* no) {
                     break;
                 }
                 
-                // Calcula o índice
                 ValorSimbolo indice_val = interpretar(array_node->data.array_access.indice);
                 if (!indice_val.inicializado || interpret_error) break;
                 
@@ -153,11 +146,9 @@ ValorSimbolo interpretar(AstNode* no) {
                     break;
                 }
                 
-                // Calcula o valor a ser atribuído
                 ValorSimbolo valor_direita = interpretar(no->data.children.right);
                 if (interpret_error || !valor_direita.inicializado) break;
                 
-                // Atribui ao elemento do array
                 if (array.tipo == TIPO_INT) {
                     array.array_data[indice].i = (valor_direita.tipo == TIPO_INT) ? 
                         valor_direita.valor.i : (int)valor_direita.valor.f;
@@ -178,7 +169,6 @@ ValorSimbolo interpretar(AstNode* no) {
                     }
                 }
                 
-                // Atualiza o array na tabela
                 tabela_inserir(nome, array);
                 resultado = valor_direita;
                 
@@ -212,7 +202,6 @@ ValorSimbolo interpretar(AstNode* no) {
 
             resultado.inicializado = 1;
             
-            // Operações com tipos mistos
             if (esq.tipo == TIPO_FLOAT || dir.tipo == TIPO_FLOAT) {
                 resultado.tipo = TIPO_FLOAT;
                 float esq_f = (esq.tipo == TIPO_FLOAT) ? esq.valor.f : (float)esq.valor.i;
@@ -237,14 +226,13 @@ ValorSimbolo interpretar(AstNode* no) {
                     case 'E': 
                     case 'N': 
                         resultado.tipo = TIPO_INT;
-                        resultado.valor.i = 0; // Será definido abaixo
+                        resultado.valor.i = 0; 
                         break;
                     default:
                         erro_tipo("operador desconhecido", lineno);
                         resultado.inicializado = 0;
                 }
                 
-                // Operadores de comparação para float
                 if (resultado.inicializado && resultado.tipo == TIPO_INT) {
                     switch (no->op) {
                         case '<': resultado.valor.i = esq_f < dir_f; break;
@@ -256,7 +244,6 @@ ValorSimbolo interpretar(AstNode* no) {
                     }
                 }
             } else {
-                // Ambos são int
                 resultado.tipo = TIPO_INT;
                 switch (no->op) {
                     case '+': resultado.valor.i = esq.valor.i + dir.valor.i; break;
@@ -328,7 +315,6 @@ ValorSimbolo interpretar(AstNode* no) {
                     }
                 }
             } else {
-                // Valores padrão
                 switch (v_nova.tipo) {
                     case TIPO_INT: v_nova.valor.i = 0; break;
                     case TIPO_FLOAT: v_nova.valor.f = 0.0f; break;
@@ -401,14 +387,12 @@ ValorSimbolo interpretar(AstNode* no) {
         if (interpret_error) break;
     }
     
-    // Loop principal
     while (!interpret_error && !g_break_flag) {
         // Verifica a condição (se existir)
         if (no->data.for_details.condicao) {
             ValorSimbolo cond = interpretar(no->data.for_details.condicao);
             if (interpret_error || !cond.inicializado) break;
             
-            // Converte condição para booleano
             int cond_valor;
             if (cond.tipo == TIPO_FLOAT) {
                 cond_valor = (cond.valor.f != 0.0f);
@@ -416,14 +400,12 @@ ValorSimbolo interpretar(AstNode* no) {
                 cond_valor = (cond.valor.i != 0);
             }
             
-            if (!cond_valor) break; // Sai do loop se condição falsa
+            if (!cond_valor) break; 
         }
         
-        // Executa o corpo do loop
         interpretar(no->data.for_details.corpo);
         if (interpret_error || g_break_flag) break;
         
-        // Executa o incremento
         if (no->data.for_details.incremento) {
             interpretar(no->data.for_details.incremento);
             if (interpret_error) break;
@@ -438,7 +420,6 @@ ValorSimbolo interpretar(AstNode* no) {
 }
 
 
-        // Casos simples que retornam 0
         case NODE_TYPE_BREAK:
             g_break_flag = 1;
             resultado.inicializado = 1;
@@ -452,7 +433,6 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_DEFAULT:
         case NODE_TYPE_DO_WHILE:
         case NODE_TYPE_BLOCK:
-            // Executa mas retorna 0
             if (no->data.children.left) interpretar(no->data.children.left);
             if (no->data.children.right) interpretar(no->data.children.right);
             resultado.inicializado = 1;
@@ -486,29 +466,24 @@ ValorSimbolo interpretar(AstNode* no) {
                 }
             }
             
-            // Se houver valores iniciais, processa a lista
             if (no->data.array_decl.valores_iniciais) {
                 int idx = 0;
                 AstNode* lista_atual = no->data.array_decl.valores_iniciais;
                 
-                // Processa a árvore de vírgulas para extrair os valores
                 while (lista_atual && idx < v_array.array_size) {
                     ValorSimbolo val;
                     
                     if (lista_atual->type == NODE_TYPE_OP && lista_atual->op == ',') {
-                        // Processa o lado esquerdo primeiro (ordem correta)
                         AstNode* temp_lista = lista_atual;
                         
-                        // Empilha os nós à esquerda
                         int stack_size = 0;
-                        AstNode* stack[100]; // Pilha temporária
+                        AstNode* stack[100]; 
                         
                         while (temp_lista && temp_lista->type == NODE_TYPE_OP && temp_lista->op == ',') {
                             stack[stack_size++] = temp_lista->data.children.right;
                             temp_lista = temp_lista->data.children.left;
                         }
                         
-                        // Processa o elemento mais à esquerda
                         if (temp_lista) {
                             val = interpretar(temp_lista);
                             if (!interpret_error && val.inicializado && idx < v_array.array_size) {
@@ -523,7 +498,6 @@ ValorSimbolo interpretar(AstNode* no) {
                             }
                         }
                         
-                        // Desempilha e processa
                         for (int i = stack_size - 1; i >= 0 && idx < v_array.array_size; i--) {
                             val = interpretar(stack[i]);
                             if (!interpret_error && val.inicializado) {
@@ -537,10 +511,9 @@ ValorSimbolo interpretar(AstNode* no) {
                                 idx++;
                             }
                         }
-                        break; // Terminou de processar
+                        break; 
                         
                     } else {
-                        // É um único valor
                         val = interpretar(lista_atual);
                         if (!interpret_error && val.inicializado) {
                             if (v_array.tipo == TIPO_INT) {
@@ -606,7 +579,6 @@ ValorSimbolo interpretar(AstNode* no) {
     return resultado;
 }
 
-// Função printf segura
 void interpretar_printf(AstNode* expr) {
     if (!expr) return;
     interpret_error = 0;
@@ -637,7 +609,7 @@ void interpretar_printf(AstNode* expr) {
             val.valor.f = expr->data.fvalor;
             val.inicializado = 1;
             break;
-        case NODE_TYPE_CHAR:  // ← ADICIONE ESTE CASO
+        case NODE_TYPE_CHAR:  
             val.tipo = TIPO_CHAR;
             val.valor.c = expr->data.cvalor;
             val.inicializado = 1;

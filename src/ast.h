@@ -1,11 +1,9 @@
-/* Arquivo: src/ast.h (Corrigido) */
 
 #ifndef AST_H
 #define AST_H
 
-#include "simbolo.h" // <<< INCLUI AS DEFINIÇÕES DE TIPO
+#include "simbolo.h" 
 
-// --- Enum para identificar o tipo de cada nó na árvore ---
 typedef enum {
     NODE_TYPE_NUM,
     NODE_TYPE_FLOAT,
@@ -21,9 +19,9 @@ typedef enum {
     NODE_TYPE_DO_WHILE,
     NODE_TYPE_WHILE,
     NODE_TYPE_FOR,     
-    NODE_TYPE_BLOCK,    // (Ainda aqui, mas talvez não usado)
+    NODE_TYPE_BLOCK,    
     NODE_TYPE_BREAK,
-    NODE_TYPE_CMD_LIST, // (Ainda aqui, mas talvez não usado)
+    NODE_TYPE_CMD_LIST, 
     NODE_TYPE_VAR_DECL,
     NODE_TYPE_PRINTF,
     NODE_TYPE_ARRAY_DECL,
@@ -31,7 +29,6 @@ typedef enum {
     NODE_TYPE_ARRAY_INIT_LIST
 } NodeType;
 
-// --- Estrutura principal de um nó da AST ---
 typedef struct AstNode {
     NodeType type;
     char op;
@@ -58,7 +55,6 @@ typedef struct AstNode {
 } AstNode;
 
 
-/* --- PROTÓTIPOS DAS FUNÇÕES (Atualizados com lineno) --- */
 AstNode* create_num_node(int valor, int lineno);
 AstNode* create_float_node(float valor, int lineno);
 AstNode* create_char_node(char valor, int lineno);
@@ -86,15 +82,4 @@ void liberar_ast(AstNode* no);
 ValorSimbolo interpretar(AstNode* no);
 void imprimir_ast_principal(AstNode* no);
 
-// <<< REMOVA A DEFINIÇÃO DUPLICADA DE ValorSimbolo DAQUI >>>
-/* #ifndef SIMBOLO_H
-typedef union { int i; float f; char c; char* s; } ValorUnion;
-typedef struct {
-    int tipo;
-    ValorUnion valor;
-    int inicializado;
-} ValorSimbolo;
-#endif
-*/
-
-#endif // AST_H
+#endif 

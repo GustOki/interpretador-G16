@@ -1,12 +1,10 @@
-/* Arquivo: src/ast.c (Corrigido com 'lineno' em todas as funções) */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
-#include "simbolo.h" // Inclui para TIPO_INT, etc.
+#include "simbolo.h" 
 #include <string.h> 
 
-// Se strdup não estiver disponível, defina uma versão própria
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
 #endif
@@ -59,7 +57,7 @@ AstNode* create_id_node(char* nome, int lineno) {
     no->type = NODE_TYPE_ID;
     no->op = 0;
     no->lineno = lineno;
-    no->data.nome = nome; // strdup é feito no lexer
+    no->data.nome = nome; 
     return no;
 }
 
@@ -150,7 +148,6 @@ AstNode* create_printf_node(AstNode* expr, int lineno) {
     no->type = NODE_TYPE_PRINTF;
     no->op = 0;
     no->lineno = lineno;
-    // Assumindo que você reutiliza a struct 'children' ou 'print_details'
     no->data.children.left = expr; 
     no->data.children.right = NULL;
     return no;
@@ -175,7 +172,7 @@ AstNode* create_case_node(AstNode* valor, AstNode* corpo, int lineno) {
     no->lineno = lineno;
     no->data.case_details.valor = valor;
     no->data.case_details.corpo = corpo;
-    no->data.case_details.proximo = NULL; // Inicializa 'proximo'
+    no->data.case_details.proximo = NULL; 
     return no;
 }
 
@@ -185,9 +182,9 @@ AstNode* create_default_node(AstNode* corpo, int lineno) {
     no->type = NODE_TYPE_DEFAULT;
     no->op = 0;
     no->lineno = lineno;
-    no->data.case_details.valor = NULL; // Default não tem valor
+    no->data.case_details.valor = NULL; 
     no->data.case_details.corpo = corpo;
-    no->data.case_details.proximo = NULL; // Inicializa 'proximo'
+    no->data.case_details.proximo = NULL; 
     return no;
 }
 
@@ -200,28 +197,23 @@ AstNode* create_break_node(int lineno) {
     return no;
 }
 
-/* --- Funções Auxiliares (sem 'lineno' do parser) --- */
 
 AstNode* append_command_list(AstNode* list, AstNode* cmd) {
     if (!list) return cmd;
-    // Usa 'create_op_node' para encadear, passando a linha do primeiro comando
     return create_op_node(';', list, cmd, list->lineno); 
 }
 
 AstNode* append_case_list(AstNode* head, AstNode* new_case) {
-    // Esta função agora constrói uma lista FIFO (ordem correta)
     
     if (!head) {
-        return new_case; // Se a lista está vazia, o novo case é a cabeça
+        return new_case; 
     }
     
-    // Se a lista não está vazia, encontra o final da lista
     AstNode* temp = head;
     while (temp->data.case_details.proximo != NULL) {
         temp = temp->data.case_details.proximo;
     }
     
-    // Adiciona o novo case no final
     temp->data.case_details.proximo = new_case;
     return head; // Retorna a CABEÇA original da lista
 }
@@ -250,8 +242,7 @@ AstNode* create_array_access_node(char* nome, AstNode* indice, int lineno) {
     return no;
 }
 
-/* --- Função para Liberar a AST --- */
-// (Esta função precisa ser completa para evitar leaks)
+
 void liberar_ast(AstNode* no) {
     if (!no) return;
     switch (no->type) {
@@ -330,17 +321,14 @@ void liberar_ast(AstNode* no) {
     free(no);
 }
 
-// Declaração antecipada da função recursiva
 static void imprimir_ast_recursivo(AstNode* no, int indent);
 
-// Função auxiliar para imprimir a indentação
 static void print_indent(int indent) {
     for (int i = 0; i < indent; i++) {
         printf("    "); // 4 espaços por nível
     }
 }
 
-// Função auxiliar para imprimir o operador
 static void print_op(char op) {
     switch(op) {
         case 'L': printf(" <= "); break; // Assumindo 'L'
@@ -351,11 +339,9 @@ static void print_op(char op) {
     }
 }
 
-// Função recursiva principal
 static void imprimir_ast_recursivo(AstNode* no, int indent) {
     if (!no) return;
 
-    // Imprime a indentação para a linha atual
     print_indent(indent);
 
     switch (no->type) {
@@ -376,19 +362,19 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             break;
         
         case NODE_TYPE_OP:
-            if (no->op == ';') { // Lista de comandos
+            if (no->op == ';') { 
                 imprimir_ast_recursivo(no->data.children.left, indent);
-                printf("\n"); // Nova linha para o próximo comando
+                printf("\n"); 
                 imprimir_ast_recursivo(no->data.children.right, indent);
-            } else if (no->op == ':') { // Lista de cases
+            } else if (no->op == ':') { 
                 imprimir_ast_recursivo(no->data.children.left, indent);
                 printf("\n");
                 imprimir_ast_recursivo(no->data.children.right, indent);
-            } else { // Operador binário
+            } else { 
                 printf("(");
-                imprimir_ast_recursivo(no->data.children.left, 0); // 0 indent
+                imprimir_ast_recursivo(no->data.children.left, 0); 
                 print_op(no->op);
-                imprimir_ast_recursivo(no->data.children.right, 0); // 0 indent
+                imprimir_ast_recursivo(no->data.children.right, 0); 
                 printf(")");
             }
             break;
@@ -504,7 +490,6 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
         case NODE_TYPE_DEFAULT:
             printf("default:\n");
             imprimir_ast_recursivo(no->data.case_details.corpo, indent + 1);
-            // O 'proximo' é tratado pela lista ligada (ver parser.y)
             break;
             
         case NODE_TYPE_BREAK:
@@ -529,16 +514,13 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             break;
             
         case NODE_TYPE_ARRAY_INIT_LIST:
-            // Tratado como parte de array_decl
             break;
             
         default:
-            // Ignora tipos desconhecidos ou não imprimíveis (como CMD_LIST ou BLOCK)
             break; 
     }
 }
 
-// Função principal que o main.c chama
 void imprimir_ast_principal(AstNode* no) {
     printf("Árvore Sintática Abstrata (AST):\n");
     imprimir_ast_recursivo(no, 0); // Começa com indentação 0

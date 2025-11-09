@@ -87,7 +87,6 @@ void tabela_liberar() {
     }
 }
 
-// Função auxiliar para converter o TIPO em string
 const char* get_tipo_str(int tipo) {
     switch(tipo) {
         case TIPO_INT: return "int";
@@ -98,8 +97,7 @@ const char* get_tipo_str(int tipo) {
     }
 }
 
-// Função principal para imprimir a tabela de símbolos
-/* helper para formatar o tipo (por exemplo: "int" ou "vetor<int, 5>") */
+
 static void tipo_format(const ValorSimbolo* v, char* out, size_t outlen) {
     if (!v || !out) return;
     if (v->is_array) {
@@ -109,7 +107,6 @@ static void tipo_format(const ValorSimbolo* v, char* out, size_t outlen) {
     }
 }
 
-/* imprimir_tabela_simbolos atualizado para mostrar "Tipo" com notação vetor<tipo, x> */
 void imprimir_tabela_simbolos() {
     printf("Tabela de Símbolos:\n");
     char tipo_buf[64];
@@ -149,7 +146,6 @@ void imprimir_tabela_simbolos() {
                     printf("}\n");
                 }
 
-            /* ESCALAR */
             } else {
                 if (atual->valor.inicializado) {
                     switch (atual->valor.tipo) {
