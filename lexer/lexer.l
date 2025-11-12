@@ -56,14 +56,13 @@ extern int yylineno;
 ")"                     { return RPAREN; }
 
 
-[ \t\r\n]+              { /* Ignora todos os espaços em branco, tabs e newlines (incluindo \r) */ }
+[ \t\r\n]+              {  }
 
-\/\/[^\r\n]* { /* Ignora comentários de linha única, parando antes de \r ou \n */ }
+\/\/[^\r\n]* {  }
 
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return ID; }
 
 .                       {
-                            /* yytext contém o caractere inválido (terminado em '\0') */
                             fprintf(stderr, "Linha %d: Erro Léxico: Caractere inesperado '%s'\n", yylineno, yytext);
                         }
 

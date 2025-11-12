@@ -3,18 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"    
-#include "simbolo.h" // Inclui as definições e protótipos da tabela
+#include "simbolo.h"
 
 int yylex(void);
 
-/* --- Variáveis Globais e yyerror --- */
 extern int yylineno;
 extern char *yytext;
 int interpret_error = 0;
 int last_error_lineno = 0;
 
-/* --- Raiz global da AST --- */
-AstNode* g_ast_root = NULL; // <<< DECLARAÇÃO ADICIONADA AQUI
+AstNode* g_ast_root = NULL;
 
 void yyerror(const char *s) {
     last_error_lineno = yylineno;
@@ -26,11 +24,9 @@ void yyerror(const char *s) {
     }
 }
 
-// Protótipos das funções auxiliares (que estão no final deste arquivo)
 AstNode* append_command_list(AstNode* list, AstNode* command);
 AstNode* append_case_list(AstNode* list, AstNode* case_node);
 
-// Definição dos tipos (assumindo que estão em simbolo.h ou ast.h)
 #ifndef TIPO_INT
 #define TIPO_INT 1
 #define TIPO_FLOAT 2
