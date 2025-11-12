@@ -68,9 +68,8 @@ void tabela_liberar() {
             NoSimbolo* temp = atual;
             if (temp->valor.tipo == TIPO_STRING && temp->valor.valor.s)
                 free(temp->valor.valor.s);
-            // Libera array se existir
+
             if (temp->valor.is_array && temp->valor.array_data) {
-                // Se array de strings, libera cada string
                 if (temp->valor.tipo == TIPO_STRING) {
                     for (int j = 0; j < temp->valor.array_size; j++) {
                         if (temp->valor.array_data[j].s)
@@ -99,7 +98,6 @@ const char* get_tipo_str(int tipo) {
 }
 
 // Função principal para imprimir a tabela de símbolos
-/* helper para formatar o tipo (por exemplo: "int" ou "vetor<int, 5>") */
 static void tipo_format(const ValorSimbolo* v, char* out, size_t outlen) {
     if (!v || !out) return;
     if (v->is_array) {
@@ -109,7 +107,6 @@ static void tipo_format(const ValorSimbolo* v, char* out, size_t outlen) {
     }
 }
 
-/* imprimir_tabela_simbolos atualizado para mostrar "Tipo" com notação vetor<tipo, x> */
 void imprimir_tabela_simbolos() {
     printf("Tabela de Símbolos:\n");
     char tipo_buf[64];
@@ -119,7 +116,6 @@ void imprimir_tabela_simbolos() {
         while (atual) {
             tipo_format(&atual->valor, tipo_buf, sizeof(tipo_buf));
 
-            /* ARRAY */
             if (atual->valor.is_array) {
                 printf("Nome: %s, Tipo: %s, ", atual->nome, tipo_buf);
 
@@ -149,7 +145,6 @@ void imprimir_tabela_simbolos() {
                     printf("}\n");
                 }
 
-            /* ESCALAR */
             } else {
                 if (atual->valor.inicializado) {
                     switch (atual->valor.tipo) {

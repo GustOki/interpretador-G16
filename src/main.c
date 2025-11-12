@@ -10,14 +10,12 @@ extern FILE *yyin;
 extern AstNode* g_ast_root;
 extern int interpret_error;
 
-// Protótipos
 extern void imprimir_tabela_simbolos();
 extern void imprimir_ast_principal(AstNode* no);
 extern void tabela_iniciar();
 extern void tabela_liberar();
 extern ValorSimbolo interpretar(AstNode* no);
 
-// Função para capturar saída da interpretação
 void executar_e_capturar_saida(AstNode* no) {
     printf("--------------------------------------------\n");
     interpretar(no);
@@ -44,18 +42,14 @@ int main(int argc, char **argv) {
     int parse_result = yyparse(); 
 
     if (parse_result == 0 && g_ast_root) {
-        // 1. Imprime a AST (as funções já imprimem seus próprios cabeçalhos)
-        imprimir_ast_principal(g_ast_root); // Já tem "Árvore Sintática Abstrata (AST):"
+        imprimir_ast_principal(g_ast_root);
 
-        // 2. Executa o código (preenche a tabela)
         printf("Execução:\n");
         interpretar(g_ast_root);
         printf("--------------------------------------------\n");
-    
-        // 3. Imprime a Tabela de Símbolos (as funções já imprimem seus próprios cabeçalhos)
-        imprimir_tabela_simbolos(); // Já tem "Tabela de Símbolos:"
 
-        // 4. Libera a memória
+        imprimir_tabela_simbolos();
+
         liberar_ast(g_ast_root);
     
     } else if (parse_result != 0) {
