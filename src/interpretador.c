@@ -63,6 +63,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' não foi definida.\n", lineno, no->data.nome);
                 interpret_error = 1;
             }
+            
             break;
         }
         
@@ -80,7 +81,6 @@ ValorSimbolo interpretar(AstNode* no) {
                 if (interpret_error || !valor_direita.inicializado) {
                     break;
                 }
-
                 var.inicializado = 1;
 
                 if (var.tipo == TIPO_FLOAT) {
@@ -175,6 +175,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 interpret_error = 1;
                 break;
             }
+            
             break;
         }
 
@@ -183,12 +184,14 @@ ValorSimbolo interpretar(AstNode* no) {
                 interpretar(no->data.children.left);
                 if (interpret_error || g_break_flag) break;
                 resultado = interpretar(no->data.children.right);
+                
                 break;
             }
             if (no->op == ':') {
                 interpretar(no->data.children.left);
                 if (interpret_error || g_break_flag) break;
                 resultado = interpretar(no->data.children.right);
+                
                 break;
             }
 
@@ -217,6 +220,7 @@ ValorSimbolo interpretar(AstNode* no) {
                         }
                         resultado.valor.f = esq_f / dir_f;
                         break;
+
                     case '<': 
                     case '>': 
                     case 'L': 
@@ -226,6 +230,7 @@ ValorSimbolo interpretar(AstNode* no) {
                         resultado.tipo = TIPO_INT;
                         resultado.valor.i = 0;
                         break;
+                    
                     default:
                         erro_tipo("operador desconhecido", lineno);
                         resultado.inicializado = 0;
@@ -254,7 +259,9 @@ ValorSimbolo interpretar(AstNode* no) {
                             break;
                         }
                         resultado.valor.i = esq.valor.i / dir.valor.i;
+                        
                         break;
+                        
                     case '<': resultado.valor.i = esq.valor.i < dir.valor.i; break;
                     case '>': resultado.valor.i = esq.valor.i > dir.valor.i; break;
                     case 'L': resultado.valor.i = esq.valor.i <= dir.valor.i; break;
@@ -266,6 +273,7 @@ ValorSimbolo interpretar(AstNode* no) {
                         resultado.inicializado = 0;
                 }
             }
+            
             break;
         }
 
@@ -274,6 +282,7 @@ ValorSimbolo interpretar(AstNode* no) {
             if (tabela_procurar(no->data.var_decl.nome, &v_existente)) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' já foi declarada.\n", lineno, no->data.var_decl.nome);
                 interpret_error = 1;
+                
                 break;
             }
             
@@ -325,6 +334,7 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
         }
 
@@ -333,6 +343,7 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
         }
 
@@ -351,6 +362,7 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
         }
 
@@ -372,6 +384,7 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
         }
 
@@ -412,6 +425,7 @@ ValorSimbolo interpretar(AstNode* no) {
     resultado.inicializado = 1;
     resultado.tipo = TIPO_INT;
     resultado.valor.i = 0;
+    
     break;
 }
 
@@ -420,6 +434,7 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
 
         case NODE_TYPE_CMD_LIST:
@@ -429,10 +444,12 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_DO_WHILE:
         case NODE_TYPE_BLOCK:
             if (no->data.children.left) interpretar(no->data.children.left);
+            
             if (no->data.children.right) interpretar(no->data.children.right);
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
         
         case NODE_TYPE_ARRAY_DECL: {
@@ -441,6 +458,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' já foi declarada.\n", 
                         lineno, no->data.array_decl.nome);
                 interpret_error = 1;
+                
                 break;
             }
             
@@ -505,6 +523,7 @@ ValorSimbolo interpretar(AstNode* no) {
                                 idx++;
                             }
                         }
+                        
                         break;
                         
                     } else {
@@ -520,15 +539,18 @@ ValorSimbolo interpretar(AstNode* no) {
                             }
                             idx++;
                         }
+                        
                         break;
                     }
                 }
             }
             
             tabela_inserir(no->data.array_decl.nome, v_array);
+            
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
+            
             break;
         }
 
@@ -538,6 +560,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Array '%s' não declarado.\n", 
                         lineno, no->data.array_access.nome);
                 interpret_error = 1;
+                
                 break;
             }
             
@@ -545,6 +568,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: '%s' não é um array.\n", 
                         lineno, no->data.array_access.nome);
                 interpret_error = 1;
+                
                 break;
             }
             
@@ -557,12 +581,14 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Índice %d fora dos limites do array (0-%d).\n", 
                         lineno, indice, array.array_size - 1);
                 interpret_error = 1;
+                
                 break;
             }
             
             resultado.tipo = array.tipo;
             resultado.inicializado = 1;
             resultado.valor = array.array_data[indice];
+            
             break;
         }
 
@@ -592,6 +618,7 @@ void interpretar_printf(AstNode* expr) {
                 erro_tipo("variável não inicializada no printf", lineno_printf);
                 return;
             }
+            
             break;
         }
         case NODE_TYPE_NUM:
@@ -599,11 +626,13 @@ void interpretar_printf(AstNode* expr) {
             val.valor.i = expr->data.valor;
             val.inicializado = 1;
             break;
+        
         case NODE_TYPE_FLOAT:
             val.tipo = TIPO_FLOAT;
             val.valor.f = expr->data.fvalor;
             val.inicializado = 1;
             break;
+        
         case NODE_TYPE_CHAR:
             val.tipo = TIPO_CHAR;
             val.valor.c = expr->data.cvalor;
@@ -622,6 +651,7 @@ void interpretar_printf(AstNode* expr) {
             case TIPO_FLOAT: printf("%.2f\n", val.valor.f); break;
             case TIPO_CHAR: printf("%c\n", val.valor.c); break;
             case TIPO_STRING: printf("%s\n", val.valor.s ? val.valor.s : "(null)"); break;
+            
             default:
                 fprintf(stderr, "Linha %d: Erro Interno: Tipo desconhecido (%d) ao imprimir.\n", lineno_printf, val.tipo);
                 interpret_error = 1;

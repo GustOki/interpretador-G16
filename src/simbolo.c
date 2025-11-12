@@ -86,7 +86,6 @@ void tabela_liberar() {
     }
 }
 
-// Função auxiliar para converter o TIPO em string
 const char* get_tipo_str(int tipo) {
     switch(tipo) {
         case TIPO_INT: return "int";
@@ -97,7 +96,6 @@ const char* get_tipo_str(int tipo) {
     }
 }
 
-// Função principal para imprimir a tabela de símbolos
 static void tipo_format(const ValorSimbolo* v, char* out, size_t outlen) {
     if (!v || !out) return;
     if (v->is_array) {

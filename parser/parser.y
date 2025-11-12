@@ -1,5 +1,3 @@
-/* Arquivo: parser/parser.y (Corrigido e Limpo) */
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,8 +64,8 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %token SWITCH CASE BREAK DEFAULT COLON
 %token DO WHILE
 %token FOR
-%token LBRACKET RBRACKET  // <<< ADICIONE ESTA LINHA
-%token VIRGULA            // <<< ADICIONE ESTA LINHA (para listas de valores)
+%token LBRACKET RBRACKET  
+%token VIRGULA            
 
 %type <no> programa stmt expressao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
@@ -76,22 +74,21 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %type <no> comando_while
 %type <no> comando_for
 %type <no> comando_printf
-%type <no> lista_valores  // <<< ADICIONE ESTA LINHA
+%type <no> lista_valores  
 
 %nonassoc IFX
 %nonassoc ELSE
 %right UMINUS
 %right IGUAL  
-%left GT LT GE LE EQ NE // <<< PRECEDÊNCIA MAIS BAIXA (agora está correto)
+%left GT LT GE LE EQ NE 
 %left PLUS MINUS
-%left TIMES DIVIDE // <<< PRECEDÊNCIA MAIS ALTA (agora está correto)
+%left TIMES DIVIDE 
 
 %%
 
-/* --- Seção de Regras da Gramática --- */
 
 programa:
-    lista_comandos { $$ = $1; g_ast_root = $1; } // Agora 'g_ast_root' é conhecido
+    lista_comandos { $$ = $1; g_ast_root = $1; } 
     ;
 
 lista_comandos:
@@ -131,11 +128,11 @@ comando_do_while:
     ;
 comando_for:
     FOR LPAREN 
-        expressao PONTO_VIRGULA     // $3 - inicialização
-        expressao PONTO_VIRGULA     // $5 - condição  
-        expressao                   // $7 - incremento
+        expressao PONTO_VIRGULA     
+        expressao PONTO_VIRGULA      
+        expressao                   
     RPAREN 
-    LBRACE lista_comandos RBRACE {  // $10 - corpo
+    LBRACE lista_comandos RBRACE {  
         $$ = create_for_node($3, $5, $7, $10, yylineno);
     }
     ; 
@@ -177,10 +174,10 @@ expressao:
     | CHAR_LIT { $$ = create_char_node($1, yylineno); }
     | STRING_LIT { $$ = create_string_node($1, yylineno); } 
     | ID  { $$ = create_id_node($1, yylineno); }
-    | ID LBRACKET expressao RBRACKET {  // <<< ADICIONE ESTA LINHA
+    | ID LBRACKET expressao RBRACKET {  
         $$ = create_array_access_node($1, $3, yylineno);
     }
-    | ID LBRACKET expressao RBRACKET IGUAL expressao {  // <<< ADICIONE ESTA LINHA
+    | ID LBRACKET expressao RBRACKET IGUAL expressao {  
         AstNode* access = create_array_access_node($1, $3, yylineno);
         $$ = create_assign_node(access, $6, yylineno);
     }
@@ -236,11 +233,3 @@ case_bloco:
     ;
 
 %%
-
-/* --- Seção de Código C Final --- */
-/*
- * As definições da tabela de símbolos (struct, array, funções)
- * foram MOVIDAS para src/simbolo.c e src/simbolo.h
- * para evitar erros de "definição múltipla".
- * O parser.y agora só inclui "simbolo.h".
- */
