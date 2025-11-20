@@ -1,0 +1,5 @@
+//Printf 
+
+int a = 7;
+printf(a);
+printf(a + 3);

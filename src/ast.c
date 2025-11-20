@@ -9,7 +9,6 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
-/* --- Funções de Criação de Nó --- */
 
 AstNode* create_num_node(int valor, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
@@ -47,7 +46,7 @@ AstNode* create_string_node(char* valor, int lineno) {
     no->type = NODE_TYPE_STRING;
     no->op = 0;
     no->lineno = lineno;
-    no->data.svalor = strdup(valor); // Faz cópia da string
+    no->data.svalor = strdup(valor); 
     return no;
 }
 
@@ -215,7 +214,7 @@ AstNode* append_case_list(AstNode* head, AstNode* new_case) {
     }
     
     temp->data.case_details.proximo = new_case;
-    return head; // Retorna a CABEÇA original da lista
+    return head; 
 }
 
 AstNode* create_array_decl_node(int tipo, char* nome, int tamanho, AstNode* valores, int lineno) {
@@ -263,11 +262,11 @@ void liberar_ast(AstNode* no) {
             free(no->data.var_decl.nome);
             liberar_ast(no->data.var_decl.valor);
             break;
-        case NODE_TYPE_ARRAY_DECL:  // <<< ADICIONE ESTE CASO
+        case NODE_TYPE_ARRAY_DECL:  
             free(no->data.array_decl.nome);
             liberar_ast(no->data.array_decl.valores_iniciais);
             break;
-        case NODE_TYPE_ARRAY_ACCESS:  // <<< ADICIONE ESTE CASO
+        case NODE_TYPE_ARRAY_ACCESS:  
             free(no->data.array_access.nome);
             liberar_ast(no->data.array_access.indice);
             break;
@@ -308,8 +307,7 @@ void liberar_ast(AstNode* no) {
         case NODE_TYPE_FLOAT:
         case NODE_TYPE_CHAR:
         case NODE_TYPE_BREAK:
-        case NODE_TYPE_ARRAY_INIT_LIST:  // <<< ADICIONE ESTE CASO
-            // Não têm filhos para liberar
+        case NODE_TYPE_ARRAY_INIT_LIST:  
             break;
         case NODE_TYPE_CMD_LIST:
              liberar_ast(no->data.cmd_list.first);
@@ -325,17 +323,17 @@ static void imprimir_ast_recursivo(AstNode* no, int indent);
 
 static void print_indent(int indent) {
     for (int i = 0; i < indent; i++) {
-        printf("    "); // 4 espaços por nível
+        printf("    "); 
     }
 }
 
 static void print_op(char op) {
     switch(op) {
-        case 'L': printf(" <= "); break; // Assumindo 'L'
-        case 'G': printf(" >= "); break; // Assumindo 'G'
-        case 'E': printf(" == "); break; // Assumindo 'E'
-        case 'N': printf(" != "); break; // Assumindo 'N'
-        default: printf(" %c ", op); // Para +, -, *, /, <, >
+        case 'L': printf(" <= "); break; 
+        case 'G': printf(" >= "); break; 
+        case 'E': printf(" == "); break; 
+        case 'N': printf(" != "); break; 
+        default: printf(" %c ", op); 
     }
 }
 
@@ -395,7 +393,7 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             }
             break;
 
-        case NODE_TYPE_PRINTF: // Ou PRINT
+        case NODE_TYPE_PRINTF: 
             printf("printf(");
             imprimir_ast_recursivo(no->data.children.left, 0);
             printf(")");
@@ -429,14 +427,18 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             break;
 
         case NODE_TYPE_DO_WHILE:
+            print_indent(indent);
             printf("do {\n");
+
             imprimir_ast_recursivo(no->data.do_while_details.corpo, indent + 1);
+
             printf("\n");
             print_indent(indent);
             printf("} while (");
             imprimir_ast_recursivo(no->data.do_while_details.condicao, 0);
             printf(")");
             break;
+
         case NODE_TYPE_FOR:
             printf("for(");
             
@@ -484,7 +486,6 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             imprimir_ast_recursivo(no->data.case_details.valor, 0);
             printf(":\n");
             imprimir_ast_recursivo(no->data.case_details.corpo, indent + 1);
-            // O 'proximo' é tratado pela lista ligada (ver parser.y)
             break;
 
         case NODE_TYPE_DEFAULT:
@@ -523,6 +524,6 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
 
 void imprimir_ast_principal(AstNode* no) {
     printf("Árvore Sintática Abstrata (AST):\n");
-    imprimir_ast_recursivo(no, 0); // Começa com indentação 0
+    imprimir_ast_recursivo(no, 0); 
     printf("\n--------------------------------------------\n");
 }

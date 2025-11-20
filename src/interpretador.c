@@ -9,7 +9,6 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
-// Protótipos
 void interpretar_printf(AstNode* expr);
 int tabela_procurar(char* nome, ValorSimbolo* v);
 void tabela_inserir(char* nome, ValorSimbolo v);
@@ -72,7 +71,7 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_ASSIGN: {
             if (no->data.children.left->type == NODE_TYPE_ID) {
                 char* nome = no->data.children.left->data.nome;
-                ValorSimbolo var;
+                ValorSimbolo var = {0};
                 if (!tabela_procurar(nome, &var)) {
                     fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' não declarada.\n", lineno, nome);
                     interpret_error = 1;
@@ -279,7 +278,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 break;
             }
             
-            ValorSimbolo v_nova;
+            ValorSimbolo v_nova = {0};
             v_nova.tipo = no->data.var_decl.tipo;
             v_nova.inicializado = (no->data.var_decl.valor != NULL);
             
@@ -299,7 +298,7 @@ ValorSimbolo interpretar(AstNode* no) {
                     } else if (valor_inicial.tipo == TIPO_FLOAT) {
                         v_nova.valor.i = (int)valor_inicial.valor.f;
                     }
-                } else if (v_nova.tipo == TIPO_CHAR) {  // ← ADICIONE ESTE BLOCO
+                } else if (v_nova.tipo == TIPO_CHAR) {  
                     if (valor_inicial.tipo == TIPO_CHAR) {
                         v_nova.valor.c = valor_inicial.valor.c;
                     } else if (valor_inicial.tipo == TIPO_INT) {
@@ -378,17 +377,15 @@ ValorSimbolo interpretar(AstNode* no) {
         }
 
         case NODE_TYPE_FOR: {
-    int old_break_flag = g_break_flag;
-    g_break_flag = 0;
-    
-    // Executa a inicialização
-    if (no->data.for_details.inicializacao) {
-        interpretar(no->data.for_details.inicializacao);
-        if (interpret_error) break;
-    }
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
+            
+            if (no->data.for_details.inicializacao) {
+                interpretar(no->data.for_details.inicializacao);
+                if (interpret_error) break;
+            }
     
     while (!interpret_error && !g_break_flag) {
-        // Verifica a condição (se existir)
         if (no->data.for_details.condicao) {
             ValorSimbolo cond = interpretar(no->data.for_details.condicao);
             if (interpret_error || !cond.inicializado) break;
@@ -431,7 +428,34 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_SWITCH:
         case NODE_TYPE_CASE:
         case NODE_TYPE_DEFAULT:
-        case NODE_TYPE_DO_WHILE:
+        case NODE_TYPE_DO_WHILE: {
+                int old_break_flag = g_break_flag;
+                g_break_flag = 0;
+
+                do {
+                    interpretar(no->data.do_while_details.corpo);
+
+                    if (interpret_error || g_break_flag) break;
+
+                    ValorSimbolo cond = interpretar(no->data.do_while_details.condicao);
+                    if (interpret_error || !cond.inicializado) break;
+
+                    int cond_valor = (cond.tipo == TIPO_FLOAT)
+                        ? (cond.valor.f != 0.0f)
+                        : (cond.valor.i != 0);
+
+                    if (!cond_valor) break;
+
+                } while (1);
+
+                g_break_flag = old_break_flag;
+
+                resultado.inicializado = 1;
+                resultado.tipo = TIPO_INT;
+                resultado.valor.i = 0;
+                break;
+            }
+
         case NODE_TYPE_BLOCK:
             if (no->data.children.left) interpretar(no->data.children.left);
             if (no->data.children.right) interpretar(no->data.children.right);
@@ -449,14 +473,13 @@ ValorSimbolo interpretar(AstNode* no) {
                 break;
             }
             
-            ValorSimbolo v_array;
+            ValorSimbolo v_array = {0};
             v_array.tipo = no->data.array_decl.tipo;
             v_array.is_array = 1;
             v_array.array_size = no->data.array_decl.tamanho;
             v_array.array_data = calloc(v_array.array_size, sizeof(ValorUnion));
             v_array.inicializado = 1;
             
-            // Inicializa com valores padrão
             for (int i = 0; i < v_array.array_size; i++) {
                 switch (v_array.tipo) {
                     case TIPO_INT: v_array.array_data[i].i = 0; break;
@@ -583,7 +606,7 @@ void interpretar_printf(AstNode* expr) {
     if (!expr) return;
     interpret_error = 0;
     
-    ValorSimbolo val;
+    ValorSimbolo val = {0};
     val.inicializado = 0;
     int lineno_printf = expr ? expr->lineno : 0;
 

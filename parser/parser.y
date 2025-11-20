@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"    
-#include "simbolo.h" // Inclui as definições e protótipos da tabela
+#include "simbolo.h" 
 
 int yylex(void);
 
@@ -14,24 +14,47 @@ extern char *yytext;
 int interpret_error = 0;
 int last_error_lineno = 0;
 
-/* --- Raiz global da AST --- */
-AstNode* g_ast_root = NULL; // <<< DECLARAÇÃO ADICIONADA AQUI
+AstNode* g_ast_root = NULL; 
 
 void yyerror(const char *s) {
-    last_error_lineno = yylineno;
-    if (yytext && yytext[0] != '\0' && yytext[0] != '\n') {
-        fprintf(stderr, "Linha %d: Erro Sintático: %s perto de '%s'\n",
-                last_error_lineno, s, yytext);
-    } else {
-        fprintf(stderr, "Linha %d: Erro Sintático: %s (possivelmente no final da entrada)\n", last_error_lineno, s);
+    if (interpret_error) {
+        return;
     }
+
+    last_error_lineno = yylineno;
+
+    const char* token = yytext && yytext[0] != '\0' ? yytext : "EOF";
+
+    if (strcmp(token, "PONTO_VIRGULA") == 0) token = ";";
+    if (strcmp(token, "ABRE_PAREN") == 0)     token = "(";
+    if (strcmp(token, "FECHA_PAREN") == 0)    token = ")";
+    if (strcmp(token, "ABRE_CHAVE") == 0)     token = "{";
+    if (strcmp(token, "FECHA_CHAVE") == 0)    token = "}";
+    if (strcmp(token, "OP_ATRIB") == 0)       token = "=";
+    if (strcmp(token, "OP_SOMA") == 0)        token = "+";
+    if (strcmp(token, "OP_SUB") == 0)         token = "-";
+    if (strcmp(token, "OP_MUL") == 0)         token = "*";
+    if (strcmp(token, "OP_DIV") == 0)         token = "/";
+
+    const char* msg = s;
+
+    if (strstr(s, "syntax error")) {
+        msg = "Erro de sintaxe";
+    }
+
+    fprintf(stderr,
+        "Linha %d: %s: elemento inesperado '%s'\n",
+        last_error_lineno,
+        msg,
+        token
+    );
 }
 
-// Protótipos das funções auxiliares (que estão no final deste arquivo)
+
+
 AstNode* append_command_list(AstNode* list, AstNode* command);
 AstNode* append_case_list(AstNode* list, AstNode* case_node);
 
-// Definição dos tipos (assumindo que estão em simbolo.h ou ast.h)
 #ifndef TIPO_INT
 #define TIPO_INT 1
 #define TIPO_FLOAT 2
@@ -66,7 +89,9 @@ AstNode* append_case_list(AstNode* list, AstNode* case_node);
 %token DO WHILE
 %token FOR
 %token LBRACKET RBRACKET  
-%token VIRGULA            
+%token VIRGULA  
+%token TOKEN_ERRO
+
 
 %type <no> programa stmt expressao comando_if lista_comandos declaracao
 %type <no> switch_statement case_list case_bloco
@@ -108,6 +133,7 @@ stmt:
     | switch_statement          { $$ = $1; }
     | BREAK PONTO_VIRGULA       { $$ = create_break_node(yylineno); }
     | LBRACE lista_comandos RBRACE { $$ = $2; }
+    | TOKEN_ERRO                   { YYABORT; }
     ;
 
 comando_printf:
@@ -197,6 +223,10 @@ expressao:
           AstNode* zero = create_num_node(0, yylineno);
           $$ = create_op_node('-', zero, $2, yylineno);
       }
+    | PLUS expressao %prec UMINUS {
+        $$ = $2;  
+    }
+
     | ID IGUAL expressao {
         AstNode* left = create_id_node($1, yylineno);
         $$ = create_assign_node(left, $3, yylineno);

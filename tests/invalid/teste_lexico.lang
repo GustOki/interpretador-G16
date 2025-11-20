@@ -1,0 +1,3 @@
+//Erro léxico
+
+int a = 5 @ 2;

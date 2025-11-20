@@ -8,6 +8,7 @@
 #include <string.h>
 
 extern int yylineno;
+extern int interpret_error;
 %}
 
 %%
@@ -65,6 +66,8 @@ extern int yylineno;
 .                       {
                             /* yytext contém o caractere inválido (terminado em '\0') */
                             fprintf(stderr, "Linha %d: Erro Léxico: Caractere inesperado '%s'\n", yylineno, yytext);
+                            interpret_error = 1;
+                            return TOKEN_ERRO;
                         }
 
 %%
