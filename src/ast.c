@@ -504,8 +504,11 @@ static void imprimir_ast_recursivo(AstNode* no, int indent) {
             break;
 
         case NODE_TYPE_DO_WHILE:
+            print_indent(indent);
             printf("do {\n");
+
             imprimir_ast_recursivo(no->data.do_while_details.corpo, indent + 1);
+
             printf("\n");
             print_indent(indent);
             printf("} while (");

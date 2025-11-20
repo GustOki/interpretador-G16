@@ -68,7 +68,6 @@ void tabela_liberar() {
             NoSimbolo* temp = atual;
             if (temp->valor.tipo == TIPO_STRING && temp->valor.valor.s)
                 free(temp->valor.valor.s);
-
             if (temp->valor.is_array && temp->valor.array_data) {
                 if (temp->valor.tipo == TIPO_STRING) {
                     for (int j = 0; j < temp->valor.array_size; j++) {

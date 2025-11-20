@@ -1,0 +1,7 @@
+//Float e operações mistas 
+
+
+float x = 1.5;
+float y = 0.5;
+printf(x + y);
+printf (x * y);

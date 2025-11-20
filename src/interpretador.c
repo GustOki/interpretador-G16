@@ -70,7 +70,7 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_ASSIGN: {
             if (no->data.children.left->type == NODE_TYPE_ID) {
                 char* nome = no->data.children.left->data.nome;
-                ValorSimbolo var;
+                ValorSimbolo var = {0};
                 if (!tabela_procurar(nome, &var)) {
                     fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' não declarada.\n", lineno, nome);
                     interpret_error = 1;
@@ -286,7 +286,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 break;
             }
             
-            ValorSimbolo v_nova;
+            ValorSimbolo v_nova = {0};
             v_nova.tipo = no->data.var_decl.tipo;
             v_nova.inicializado = (no->data.var_decl.valor != NULL);
             
@@ -441,7 +441,34 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_SWITCH:
         case NODE_TYPE_CASE:
         case NODE_TYPE_DEFAULT:
-        case NODE_TYPE_DO_WHILE:
+        case NODE_TYPE_DO_WHILE: {
+                int old_break_flag = g_break_flag;
+                g_break_flag = 0;
+
+                do {
+                    interpretar(no->data.do_while_details.corpo);
+
+                    if (interpret_error || g_break_flag) break;
+
+                    ValorSimbolo cond = interpretar(no->data.do_while_details.condicao);
+                    if (interpret_error || !cond.inicializado) break;
+
+                    int cond_valor = (cond.tipo == TIPO_FLOAT)
+                        ? (cond.valor.f != 0.0f)
+                        : (cond.valor.i != 0);
+
+                    if (!cond_valor) break;
+
+                } while (1);
+
+                g_break_flag = old_break_flag;
+
+                resultado.inicializado = 1;
+                resultado.tipo = TIPO_INT;
+                resultado.valor.i = 0;
+                break;
+            }
+
         case NODE_TYPE_BLOCK:
             if (no->data.children.left) interpretar(no->data.children.left);
             
@@ -462,7 +489,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 break;
             }
             
-            ValorSimbolo v_array;
+            ValorSimbolo v_array = {0};
             v_array.tipo = no->data.array_decl.tipo;
             v_array.is_array = 1;
             v_array.array_size = no->data.array_decl.tamanho;
@@ -604,7 +631,7 @@ void interpretar_printf(AstNode* expr) {
     if (!expr) return;
     interpret_error = 0;
     
-    ValorSimbolo val;
+    ValorSimbolo val = {0};
     val.inicializado = 0;
     int lineno_printf = expr ? expr->lineno : 0;
 
