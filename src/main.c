@@ -1,20 +1,69 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "simbolo.h"
+#include "ast.h" 
 
 extern int yyparse(void);
+extern FILE *yyin; 
 
-int main(void) {
-  tabela_iniciar();
+extern AstNode* g_ast_root;
+extern int interpret_error;
 
-  printf("Interpretador com AST. Pressione Ctrl+D para sair.\n");
+extern void imprimir_tabela_simbolos();
+extern void imprimir_ast_principal(AstNode* no);
+extern void tabela_iniciar();
+extern void tabela_liberar();
+extern ValorSimbolo interpretar(AstNode* no);
 
-  while(!feof(stdin)) {
-      printf("> ");
-      fflush(stdout); 
-      yyparse();
-  }
-  tabela_liberar();
-  
-  printf("\nAté mais!\n");
-  return 0;
+void executar_e_capturar_saida(AstNode* no) {
+    printf("--------------------------------------------\n");
+    interpretar(no);
+    printf("--------------------------------------------\n");
+}
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Uso correto: %s <arquivo_do_script>\n", argv[0]);
+        exit(1);
+    }
+
+    FILE *arquivo = fopen(argv[1], "r");
+    if (!arquivo) {
+        fprintf(stderr, "Erro: Não foi possível abrir o arquivo '%s'\n", argv[1]);
+        exit(1);
+    }
+
+    yyin = arquivo; 
+    tabela_iniciar(); 
+
+    printf("--- Executando script: %s ---\n\n", argv[1]);
+
+    int parse_result = yyparse(); 
+
+    if (parse_result == 0 && g_ast_root) {
+        imprimir_ast_principal(g_ast_root);
+
+        printf("Execução:\n");
+        interpretar(g_ast_root);
+        printf("--------------------------------------------\n");
+
+        imprimir_tabela_simbolos();
+
+        liberar_ast(g_ast_root);
+    
+    } else if (parse_result != 0) {
+        printf("\n--- Script interrompido por erro de sintaxe ---\n");
+    }
+    
+    if (interpret_error) {
+        printf("\n--- Script concluído com erros semânticos ---\n");
+    } else if (parse_result == 0) {
+        printf("\n--- Script concluído com sucesso ---\n");
+    }
+
+    tabela_liberar();
+    fclose(arquivo);
+    
+    return (parse_result != 0 || interpret_error);
 }

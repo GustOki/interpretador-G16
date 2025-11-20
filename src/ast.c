@@ -1,111 +1,609 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "ast.h"
+#include "simbolo.h"
+#include <string.h>
 
-// Função para criar um nó de número
-AstNode* create_num_node(int valor) {
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+AstNode* create_num_node(int valor, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
-    if (!no) {
-        fprintf(stderr, "Erro de alocação de memória\n");
-        exit(1);
-    }
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
     no->type = NODE_TYPE_NUM;
-    no->op = 0; // Operador não aplicável
+    no->op = 0;
+    no->lineno = lineno;
     no->data.valor = valor;
+    
     return no;
 }
 
-// Função para criar um nó de identificador
-AstNode* create_id_node(char* nome) {
+AstNode* create_float_node(float valor, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
-    if (!no) {
-        fprintf(stderr, "Erro de alocação de memória\n");
-        exit(1);
-    }
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_FLOAT;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.fvalor = valor;
+    
+    return no;
+}
+
+AstNode* create_char_node(char valor, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_CHAR;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.cvalor = valor;
+    
+    return no;
+}
+
+AstNode* create_string_node(char* valor, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_STRING;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.svalor = strdup(valor);
+    
+    return no;
+}
+
+AstNode* create_id_node(char* nome, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
     no->type = NODE_TYPE_ID;
     no->op = 0;
-    no->data.nome = nome; // strdup já foi feito no lexer
+    no->lineno = lineno;
+    no->data.nome = nome;
+    
     return no;
 }
 
-// Função para criar um nó de operação
-AstNode* create_op_node(char op, AstNode* left, AstNode* right) {
+AstNode* create_op_node(char op, AstNode* left, AstNode* right, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
-    if (!no) {
-        fprintf(stderr, "Erro de alocação de memória\n");
-        exit(1);
-    }
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
     no->type = NODE_TYPE_OP;
     no->op = op;
+    no->lineno = lineno;
     no->data.children.left = left;
     no->data.children.right = right;
+    
     return no;
 }
 
-// Função para criar um nó de atribuição
-AstNode* create_assign_node(AstNode* left, AstNode* right) {
+AstNode* create_assign_node(AstNode* left, AstNode* right, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
-    if (!no) {
-        fprintf(stderr, "Erro de alocação de memória\n");
-        exit(1);
-    }
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
     no->type = NODE_TYPE_ASSIGN;
     no->op = '=';
+    no->lineno = lineno;
     no->data.children.left = left;
     no->data.children.right = right;
+    
     return no;
 }
 
-// Função para criar um nó de condição
-AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_else) {
+AstNode* create_if_node(AstNode* condicao, AstNode* bloco_then, AstNode* bloco_else, int lineno) {
     AstNode* no = (AstNode*) malloc(sizeof(AstNode));
-    if (!no) {
-        fprintf(stderr, "Erro de alocação de memória\n");
-        exit(1);
-    }
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
     no->type = NODE_TYPE_IF;
-    no->op = 0; // Não aplicável
+    no->op = 0;
+    no->lineno = lineno;
     no->data.if_details.condicao = condicao;
     no->data.if_details.bloco_then = bloco_then;
     no->data.if_details.bloco_else = bloco_else;
+    
     return no;
 }
 
-AstNode* create_relop_node(char op, AstNode* left, AstNode* right) {
-    AstNode* node = malloc(sizeof(AstNode));
-    node->type = NODE_TYPE_OP;
-    node->op = op;
-    node->data.children.left = left;
-    node->data.children.right = right;
-    return node;
+AstNode* create_while_node(AstNode* condicao, AstNode* corpo, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_WHILE;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.while_details.condicao = condicao;
+    no->data.while_details.corpo = corpo;
+    
+    return no;
 }
 
-AstNode* create_command_list(AstNode* first, AstNode* next) {
-    AstNode* node = malloc(sizeof(AstNode));
-    node->type = NODE_TYPE_CMD_LIST;
-    node->data.cmd_list.first = first;
-    node->data.cmd_list.next = next;
-    return node;
+AstNode* create_do_while_node(AstNode* corpo, AstNode* condicao, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_DO_WHILE;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.do_while_details.corpo = corpo;
+    no->data.do_while_details.condicao = condicao;
+    
+    return no;
+}
+
+AstNode* create_for_node(AstNode* inicializacao, AstNode* condicao, AstNode* incremento, AstNode* corpo, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_FOR;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.for_details.inicializacao = inicializacao;
+    no->data.for_details.condicao = condicao;
+    no->data.for_details.incremento = incremento;
+    no->data.for_details.corpo = corpo;
+    
+    return no;
+}
+
+AstNode* create_var_decl_node(int tipo, char* nome, AstNode* valor, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_VAR_DECL;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.var_decl.tipo = tipo;
+    no->data.var_decl.nome = nome;
+    no->data.var_decl.valor = valor;
+    
+    return no;
+}
+
+AstNode* create_printf_node(AstNode* expr, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_PRINTF;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.children.left = expr; 
+    no->data.children.right = NULL;
+    
+    return no;
+}
+
+AstNode* create_switch_node(AstNode* condicao, AstNode* casos, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_SWITCH;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.switch_details.condicao = condicao;
+    no->data.switch_details.casos = casos;
+    
+    return no;
+}
+
+AstNode* create_case_node(AstNode* valor, AstNode* corpo, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_CASE;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.case_details.valor = valor;
+    no->data.case_details.corpo = corpo;
+    no->data.case_details.proximo = NULL;
+    
+    return no;
+}
+
+AstNode* create_default_node(AstNode* corpo, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_DEFAULT;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.case_details.valor = NULL;
+    no->data.case_details.corpo = corpo;
+    no->data.case_details.proximo = NULL;
+    
+    return no;
+}
+
+AstNode* create_break_node(int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_BREAK;
+    no->op = 0;
+    no->lineno = lineno;
+    
+    return no;
 }
 
 AstNode* append_command_list(AstNode* list, AstNode* cmd) {
-    if (!list) return create_command_list(cmd, NULL);
-    AstNode* temp = list;
-    while (temp->data.cmd_list.next)
-        temp = temp->data.cmd_list.next;
-    temp->data.cmd_list.next = create_command_list(cmd, NULL);
-    return list;
+    if (!list) return cmd;
+
+    return create_op_node(';', list, cmd, list->lineno); 
 }
 
+AstNode* append_case_list(AstNode* head, AstNode* new_case) {
+    if (!head) {
+        return new_case;
+    }
+    
+    AstNode* temp = head;
+    while (temp->data.case_details.proximo != NULL) {
+        temp = temp->data.case_details.proximo;
+    }
+    
+    temp->data.case_details.proximo = new_case;
+    
+    return head;
+}
 
-// Função para liberar a memória da AST
+AstNode* create_array_decl_node(int tipo, char* nome, int tamanho, AstNode* valores, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_ARRAY_DECL;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.array_decl.tipo = tipo;
+    no->data.array_decl.nome = nome;
+    no->data.array_decl.tamanho = tamanho;
+    no->data.array_decl.valores_iniciais = valores;
+    
+    return no;
+}
+
+AstNode* create_array_access_node(char* nome, AstNode* indice, int lineno) {
+    AstNode* no = (AstNode*) malloc(sizeof(AstNode));
+    if (!no) { fprintf(stderr, "Erro de alocação\n"); exit(1); }
+    
+    no->type = NODE_TYPE_ARRAY_ACCESS;
+    no->op = 0;
+    no->lineno = lineno;
+    no->data.array_access.nome = nome;
+    no->data.array_access.indice = indice;
+    
+    return no;
+}
+
 void liberar_ast(AstNode* no) {
     if (!no) return;
-    if (no->type == NODE_TYPE_OP || no->type == NODE_TYPE_ASSIGN) {
-        liberar_ast(no->data.children.left);
-        liberar_ast(no->data.children.right);
-    } else if (no->type == NODE_TYPE_ID) {
-        free(no->data.nome); // Libera a string copiada pelo strdup
+    switch (no->type) {
+        case NODE_TYPE_OP:
+        case NODE_TYPE_ASSIGN:
+            liberar_ast(no->data.children.left);
+            liberar_ast(no->data.children.right);
+            break;
+        
+            case NODE_TYPE_IF:
+            liberar_ast(no->data.if_details.condicao);
+            liberar_ast(no->data.if_details.bloco_then);
+            liberar_ast(no->data.if_details.bloco_else);
+            break;
+        
+        case NODE_TYPE_ID:
+            free(no->data.nome);
+            break;
+    
+        case NODE_TYPE_VAR_DECL:
+            free(no->data.var_decl.nome);
+            liberar_ast(no->data.var_decl.valor);
+            break;
+        
+        case NODE_TYPE_ARRAY_DECL:
+            free(no->data.array_decl.nome);
+            liberar_ast(no->data.array_decl.valores_iniciais);
+            break;
+    
+        case NODE_TYPE_ARRAY_ACCESS:
+            free(no->data.array_access.nome);
+            liberar_ast(no->data.array_access.indice);
+            break;
+        
+        case NODE_TYPE_PRINTF:
+            liberar_ast(no->data.children.left);
+            break;
+    
+        case NODE_TYPE_WHILE:
+            liberar_ast(no->data.while_details.condicao);
+            liberar_ast(no->data.while_details.corpo);
+            break;
+        
+        case NODE_TYPE_DO_WHILE:
+            liberar_ast(no->data.do_while_details.corpo);
+            liberar_ast(no->data.do_while_details.condicao);
+            break;
+    
+        case NODE_TYPE_FOR:
+            liberar_ast(no->data.for_details.inicializacao);
+            liberar_ast(no->data.for_details.condicao);
+            liberar_ast(no->data.for_details.incremento);
+            liberar_ast(no->data.for_details.corpo);
+            break;    
+        case NODE_TYPE_SWITCH:
+            liberar_ast(no->data.switch_details.condicao);
+            liberar_ast(no->data.switch_details.casos);
+            break;
+        
+        case NODE_TYPE_CASE:
+            liberar_ast(no->data.case_details.valor);
+            liberar_ast(no->data.case_details.corpo);
+            liberar_ast(no->data.case_details.proximo);
+            break;
+    
+        case NODE_TYPE_DEFAULT:
+            liberar_ast(no->data.case_details.corpo);
+            liberar_ast(no->data.case_details.proximo);
+            break;
+        
+        case NODE_TYPE_STRING:
+            free(no->data.svalor);
+            break;
+    
+        case NODE_TYPE_NUM:
+        case NODE_TYPE_FLOAT:
+        case NODE_TYPE_CHAR:
+        case NODE_TYPE_BREAK:
+        case NODE_TYPE_ARRAY_INIT_LIST:
+            break;
+        
+        case NODE_TYPE_CMD_LIST:
+             liberar_ast(no->data.cmd_list.first);
+             liberar_ast(no->data.cmd_list.next);
+             break;
+        
+         case NODE_TYPE_BLOCK:
+             break;
     }
     free(no);
+}
+
+static void imprimir_ast_recursivo(AstNode* no, int indent);
+
+static void print_indent(int indent) {
+    for (int i = 0; i < indent; i++) {
+        printf("    ");
+    }
+}
+
+static void print_op(char op) {
+    switch(op) {
+        case 'L': printf(" <= "); break;
+        case 'G': printf(" >= "); break;
+        case 'E': printf(" == "); break;
+        case 'N': printf(" != "); break;
+
+        default: printf(" %c ", op);
+    }
+}
+
+static void imprimir_ast_recursivo(AstNode* no, int indent) {
+    if (!no) return;
+
+    print_indent(indent);
+
+    switch (no->type) {
+        case NODE_TYPE_NUM:
+            printf("%d", no->data.valor);
+            break;
+        
+        case NODE_TYPE_FLOAT: 
+            printf("%.2f", no->data.fvalor);
+            break;
+    
+        case NODE_TYPE_CHAR:  
+            printf("'%c'", no->data.cvalor);
+            break;
+        
+        case NODE_TYPE_STRING:
+            printf("\"%s\"", no->data.svalor); 
+            break;
+    
+        case NODE_TYPE_ID:
+            printf("%s", no->data.nome);
+            break;
+        
+        case NODE_TYPE_OP:
+            if (no->op == ';') {
+                imprimir_ast_recursivo(no->data.children.left, indent);
+                printf("\n");
+                imprimir_ast_recursivo(no->data.children.right, indent);
+            } else if (no->op == ':') {
+                imprimir_ast_recursivo(no->data.children.left, indent);
+                printf("\n");
+                imprimir_ast_recursivo(no->data.children.right, indent);
+            } else {
+                printf("(");
+                imprimir_ast_recursivo(no->data.children.left, 0);
+                print_op(no->op);
+                imprimir_ast_recursivo(no->data.children.right, 0);
+                printf(")");
+            }
+            
+            break;
+        
+        case NODE_TYPE_ASSIGN:
+            printf("(");
+            imprimir_ast_recursivo(no->data.children.left, 0);
+            printf(" = ");
+            imprimir_ast_recursivo(no->data.children.right, 0);
+            printf(")");
+
+            break;
+
+        case NODE_TYPE_VAR_DECL:
+            printf("%s %s", get_tipo_str(no->data.var_decl.tipo), no->data.var_decl.nome);
+            if (no->data.var_decl.valor) {
+                printf(" = ");
+                imprimir_ast_recursivo(no->data.var_decl.valor, 0);
+            }
+
+            break;
+
+        case NODE_TYPE_PRINTF:
+            printf("printf(");
+            imprimir_ast_recursivo(no->data.children.left, 0);
+            printf(")");
+
+            break;
+
+        case NODE_TYPE_IF:
+            printf("if (");
+            imprimir_ast_recursivo(no->data.if_details.condicao, 0);
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.if_details.bloco_then, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+
+            if (no->data.if_details.bloco_else) {
+                printf(" else {\n");
+                imprimir_ast_recursivo(no->data.if_details.bloco_else, indent + 1);
+                printf("\n");
+                print_indent(indent);
+                printf("}");
+            }
+
+            break;
+
+        case NODE_TYPE_WHILE:
+            printf("while (");
+            imprimir_ast_recursivo(no->data.while_details.condicao, 0);
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.while_details.corpo, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+
+            break;
+
+        case NODE_TYPE_DO_WHILE:
+            printf("do {\n");
+            imprimir_ast_recursivo(no->data.do_while_details.corpo, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("} while (");
+            imprimir_ast_recursivo(no->data.do_while_details.condicao, 0);
+            printf(")");
+
+            break;
+        
+        case NODE_TYPE_FOR:
+            printf("for(");
+            
+            if (no->data.for_details.inicializacao && no->data.for_details.inicializacao->type == NODE_TYPE_ASSIGN) {
+                AstNode* assign = no->data.for_details.inicializacao;
+                printf("%s = ", assign->data.children.left->data.nome);
+                imprimir_ast_recursivo(assign->data.children.right, 0);
+            }
+            
+            printf("; ");
+            
+            if (no->data.for_details.condicao && no->data.for_details.condicao->type == NODE_TYPE_OP) {
+                AstNode* cond = no->data.for_details.condicao;
+                printf("%s", cond->data.children.left->data.nome);
+                print_op(cond->op);
+                imprimir_ast_recursivo(cond->data.children.right, 0);
+            }
+            
+            printf("; ");
+            
+            if (no->data.for_details.incremento && no->data.for_details.incremento->type == NODE_TYPE_ASSIGN) {
+                AstNode* inc = no->data.for_details.incremento;
+                printf("%s = %s + 1", inc->data.children.left->data.nome, inc->data.children.left->data.nome);
+            }
+            
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.for_details.corpo, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+            
+            break;
+            
+        case NODE_TYPE_SWITCH:
+            printf("switch (");
+            imprimir_ast_recursivo(no->data.switch_details.condicao, 0);
+            printf(") {\n");
+            imprimir_ast_recursivo(no->data.switch_details.casos, indent + 1);
+            printf("\n");
+            print_indent(indent);
+            printf("}");
+            
+            break;
+
+        case NODE_TYPE_CASE:
+            printf("case ");
+            imprimir_ast_recursivo(no->data.case_details.valor, 0);
+            printf(":\n");
+            imprimir_ast_recursivo(no->data.case_details.corpo, indent + 1);
+            
+            break;
+
+        case NODE_TYPE_DEFAULT:
+            printf("default:\n");
+            imprimir_ast_recursivo(no->data.case_details.corpo, indent + 1);
+            break;
+            
+        case NODE_TYPE_BREAK:
+            printf("break");
+            break;
+        
+        case NODE_TYPE_ARRAY_DECL:
+            printf("%s %s[%d]", 
+                   get_tipo_str(no->data.array_decl.tipo), 
+                   no->data.array_decl.nome,
+                   no->data.array_decl.tamanho);
+            if (no->data.array_decl.valores_iniciais) {
+                printf(" = {");
+                imprimir_ast_recursivo(no->data.array_decl.valores_iniciais, 0);
+                printf("}");
+            }
+            
+            break;
+            
+        case NODE_TYPE_ARRAY_ACCESS:
+            printf("%s[", no->data.array_access.nome);
+            imprimir_ast_recursivo(no->data.array_access.indice, 0);
+            printf("]");
+            break;
+            
+        case NODE_TYPE_ARRAY_INIT_LIST:
+            break;
+            
+        default:
+            break; 
+    }
+}
+
+void imprimir_ast_principal(AstNode* no) {
+    printf("Árvore Sintática Abstrata (AST):\n");
+    imprimir_ast_recursivo(no, 0);
+    printf("\n--------------------------------------------\n");
 }

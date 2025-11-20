@@ -11,11 +11,30 @@ extern int yylineno;
 %}
 
 %%
+"int"       { return INT; }
+"float"     { return FLOAT; }
+"char"      { return CHAR; }
+"string"    { return STRING; }
+"printf"    { return PRINTF; }
+
 "if"        { return IF; }
 "else"      { return ELSE; }
+"do"        { return DO; }
+"while"     { return WHILE; }
+"for"       { return FOR; }
+"switch"    { return SWITCH; }
+"case"      { return CASE; }
+"break"     { return BREAK; }
+"default"   { return DEFAULT; }
+
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
+","         { return VIRGULA; }
+"["         { return LBRACKET; }
+"]"         { return RBRACKET; }
+":"         { return COLON; }
 ";"         { return PONTO_VIRGULA; }
+
 "!="        { return NE; }
 "<="        { return LE; }
 ">="        { return GE; }
@@ -24,8 +43,10 @@ extern int yylineno;
 "="         { return IGUAL; }
 "=="        { return EQ; }
 
-
 [0-9]+                  { yylval.valor = atoi(yytext); return NUM; }
+[0-9]+\.[0-9]*          { yylval.fval = atof(yytext); return FLOAT_NUM; }
+'[^']'                  { yylval.cval = yytext[1]; return CHAR_LIT; }
+\"[^\"]*\"              { yylval.str = strdup(yytext+1); yylval.str[strlen(yylval.str)-1] = '\0'; return STRING_LIT; } 
 
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }
@@ -33,14 +54,16 @@ extern int yylineno;
 "/"                     { return DIVIDE; }
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
-"\n"                    { return NEWLINE; }
 
-[ \t]+                  { /* ignora espaços e tabs */ }
-[a-zA-Z][a-zA-Z0-9_]*   { yylval.str = strdup(yytext); return ID; }
+
+[ \t\r\n]+              {  }
+
+\/\/[^\r\n]* {  }
+
+[a-zA-Z_][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return ID; }
 
 .                       {
-                            /* yytext contém o caractere inválido (terminado em '\0') */
-                            fprintf(stderr, "Linha %d: caractere inválido '%s'\n", yylineno, yytext);
+                            fprintf(stderr, "Linha %d: Erro Léxico: Caractere inesperado '%s'\n", yylineno, yytext);
                         }
 
 %%
