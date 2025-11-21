@@ -1,4 +1,4 @@
-# Documentação Inicial — Interpretador (Grupo 16)
+# Documentação — Interpretador (Grupo 16)
 
 * **Linguagem do projeto:** C
 * **Grupo:** Grupo 16
@@ -6,202 +6,133 @@
 
 ---
 
-# Por que usamos C?
+## 📖 Por que usamos C?
 
-* **Protótipo rápido:** A Linguagrem C permite desenvolver e iterar rapidamente estruturas de dados (AST, tabela de símbolos) e componentes do interpretador.
-* **Leitura e manutenção:** sintaxe clara e menor boilerplate facilitam o trabalho em equipe.
-* **Bibliotecas e ferramentas:** opção de usar bibliotecas de parsing (ex.: PLY, lark) caso se deseje, além de utilitários para testes e logging.
-* **Integração com Flex/Bison:** Flex/Bison podem gerar a etapa léxica/sintática tradicional; Python é ideal para implementar a camada de execução (AST/interpreter) sem precisar compilar todo o backend em C.
-* **Educação:** facilita a compreensão de conceitos como AST, análise semântica e avaliação.
+* **Protótipo rápido:** A Linguagem C permite desenvolver e iterar rapidamente estruturas de dados (AST, tabela de símbolos) e componentes do interpretador.
+* **Leitura e manutenção:** Sintaxe clara e menor boilerplate facilitam o trabalho em equipe.
+* **Bibliotecas e ferramentas:** Integração nativa com Flex e Bison, além de ferramentas padrão de sistema (Make, GDB).
+* **Integração com Flex/Bison:** Flex/Bison geram código C otimizado para a etapa léxica e sintática.
+* **Educação:** Facilita a compreensão de conceitos de baixo nível como gerenciamento de memória, ponteiros e a estrutura interna de um processo de compilação.
 
+---
 
-## Visão Geral
+## 📋 Visão Geral
 
 Este repositório contém a implementação de um **interpretador** para uma linguagem simples definida pelo grupo. A análise léxica e sintática é feita com **Flex** e **Bison**; a AST, análise semântica e o interpretador estão implementados em **C**.
 
-Pipeline alvo:
-`arquivo fonte → lexer (Flex) → parser (Bison) → AST → checagem semântica → interpretação/execução`.
+**Pipeline de Execução:**
+`Código Fonte (.lang)` → `Lexer (Tokens)` → `Parser (Gramática)` → `AST` → `Verificação Semântica` → `Interpretação/Execução`
 
 ---
 
-## Estrutura do repositório (atual)
+## 📂 Estrutura do Repositório
 
-```
+```text
 interpretador-grupo16/
-├── build/                    # artefatos de build (opcional)
+├── build/                    # Artefatos de compilação e executável final (gerado automaticamente)
 ├── lexer/
-│   ├── lex.yy.c              # gerado (Flex)
-│   └── lexer.l
+│   ├── lex.yy.c              # Gerado automaticamente pelo Flex
+│   └── lexer.l               # Regras léxicas (tokens)
 ├── parser/
-│   ├── parser.tab.c          # gerado (Bison)
-│   ├── parser.tab.h          # gerado (Bison)
-│   └── parser.y
+│   ├── parser.tab.c          # Gerado automaticamente pelo Bison
+│   ├── parser.tab.h          # Header gerado pelo Bison
+│   └── parser.y              # Regras gramaticais
 ├── src/
-│   ├── ast.c
-│   ├── ast.h
-│   ├── interpretador.c
-│   ├── main.c
-│   └── simbolo.h
-├── Makefile
-└── README.md
+│   ├── ast.c                 # Implementação da Árvore Sintática Abstrata
+│   ├── ast.h                 # Definições das estruturas da AST
+│   ├── interpretador.c       # Lógica de execução, avaliação e runtime
+│   ├── main.c                # Ponto de entrada (leitura de arquivo)
+|	├── test_runner.py        # Script Python para orquestração dos testes
+│   ├── simbolo.c             # Implementação da Tabela de Símbolos
+│   └── simbolo.h             # Interface da Tabela de Símbolos
+├── tests/                    # Suíte de testes automatizados
+│   ├── valid/                # Testes validos (devem rodar com sucesso)
+│   └── invalid/              # Testes de erro (devem falhar propositalmente)
+├── Makefile                  # Automação de build
+└── README.md                 # Documentação
 ```
 
----
+🛠️ Pré-requisitos
+------------------
 
-<<<<<<< HEAD
-# 4. Instalação de dependências e comandos úteis
+Para compilar e rodar o projeto, você precisará das seguintes ferramentas instaladas:
 
-## Flex / Bison (Debian/Ubuntu)
-=======
-## Pré-requisitos
+*   **GCC** (Compilador C)
+    
+*   **Flex**
+    
+*   **Bison**
+    
+*   **Python 3** (Para rodar a suíte de testes)
+    
+*   **Make**
+    
 
-No Ubuntu/Debian:
->>>>>>> bf5fc69a41e78f35a0ce7c9c7a6a8dab98079e0f
+**Instalação no Ubuntu/Debian/WSL:**
 
-```bash
-sudo apt-get update
-sudo apt-get install build-essential flex bison
-```
 
-Opcional (testes/unit):
+`   sudo apt-get update  sudo apt-get install build-essential flex bison python3   `
 
-```bash
-sudo apt-get install cmocka
-```
+🚀 Compilação e Execução
+------------------------
 
-Recomendações de desenvolvimento:
+O projeto utiliza um Makefile para automatizar todo o processo.
 
-* `gcc` ou `clang`
-* `clang-format` (padronização de estilo)
-* usar sanitizers em builds de debug: `-fsanitize=address,undefined`
+### Compilar o Projeto
 
----
+Gera o executável interpretador na pasta build/.
 
-## Build — Como compilar (Makefile)
+`   make   `
 
-Abaixo está o **Makefile** atual usado no projeto (cole-o no `Makefile` se ainda não estiver):
+### Limpar Arquivos Gerados
 
-```makefile
-# Makefile para Estrutura de Pastas Organizada
+Remove a pasta build e os arquivos C gerados pelo Flex/Bison.
 
-# --- Variáveis de Compilação ---
-CC = gcc
-# Flags do compilador:
-# -g para informações de debug (para usar com gdb)
-# -Wall para mostrar todos os avisos
-# -Isrc para procurar headers na pasta src/
-# -Iparser para procurar o parser.tab.h na pasta parser/
-CFLAGS = -g -Wall -Isrc -Iparser
-# Flags do Linker: -lfl para a biblioteca do Flex
-LDFLAGS = -lfl
+`   make clean   `
 
-# --- Variáveis de Projeto ---
-TARGET = interpretador
-BUILD_DIR = build
+### Executar um Script Manualmente
 
-# --- Definição dos Arquivos ---
-# Fontes .c escritos à mão
-C_SOURCES   = $(wildcard src/*.c)
-# Arquivos de parser e lexer
-LEXER_SRC   = lexer/lexer.l
-PARSER_SRC  = parser/parser.y
+Para rodar um arquivo específico da nossa linguagem:
 
-# Arquivos que serão gerados pelo Flex e Bison
-PARSER_GEN_C = parser/parser.tab.c
-PARSER_GEN_H = parser/parser.tab.h
-LEXER_GEN_C  = lexer/lex.yy.c
+`   ./build/interpretador caminho/para/arquivo.c   `
 
-# Lista de todos os arquivos objeto que serão criados na pasta build/
-C_OBJS      = $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(C_SOURCES))
-PARSER_OBJ  = $(BUILD_DIR)/parser.tab.o
-LEXER_OBJ   = $(BUILD_DIR)/lex.yy.o
-OBJECTS     = $(C_OBJS) $(PARSER_OBJ) $(LEXER_OBJ)
+🧪 Testes Automatizados
+-----------------------
 
-# --- Regras do Make ---
+O projeto possui um sistema robusto de **Testes de Regressão** (test\_runner.py). Ele garante que novas funcionalidades não quebrem comportamentos existentes.
 
-# Regra padrão: executada ao digitar "make"
-# Depende do executável final.
-all: $(BUILD_DIR)/$(TARGET)
+### Como Rodar os Testes
 
-# Regra para linkar e criar o executável final
-$(BUILD_DIR)/$(TARGET): $(OBJECTS)
-	@echo "===> LINKANDO PROJETO..."
-	$(CC) -o $@ $^ $(LDFLAGS)
-	@echo "===> PROJETO CONSTRUÍDO: $@"
+Basta executar o comando abaixo. O sistema irá compilar o projeto e rodar todos os casos de teste.
 
-# Regra para compilar os arquivos .c da pasta src/ para .o na pasta build/
-# Depende do header do Bison para garantir a ordem correta de compilação.
-$(BUILD_DIR)/%.o: src/%.c $(PARSER_GEN_H)
-	@echo "===> COMPILANDO (C): $<"
-	$(CC) $(CFLAGS) -c $< -o $@
+`   make test   `
 
-# Regra para compilar o parser.tab.c gerado
-$(PARSER_OBJ): $(PARSER_GEN_C)
-	@echo "===> COMPILANDO (PARSER): $<"
-	$(CC) $(CFLAGS) -c $< -o $@
+### Estrutura dos Testes
 
-# Regra para compilar o lex.yy.c gerado
-$(LEXER_OBJ): $(LEXER_GEN_C)
-	@echo "===> COMPILANDO (LEXER): $<"
-	$(CC) $(CFLAGS) -c $< -o $@
+*   **Pasta tests/valid:** Contém códigos que **devem funcionar**. O teste verifica se o código de saída é 0 e se a saída impressa bate com o gabarito (.out).
+    
+*   **Pasta tests/invalid:** Contém códigos com erros propositais (sintaxe ou semântica). O teste verifica se o interpretador **identifica o erro** e retorna falha, garantindo segurança.
+    
 
-# Regra para gerar os arquivos do Parser (.tab.c e .tab.h) a partir do .y
-$(PARSER_GEN_C) $(PARSER_GEN_H): $(PARSER_SRC)
-	@echo "===> GERANDO PARSER (BISON)..."
-	bison -d -o $(PARSER_GEN_C) $(PARSER_SRC)
+###  Como Adicionar Novos Testes (Geração Automática)
 
-# Regra para gerar o arquivo do Lexer (.yy.c) a partir do .l
-# Depende do header do Bison, garantindo que o Bison rode primeiro.
-$(LEXER_GEN_C): $(LEXER_SRC) $(PARSER_GEN_H)
-	@echo "===> GERANDO LEXER (FLEX)..."
-	flex -o $(LEXER_GEN_C) $(LEXER_SRC)
+Para adicionar um novo caso de teste válido sem precisar escrever o gabarito manualmente:
 
-# Regra para garantir que a pasta build/ exista antes de criar arquivos .o nela
-$(OBJECTS): | $(BUILD_DIR)
+1.  Crie o arquivo .lang: Crie um novo arquivo com seu código na pasta tests/valid/ (ex: tests/valid/novo\_teste.lang).
+    
+2. Gere o gabarito (.out) automaticamente rodando este comando no terminal:
 
-$(BUILD_DIR):
-	@echo "===> CRIANDO DIRETÓRIO DE BUILD..."
-	mkdir -p $(BUILD_DIR)
+`for f in tests/valid/\*.lang; do ./build/interpretador "$f" > "${f%.lang}.out"; done `
 
-# Regra para limpar todos os arquivos gerados
-.PHONY: clean
-clean:
-	@echo "===> LIMPANDO PROJETO..."
-	rm -rf $(BUILD_DIR)
-	rm -f $(PARSER_GEN_C) $(PARSER_GEN_H) $(LEXER_GEN_C)
-```
+    
+3.  **Verifique:** Abra o arquivo .out gerado para garantir que a saída está correta conforme o esperado.
+    
+4.  **Rode a validação:** Execute `make test` para confirmar que tudo está verde.
+    
 
-### Comandos Make mais usados
-
-```bash
-# Compilar tudo (regra padrão 'all')
-make
-
-# Ou explicitamente
-make all
-
-# Limpar artefatos gerados
-make clean
-```
 
 **O executável final** ficará em `build/interpretador` (conforme `BUILD_DIR` e `TARGET`).
 
----
-
-## Uso — Como rodar
-
-Supondo que `make` já foi executado com sucesso:
-
-```bash
-./build/interpretador caminhos/para/exemplo.lang
-```
-
-Observações:
-
-* Verifique `src/main.c` para confirmar o formato de invocação (argumentos esperados).
-* Se o projeto não receber um arquivo por argumento, talvez rode em modo interativo — veja `main.c`.
-
----
 
 ## Tokens, tipos e construções iniciais
 
