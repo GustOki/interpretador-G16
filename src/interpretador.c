@@ -29,7 +29,6 @@ ValorSimbolo interpretar(AstNode* no) {
     resultado.inicializado = 0;
     resultado.tipo = TIPO_INT;
     
-    /* --- ATUALIZADO: Verifica g_break_flag --- */
     if (!no || interpret_error || g_break_flag) {
         return resultado;
     }
@@ -37,7 +36,6 @@ ValorSimbolo interpretar(AstNode* no) {
     int lineno = no->lineno;
 
     switch (no->type) {
-        /* --- SEUS CASOS EXISTENTES (MANTIDOS) --- */
         case NODE_TYPE_NUM:
             resultado.tipo = TIPO_INT;
             resultado.valor.i = no->data.valor;
@@ -185,7 +183,6 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_OP: {
             if (no->op == ';') {
                 interpretar(no->data.children.left);
-                /* --- ATUALIZADO: Checa g_break_flag --- */
                 if (interpret_error || g_break_flag) break;
                 resultado = interpretar(no->data.children.right);
                 break;
@@ -451,7 +448,6 @@ ValorSimbolo interpretar(AstNode* no) {
             break;
         }
 
-        /* --- ATUALIZADO: Lida com CMD_LIST e checa BREAK --- */
         case NODE_TYPE_CMD_LIST: {
             AstNode* temp = no;
             while (temp && !interpret_error && !g_break_flag) {
@@ -594,7 +590,6 @@ ValorSimbolo interpretar(AstNode* no) {
             break;
         }
 
-        /* --- REINTRODUZIDO: BREAK --- */
         case NODE_TYPE_BREAK:
             g_break_flag = 1;
             resultado.inicializado = 1;
@@ -602,7 +597,6 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.valor.i = 0;
             break;
 
-        /* --- REINTRODUZIDO: SWITCH --- */
         case NODE_TYPE_SWITCH: {
             ValorSimbolo cond = interpretar(no->data.switch_details.condicao);
             if (interpret_error || !cond.inicializado) break;
@@ -614,7 +608,6 @@ ValorSimbolo interpretar(AstNode* no) {
             AstNode* caso_atual = no->data.switch_details.casos;
             AstNode* default_corpo = NULL;
 
-            // Loop pela lista de cases
             while (caso_atual && !g_break_flag) {
                 // DEFAULT
                 if (caso_atual->data.case_details.valor == NULL) {
@@ -626,20 +619,17 @@ ValorSimbolo interpretar(AstNode* no) {
                         ValorSimbolo case_val = interpretar(caso_atual->data.case_details.valor);
                         if (interpret_error) break;
 
-                        // Comparação baseada no tipo
                         int eh_igual = 0;
                         if (cond.tipo == TIPO_INT && case_val.tipo == TIPO_INT) {
                             eh_igual = (cond.valor.i == case_val.valor.i);
                         } else if (cond.tipo == TIPO_FLOAT && case_val.tipo == TIPO_FLOAT) {
                             eh_igual = (cond.valor.f == case_val.valor.f);
                         }
-                        // (Adicione mais tipos se necessário)
 
                         if (eh_igual) match_encontrado = 1;
                     }
                 }
 
-                // Se encontrou match (agora ou antes), executa (fall-through)
                 if (match_encontrado) {
                     interpretar(caso_atual->data.case_details.corpo);
                 }
@@ -647,7 +637,6 @@ ValorSimbolo interpretar(AstNode* no) {
                 caso_atual = caso_atual->data.case_details.proximo;
             }
 
-            // Se não houve match e existe default, executa default
             if (!match_encontrado && default_corpo && !g_break_flag) {
                 interpretar(default_corpo);
             }
@@ -705,7 +694,7 @@ void interpretar_printf(AstNode* expr) {
             val.inicializado = 1;
             break;
 
-        case NODE_TYPE_STRING: // Adicionado para suporte a string no printf
+        case NODE_TYPE_STRING: 
              val.tipo = TIPO_STRING;
              val.valor.s = expr->data.svalor;
              val.inicializado = 1;

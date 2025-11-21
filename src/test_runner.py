@@ -3,13 +3,12 @@ import subprocess
 import sys
 import difflib
 
-# --- CONFIGURAÇÕES ---
+
 INTERPRETER_PATH = "./build/interpretador"
 TESTS_DIR = "tests"
 VALID_DIR = os.path.join(TESTS_DIR, "valid")
 INVALID_DIR = os.path.join(TESTS_DIR, "invalid")
 
-# Cores para o terminal
 GREEN = "\033[92m"
 RED = "\033[91m"
 RESET = "\033[0m"
@@ -42,7 +41,6 @@ def run_valid_tests():
             print(f"[SKIP] {filename}: Arquivo .out não encontrado. (Gere-o primeiro!)")
             continue
 
-        # Roda o interpretador
         try:
             result = subprocess.run(
                 [INTERPRETER_PATH, filepath],
@@ -56,13 +54,11 @@ def run_valid_tests():
             with open(expected_out_path, "r") as f:
                 expected_output = f.read().strip()
 
-            # Verifica o código de saída (deve ser 0 para sucesso)
             if result.returncode != 0:
                 print(f"{RED}[FAIL] {filename}{RESET}: Erro de execução (Código {result.returncode})")
                 print(result.stderr)
                 continue
 
-            # Verifica a saída do texto
             if actual_output == expected_output:
                 print(f"{GREEN}[PASS] {filename}{RESET}")
                 passed += 1
@@ -99,8 +95,7 @@ def run_invalid_tests():
                 timeout=2
             )
 
-            # Aqui o sucesso é FALHAR (código diferente de 0)
-            # Ou imprimir "Erro" na saída de erro
+ 
             if result.returncode != 0 or "Erro" in result.stderr:
                 print(f"{GREEN}[PASS] {filename}{RESET}")
                 passed += 1
