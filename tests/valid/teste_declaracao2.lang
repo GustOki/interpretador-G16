@@ -1,0 +1,4 @@
+//Declaração com inicialização 
+
+int x = 5;
+printf(x);
