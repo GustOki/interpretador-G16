@@ -1,0 +1,6 @@
+/* Supondo que switch só aceite int/char */
+string s;
+s = "ola";
+switch(s) { 
+    default: {}
+}

@@ -1,0 +1,20 @@
+int i;
+i = 0;
+
+// Loop externo
+while (i < 5) {
+    printf(i);
+    
+    switch (i) {
+        case 2: {
+            printf(999); 
+            break; // Este break deve parar o SWITCH, não o WHILE
+        }
+        default: {
+            // Não faz nada
+        }
+    }
+    
+    i = i + 1;
+}
+printf(1000); 

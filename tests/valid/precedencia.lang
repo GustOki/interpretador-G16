@@ -1,0 +1,12 @@
+//Garantir que o Bison gerou a árvore correta onde multiplicação acontece antes da adição.int a;
+int a;
+a = 10 + 5 * 2; // Esperado: 20, NÃO 30
+printf(a);
+
+int b;
+b = (10 + 5) * 2; // Esperado: 30
+printf(b);
+
+int c;
+c = 10 * 2 / 5; // Esperado: 4 (Associatividade à esquerda)
+printf(c);

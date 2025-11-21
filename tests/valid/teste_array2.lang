@@ -1,5 +1,5 @@
 //Arrays
 
 int nums[4] = {1, 2, 3, 5};
-printf(nums[4]);
+printf(nums[3]);
 

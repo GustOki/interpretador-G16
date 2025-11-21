@@ -1,0 +1,2 @@
+int lista[3]; 
+lista[3] = 50; // Erro! Índice 3 está fora.

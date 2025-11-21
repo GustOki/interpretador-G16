@@ -1,0 +1,18 @@
+--- Executando script: tests/valid/teste_operacoes2.lang ---
+
+Árvore Sintática Abstrata (AST):
+float x = 1.50
+float y = 0.50
+printf((x + y))
+printf((x * y))
+--------------------------------------------
+Execução:
+2.00
+0.75
+--------------------------------------------
+Tabela de Símbolos:
+Nome: x, Tipo: float, Valor: 1.5
+Nome: y, Tipo: float, Valor: 0.5
+--------------------------------------------
+
+--- Script concluído com sucesso ---

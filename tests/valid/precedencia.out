@@ -1,0 +1,25 @@
+--- Executando script: tests/valid/precedencia.lang ---
+
+Árvore Sintática Abstrata (AST):
+int a
+(a = (10 + (5 * 2)))
+printf(a)
+int b
+(b = ((10 + 5) * 2))
+printf(b)
+int c
+(c = ((10 * 2) / 5))
+printf(c)
+--------------------------------------------
+Execução:
+20
+30
+4
+--------------------------------------------
+Tabela de Símbolos:
+Nome: a, Tipo: int, Valor: 20
+Nome: b, Tipo: int, Valor: 30
+Nome: c, Tipo: int, Valor: 4
+--------------------------------------------
+
+--- Script concluído com sucesso ---

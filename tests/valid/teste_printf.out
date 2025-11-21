@@ -1,0 +1,16 @@
+--- Executando script: tests/valid/teste_printf.lang ---
+
+Árvore Sintática Abstrata (AST):
+int a = 7
+printf(a)
+printf((a + 3))
+--------------------------------------------
+Execução:
+7
+10
+--------------------------------------------
+Tabela de Símbolos:
+Nome: a, Tipo: int, Valor: 7
+--------------------------------------------
+
+--- Script concluído com sucesso ---

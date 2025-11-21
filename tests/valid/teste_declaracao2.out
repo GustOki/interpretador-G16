@@ -1,0 +1,14 @@
+--- Executando script: tests/valid/teste_declaracao2.lang ---
+
+Árvore Sintática Abstrata (AST):
+int x = 5
+printf(x)
+--------------------------------------------
+Execução:
+5
+--------------------------------------------
+Tabela de Símbolos:
+Nome: x, Tipo: int, Valor: 5
+--------------------------------------------
+
+--- Script concluído com sucesso ---

@@ -1,0 +1,50 @@
+--- Executando script: tests/valid/teste_tipos.lang ---
+
+Árvore Sintática Abstrata (AST):
+int idade = 25
+printf(idade)
+float preco = 99.99
+printf(preco)
+char letra = 'A'
+printf(letra)
+string nome = "João"
+printf(nome)
+int x = 10
+float y = 2.50
+float resultado = (x + y)
+printf(resultado)
+if ((idade > 18)) {
+    printf(1)
+}
+int i
+for(i = 0; i < 5; i = i + 1) {
+    printf(i)
+}
+printf(i)
+--------------------------------------------
+Execução:
+25
+99.99
+A
+João
+12.50
+1
+0
+1
+2
+3
+4
+5
+--------------------------------------------
+Tabela de Símbolos:
+Nome: i, Tipo: int, Valor: 5
+Nome: x, Tipo: int, Valor: 10
+Nome: y, Tipo: float, Valor: 2.5
+Nome: letra, Tipo: char, Valor: 'A'
+Nome: resultado, Tipo: float, Valor: 12.5
+Nome: preco, Tipo: float, Valor: 99.99
+Nome: nome, Tipo: string, Valor: "João"
+Nome: idade, Tipo: int, Valor: 25
+--------------------------------------------
+
+--- Script concluído com sucesso ---
