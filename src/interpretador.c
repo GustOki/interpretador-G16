@@ -8,6 +8,7 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+
 void interpretar_printf(AstNode* expr);
 int tabela_procurar(char* nome, ValorSimbolo* v);
 void tabela_inserir(char* nome, ValorSimbolo v);
@@ -15,6 +16,7 @@ void tabela_iniciar();
 void tabela_liberar();
 
 extern int interpret_error;
+
 static int g_break_flag = 0;
 
 void erro_tipo(const char* msg, int lineno) {
@@ -27,6 +29,7 @@ ValorSimbolo interpretar(AstNode* no) {
     resultado.inicializado = 0;
     resultado.tipo = TIPO_INT;
     
+    /* --- ATUALIZADO: Verifica g_break_flag --- */
     if (!no || interpret_error || g_break_flag) {
         return resultado;
     }
@@ -34,6 +37,7 @@ ValorSimbolo interpretar(AstNode* no) {
     int lineno = no->lineno;
 
     switch (no->type) {
+        /* --- SEUS CASOS EXISTENTES (MANTIDOS) --- */
         case NODE_TYPE_NUM:
             resultado.tipo = TIPO_INT;
             resultado.valor.i = no->data.valor;
@@ -63,7 +67,6 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' não foi definida.\n", lineno, no->data.nome);
                 interpret_error = 1;
             }
-            
             break;
         }
         
@@ -182,16 +185,15 @@ ValorSimbolo interpretar(AstNode* no) {
         case NODE_TYPE_OP: {
             if (no->op == ';') {
                 interpretar(no->data.children.left);
+                /* --- ATUALIZADO: Checa g_break_flag --- */
                 if (interpret_error || g_break_flag) break;
                 resultado = interpretar(no->data.children.right);
-                
                 break;
             }
             if (no->op == ':') {
                 interpretar(no->data.children.left);
                 if (interpret_error || g_break_flag) break;
                 resultado = interpretar(no->data.children.right);
-                
                 break;
             }
 
@@ -259,7 +261,6 @@ ValorSimbolo interpretar(AstNode* no) {
                             break;
                         }
                         resultado.valor.i = esq.valor.i / dir.valor.i;
-                        
                         break;
                         
                     case '<': resultado.valor.i = esq.valor.i < dir.valor.i; break;
@@ -273,7 +274,6 @@ ValorSimbolo interpretar(AstNode* no) {
                         resultado.inicializado = 0;
                 }
             }
-            
             break;
         }
 
@@ -282,7 +282,6 @@ ValorSimbolo interpretar(AstNode* no) {
             if (tabela_procurar(no->data.var_decl.nome, &v_existente)) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' já foi declarada.\n", lineno, no->data.var_decl.nome);
                 interpret_error = 1;
-                
                 break;
             }
             
@@ -334,7 +333,6 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
         }
 
@@ -343,7 +341,6 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
         }
 
@@ -362,7 +359,6 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
         }
 
@@ -384,99 +380,97 @@ ValorSimbolo interpretar(AstNode* no) {
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
         }
 
         case NODE_TYPE_FOR: {
-    int old_break_flag = g_break_flag;
-    g_break_flag = 0;
-    
-    if (no->data.for_details.inicializacao) {
-        interpretar(no->data.for_details.inicializacao);
-        if (interpret_error) break;
-    }
-    
-    while (!interpret_error && !g_break_flag) {
-        if (no->data.for_details.condicao) {
-            ValorSimbolo cond = interpretar(no->data.for_details.condicao);
-            if (interpret_error || !cond.inicializado) break;
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
             
-            int cond_valor;
-            if (cond.tipo == TIPO_FLOAT) {
-                cond_valor = (cond.valor.f != 0.0f);
-            } else {
-                cond_valor = (cond.valor.i != 0);
+            if (no->data.for_details.inicializacao) {
+                interpretar(no->data.for_details.inicializacao);
+                if (interpret_error) break;
             }
             
-            if (!cond_valor) break;
-        }
-        
-        interpretar(no->data.for_details.corpo);
-        if (interpret_error || g_break_flag) break;
-        
-        if (no->data.for_details.incremento) {
-            interpretar(no->data.for_details.incremento);
-            if (interpret_error) break;
-        }
-    }
-    
-    g_break_flag = old_break_flag;
-    resultado.inicializado = 1;
-    resultado.tipo = TIPO_INT;
-    resultado.valor.i = 0;
-    
-    break;
-}
-
-        case NODE_TYPE_BREAK:
-            g_break_flag = 1;
+            while (!interpret_error && !g_break_flag) {
+                if (no->data.for_details.condicao) {
+                    ValorSimbolo cond = interpretar(no->data.for_details.condicao);
+                    if (interpret_error || !cond.inicializado) break;
+                    
+                    int cond_valor;
+                    if (cond.tipo == TIPO_FLOAT) {
+                        cond_valor = (cond.valor.f != 0.0f);
+                    } else {
+                        cond_valor = (cond.valor.i != 0);
+                    }
+                    
+                    if (!cond_valor) break;
+                }
+                
+                interpretar(no->data.for_details.corpo);
+                if (interpret_error || g_break_flag) break;
+                
+                if (no->data.for_details.incremento) {
+                    interpretar(no->data.for_details.incremento);
+                    if (interpret_error) break;
+                }
+            }
+            
+            g_break_flag = old_break_flag;
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
+        }
 
-        case NODE_TYPE_CMD_LIST:
-        case NODE_TYPE_SWITCH:
-        case NODE_TYPE_CASE:
-        case NODE_TYPE_DEFAULT:
         case NODE_TYPE_DO_WHILE: {
-                int old_break_flag = g_break_flag;
-                g_break_flag = 0;
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
 
-                do {
-                    interpretar(no->data.do_while_details.corpo);
+            do {
+                interpretar(no->data.do_while_details.corpo);
 
-                    if (interpret_error || g_break_flag) break;
+                if (interpret_error || g_break_flag) break;
 
-                    ValorSimbolo cond = interpretar(no->data.do_while_details.condicao);
-                    if (interpret_error || !cond.inicializado) break;
+                ValorSimbolo cond = interpretar(no->data.do_while_details.condicao);
+                if (interpret_error || !cond.inicializado) break;
 
-                    int cond_valor = (cond.tipo == TIPO_FLOAT)
-                        ? (cond.valor.f != 0.0f)
-                        : (cond.valor.i != 0);
+                int cond_valor = (cond.tipo == TIPO_FLOAT)
+                    ? (cond.valor.f != 0.0f)
+                    : (cond.valor.i != 0);
 
-                    if (!cond_valor) break;
+                if (!cond_valor) break;
 
-                } while (1);
+            } while (1);
 
-                g_break_flag = old_break_flag;
+            g_break_flag = old_break_flag;
 
-                resultado.inicializado = 1;
-                resultado.tipo = TIPO_INT;
-                resultado.valor.i = 0;
-                break;
+            resultado.inicializado = 1;
+            resultado.tipo = TIPO_INT;
+            resultado.valor.i = 0;
+            break;
+        }
+
+        /* --- ATUALIZADO: Lida com CMD_LIST e checa BREAK --- */
+        case NODE_TYPE_CMD_LIST: {
+            AstNode* temp = no;
+            while (temp && !interpret_error && !g_break_flag) {
+                interpretar(temp->data.cmd_list.first);
+                temp = temp->data.cmd_list.next;
             }
+            
+            resultado.inicializado = 1;
+            resultado.tipo = TIPO_INT;
+            resultado.valor.i = 0;
+            break;
+        }
 
         case NODE_TYPE_BLOCK:
             if (no->data.children.left) interpretar(no->data.children.left);
-            
             if (no->data.children.right) interpretar(no->data.children.right);
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
         
         case NODE_TYPE_ARRAY_DECL: {
@@ -485,7 +479,6 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Variável '%s' já foi declarada.\n", 
                         lineno, no->data.array_decl.nome);
                 interpret_error = 1;
-                
                 break;
             }
             
@@ -514,7 +507,6 @@ ValorSimbolo interpretar(AstNode* no) {
                     
                     if (lista_atual->type == NODE_TYPE_OP && lista_atual->op == ',') {
                         AstNode* temp_lista = lista_atual;
-                        
                         int stack_size = 0;
                         AstNode* stack[100];
                         
@@ -527,11 +519,9 @@ ValorSimbolo interpretar(AstNode* no) {
                             val = interpretar(temp_lista);
                             if (!interpret_error && val.inicializado && idx < v_array.array_size) {
                                 if (v_array.tipo == TIPO_INT) {
-                                    v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
-                                        val.valor.i : (int)val.valor.f;
+                                    v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? val.valor.i : (int)val.valor.f;
                                 } else if (v_array.tipo == TIPO_FLOAT) {
-                                    v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
-                                        val.valor.f : (float)val.valor.i;
+                                    v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? val.valor.f : (float)val.valor.i;
                                 }
                                 idx++;
                             }
@@ -541,43 +531,33 @@ ValorSimbolo interpretar(AstNode* no) {
                             val = interpretar(stack[i]);
                             if (!interpret_error && val.inicializado) {
                                 if (v_array.tipo == TIPO_INT) {
-                                    v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
-                                        val.valor.i : (int)val.valor.f;
+                                    v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? val.valor.i : (int)val.valor.f;
                                 } else if (v_array.tipo == TIPO_FLOAT) {
-                                    v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
-                                        val.valor.f : (float)val.valor.i;
+                                    v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? val.valor.f : (float)val.valor.i;
                                 }
                                 idx++;
                             }
                         }
-                        
                         break;
-                        
                     } else {
                         val = interpretar(lista_atual);
-
                         if (!interpret_error && val.inicializado) {
                             if (v_array.tipo == TIPO_INT) {
-                                v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? 
-                                    val.valor.i : (int)val.valor.f;
+                                v_array.array_data[idx].i = (val.tipo == TIPO_INT) ? val.valor.i : (int)val.valor.f;
                             } else if (v_array.tipo == TIPO_FLOAT) {
-                                v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? 
-                                    val.valor.f : (float)val.valor.i;
+                                v_array.array_data[idx].f = (val.tipo == TIPO_FLOAT) ? val.valor.f : (float)val.valor.i;
                             }
                             idx++;
                         }
-                        
                         break;
                     }
                 }
             }
             
             tabela_inserir(no->data.array_decl.nome, v_array);
-            
             resultado.inicializado = 1;
             resultado.tipo = TIPO_INT;
             resultado.valor.i = 0;
-            
             break;
         }
 
@@ -587,15 +567,12 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Array '%s' não declarado.\n", 
                         lineno, no->data.array_access.nome);
                 interpret_error = 1;
-                
                 break;
             }
-            
             if (!array.is_array) {
                 fprintf(stderr, "Linha %d: Erro Semântico: '%s' não é um array.\n", 
                         lineno, no->data.array_access.nome);
                 interpret_error = 1;
-                
                 break;
             }
             
@@ -608,14 +585,77 @@ ValorSimbolo interpretar(AstNode* no) {
                 fprintf(stderr, "Linha %d: Erro Semântico: Índice %d fora dos limites do array (0-%d).\n", 
                         lineno, indice, array.array_size - 1);
                 interpret_error = 1;
-                
                 break;
             }
             
             resultado.tipo = array.tipo;
             resultado.inicializado = 1;
             resultado.valor = array.array_data[indice];
-            
+            break;
+        }
+
+        /* --- REINTRODUZIDO: BREAK --- */
+        case NODE_TYPE_BREAK:
+            g_break_flag = 1;
+            resultado.inicializado = 1;
+            resultado.tipo = TIPO_INT;
+            resultado.valor.i = 0;
+            break;
+
+        /* --- REINTRODUZIDO: SWITCH --- */
+        case NODE_TYPE_SWITCH: {
+            ValorSimbolo cond = interpretar(no->data.switch_details.condicao);
+            if (interpret_error || !cond.inicializado) break;
+
+            int old_break_flag = g_break_flag;
+            g_break_flag = 0;
+
+            int match_encontrado = 0;
+            AstNode* caso_atual = no->data.switch_details.casos;
+            AstNode* default_corpo = NULL;
+
+            // Loop pela lista de cases
+            while (caso_atual && !g_break_flag) {
+                // DEFAULT
+                if (caso_atual->data.case_details.valor == NULL) {
+                    default_corpo = caso_atual->data.case_details.corpo;
+                }
+                // CASE
+                else {
+                    if (!match_encontrado) {
+                        ValorSimbolo case_val = interpretar(caso_atual->data.case_details.valor);
+                        if (interpret_error) break;
+
+                        // Comparação baseada no tipo
+                        int eh_igual = 0;
+                        if (cond.tipo == TIPO_INT && case_val.tipo == TIPO_INT) {
+                            eh_igual = (cond.valor.i == case_val.valor.i);
+                        } else if (cond.tipo == TIPO_FLOAT && case_val.tipo == TIPO_FLOAT) {
+                            eh_igual = (cond.valor.f == case_val.valor.f);
+                        }
+                        // (Adicione mais tipos se necessário)
+
+                        if (eh_igual) match_encontrado = 1;
+                    }
+                }
+
+                // Se encontrou match (agora ou antes), executa (fall-through)
+                if (match_encontrado) {
+                    interpretar(caso_atual->data.case_details.corpo);
+                }
+                
+                caso_atual = caso_atual->data.case_details.proximo;
+            }
+
+            // Se não houve match e existe default, executa default
+            if (!match_encontrado && default_corpo && !g_break_flag) {
+                interpretar(default_corpo);
+            }
+
+            g_break_flag = old_break_flag;
+            resultado.inicializado = 1;
+            resultado.tipo = TIPO_INT;
+            resultado.valor.i = 0;
             break;
         }
 
@@ -645,7 +685,6 @@ void interpretar_printf(AstNode* expr) {
                 erro_tipo("variável não inicializada no printf", lineno_printf);
                 return;
             }
-            
             break;
         }
         case NODE_TYPE_NUM:
@@ -665,6 +704,12 @@ void interpretar_printf(AstNode* expr) {
             val.valor.c = expr->data.cvalor;
             val.inicializado = 1;
             break;
+
+        case NODE_TYPE_STRING: // Adicionado para suporte a string no printf
+             val.tipo = TIPO_STRING;
+             val.valor.s = expr->data.svalor;
+             val.inicializado = 1;
+             break;
 
         default:
             val = interpretar(expr);
