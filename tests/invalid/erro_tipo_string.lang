@@ -1,0 +1,6 @@
+string s;
+s = "ola";
+int x;
+x = 10;
+
+x = x + s;

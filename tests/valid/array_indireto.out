@@ -1,0 +1,21 @@
+--- Executando script: tests/valid/array_indireto.lang ---
+
+Árvore Sintática Abstrata (AST):
+int dados[5]
+(dados[0] = 1)
+(dados[1] = 2)
+(dados[2] = 3)
+(dados[3] = 4)
+(dados[4] = 0)
+printf(dados[(1 + 1)])
+printf(dados[dados[4]])
+--------------------------------------------
+Execução:
+3
+1
+--------------------------------------------
+Tabela de Símbolos:
+Nome: dados, Tipo: vetor<int, 5>, Valores: {1, 2, 3, 4, 0}
+--------------------------------------------
+
+--- Script concluído com sucesso ---
