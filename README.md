@@ -65,7 +65,7 @@ interpretador-grupo16/
 - **`src/ast.*`**: Estruturas de dados que representam o programa como uma árvore. Cada nó representa uma construção da linguagem (expressão, comando, declaração).
 - **`src/simbolo.*`**: Gerencia variáveis e seus escopos. Implementa pilha de escopos para suportar funções e blocos aninhados.
 - **`src/interpretador.c`**: Implementa o "walker" da AST que executa o programa: avalia expressões, executa comandos e gerencia o fluxo de controle.
-- **`src/test_runner.py`**: Sistema de testes automatizado que compila o interpretador e valida casos de sucesso e falha.
+- **`test_runner.py`**: Sistema de testes automatizado que compila o interpretador e valida casos de sucesso e falha.
 
 ---
 
@@ -275,27 +275,56 @@ make test  # Verifique que o interpretador detecta o erro
 
 ### Exemplos de Casos de Teste
 
-#### Teste Válido - Fibonacci
+#### Teste Válido - Contador Simples
 ```c
-// tests/valid/fibonacci.lang
-var n = 10;
-var a = 0;
-var b = 1;
-var i = 0;
+// tests/valid/contador.lang
+int i;
+for (i = 0; i < 5; i = i + 1) {
+    printf("Contador: %d\n", i);
+}
+```
 
-while (i < n) {
-    print(a);
-    var temp = a + b;
-    a = b;
-    b = temp;
-    i = i + 1;
+#### Teste Válido - Cálculo de Média
+```c
+// tests/valid/media.lang
+float nota1 = 8.5;
+float nota2 = 7.0;
+float nota3 = 9.5;
+float media = (nota1 + nota2 + nota3) / 3.0;
+printf("Média: %f\n", media);
+```
+
+#### Teste Válido - Switch-Case
+```c
+// tests/valid/switch_test.lang
+int dia = 3;
+switch (dia) {
+    case 1:
+        printf("Segunda-feira\n");
+        break;
+    case 2:
+        printf("Terça-feira\n");
+        break;
+    case 3:
+        printf("Quarta-feira\n");
+        break;
+    default:
+        printf("Outro dia\n");
+        break;
 }
 ```
 
 #### Teste Inválido - Variável Não Declarada
 ```c
 // tests/invalid/undefined_var.lang
-print(x);  // Erro: x não foi declarada
+printf("%d\n", x);  // Erro: x não foi declarada
+```
+
+#### Teste Inválido - Erro de Sintaxe
+```c
+// tests/invalid/syntax_error.lang
+int x = 10  // Erro: faltando ponto e vírgula
+printf("%d\n", x);
 ```
 
 ### Saída do Sistema de Testes
@@ -325,135 +354,187 @@ Resumo: 5/5 testes aprovados (100%)
 O lexer reconhece os seguintes tipos de tokens:
 
 #### **Identificadores e Literais**
-| Token | Descrição | Exemplo |
-|-------|-----------|---------|
-| `IDENT` | Identificador (variável, função) | `x`, `contador`, `calcularSoma` |
-| `NUMBER` | Literal numérico inteiro | `42`, `0`, `-15` |
-| `FLOAT` | Literal numérico de ponto flutuante | `3.14`, `0.5`, `-2.718` |
-| `STRING` | Literal de string | `"Hello"`, `"Mundo"` |
-| `TRUE` / `FALSE` | Literais booleanos | `true`, `false` |
+| Token | Descrição | Padrão/Exemplo |
+|-------|-----------|----------------|
+| `ID` | Identificador (variável, função) | `[a-zA-Z_][a-zA-Z0-9_]*` → `x`, `contador`, `soma_total` |
+| `NUM` | Literal numérico inteiro | `[0-9]+` → `42`, `0`, `123` |
+| `FLOAT_NUM` | Literal numérico de ponto flutuante | `[0-9]+\.[0-9]*` → `3.14`, `0.5`, `2.718` |
+| `CHAR_LIT` | Literal de caractere | `'[^']'` → `'a'`, `'Z'`, `'9'` |
+| `STRING_LIT` | Literal de string | `\"[^\"]*\"` → `"Hello"`, `"Mundo"` |
 
 #### **Palavras-Chave Reservadas**
 ```
-if      else      while     for       func      return
-var     const     print     input     break     continue
+if          else        while       for         do          switch
+case        break       default     printf
+```
+
+#### **Tipos de Dados**
+```
+int         float       char        string
 ```
 
 #### **Operadores Aritméticos**
-```
-+       -         *         /         %         **
-```
+| Operador | Token | Descrição |
+|----------|-------|-----------|
+| `+` | `PLUS` | Adição |
+| `-` | `MINUS` | Subtração |
+| `*` | `TIMES` | Multiplicação |
+| `/` | `DIVIDE` | Divisão |
 
 #### **Operadores Relacionais**
-```
-==      !=        <         >         <=        >=
-```
-
-#### **Operadores Lógicos**
-```
-&&      ||        !
-```
+| Operador | Token | Descrição |
+|----------|-------|-----------|
+| `==` | `EQ` | Igualdade |
+| `!=` | `NE` | Diferente |
+| `<` | `LT` | Menor que |
+| `>` | `GT` | Maior que |
+| `<=` | `LE` | Menor ou igual |
+| `>=` | `GE` | Maior ou igual |
 
 #### **Operadores de Atribuição**
-```
-=       +=        -=        *=        /=        %=
-```
+| Operador | Token | Descrição |
+|----------|-------|-----------|
+| `=` | `IGUAL` | Atribuição simples |
 
 #### **Delimitadores e Pontuação**
-```
-;       ,         (         )         {         }         [         ]
-```
+| Símbolo | Token | Descrição |
+|---------|-------|-----------|
+| `;` | `PONTO_VIRGULA` | Fim de instrução |
+| `,` | `VIRGULA` | Separador |
+| `(` | `LPAREN` | Parêntese esquerdo |
+| `)` | `RPAREN` | Parêntese direito |
+| `{` | `LBRACE` | Chave esquerda (início de bloco) |
+| `}` | `RBRACE` | Chave direita (fim de bloco) |
+| `[` | `LBRACKET` | Colchete esquerdo (arrays) |
+| `]` | `RBRACKET` | Colchete direito (arrays) |
+| `:` | `COLON` | Dois pontos (switch/case) |
+
+#### **Comentários**
+O lexer suporta dois tipos de comentários:
+- **Comentário de linha:** `// comentário até o fim da linha`
+- **Comentário de bloco:** `/* comentário em múltiplas linhas */`
 
 ### Tipos de Dados Suportados
 
-A linguagem suporta os seguintes tipos de dados:
+A linguagem suporta os seguintes tipos de dados primitivos:
 
-| Tipo | Descrição | Exemplo |
-|------|-----------|---------|
-| `int` | Números inteiros de 32 bits | `42`, `-15`, `0` |
-| `float` | Números de ponto flutuante | `3.14`, `-0.5` |
-| `bool` | Booleanos (verdadeiro/falso) | `true`, `false` |
-| `string` | Cadeias de caracteres | `"Hello"`, `"Mundo"` |
+| Tipo | Descrição | Exemplo de Declaração | Exemplo de Literal |
+|------|-----------|----------------------|-------------------|
+| `int` | Números inteiros | `int x = 42;` | `123`, `0`, `999` |
+| `float` | Números de ponto flutuante | `float pi = 3.14;` | `3.14`, `0.5`, `2.0` |
+| `char` | Caractere único | `char letra = 'A';` | `'a'`, `'Z'`, `'9'` |
+| `string` | Cadeia de caracteres | `string nome = "João";` | `"Hello"`, `"Mundo"` |
 
-**Conversões implícitas:**
-- `int` → `float` (automática em operações mistas)
-- `bool` → `int` (`true` = 1, `false` = 0)
+**Observações sobre tipos:**
+- Inteiros são representados sem ponto decimal
+- Floats devem conter pelo menos um dígito após o ponto (ex: `2.0` não apenas `2.`)
+- Chars são delimitados por aspas simples (`'`)
+- Strings são delimitadas por aspas duplas (`"`)
 
 ### Construções Sintáticas
 
 #### **1. Declaração de Variáveis**
 ```c
-var x;              // Declaração sem inicialização
-var y = 10;         // Declaração com inicialização
-var nome = "João";  // String
-var pi = 3.14159;   // Float
+int x;                  // Declaração sem inicialização
+int y = 10;             // Declaração com inicialização
+float pi = 3.14159;     // Float
+char letra = 'A';       // Char
+string nome = "Maria";  // String
 ```
 
 #### **2. Atribuições**
 ```c
-x = 5;              // Atribuição simples
-y += 3;             // Equivalente a: y = y + 3
-z *= 2;             // Equivalente a: z = z * 2
+x = 5;                  // Atribuição simples
+y = x + 10;             // Atribuição com expressão
+letra = 'B';            // Atribuição de char
 ```
 
 #### **3. Expressões Aritméticas**
 ```c
-var resultado = (a + b) * c - d / 2;
-var potencia = base ** expoente;
-var resto = x % 3;
+int resultado = (a + b) * c - d / 2;
+float media = (nota1 + nota2) / 2.0;
+int resto = x - y * z;
 ```
 
-#### **4. Expressões Lógicas**
+#### **4. Expressões Relacionais**
 ```c
-var teste = (x > 5) && (y < 10);
-var valido = !erro || status;
+if (x > 0) { /* ... */ }
+if (a == b) { /* ... */ }
+if (nota >= 7.0) { /* ... */ }
+while (i < 10) { /* ... */ }
 ```
 
 #### **5. Estrutura Condicional (if/else)**
 ```c
 if (x > 0) {
-    print("Positivo");
+    printf("Positivo");
 } else if (x < 0) {
-    print("Negativo");
+    printf("Negativo");
 } else {
-    print("Zero");
+    printf("Zero");
 }
 ```
 
 #### **6. Laço While**
 ```c
-var i = 0;
+int i = 0;
 while (i < 10) {
-    print(i);
+    printf("%d\n", i);
     i = i + 1;
 }
 ```
 
-#### **7. Laço For**
+#### **7. Laço Do-While**
 ```c
-for (var i = 0; i < 10; i = i + 1) {
-    print(i);
+int i = 0;
+do {
+    printf("%d\n", i);
+    i = i + 1;
+} while (i < 10);
+```
+
+#### **8. Laço For**
+```c
+int i;
+for (i = 0; i < 10; i = i + 1) {
+    printf("%d\n", i);
 }
 ```
 
-#### **8. Funções** *(se implementadas)*
+#### **9. Estrutura Switch-Case**
 ```c
-func fibonacci(n) {
-    if (n <= 1) {
-        return n;
-    }
-    return fibonacci(n - 1) + fibonacci(n - 2);
+int opcao = 2;
+switch (opcao) {
+    case 1:
+        printf("Opção 1");
+        break;
+    case 2:
+        printf("Opção 2");
+        break;
+    case 3:
+        printf("Opção 3");
+        break;
+    default:
+        printf("Opção inválida");
+        break;
 }
-
-var resultado = fibonacci(10);
 ```
 
-#### **9. Entrada e Saída**
+#### **10. Saída de Dados (printf)**
 ```c
-print("Digite um número:");
-var numero = input();
-print("Você digitou: ");
-print(numero);
+printf("Hello, World!\n");              // String simples
+printf("Valor: %d\n", x);                // Inteiro
+printf("Pi: %f\n", pi);                  // Float
+printf("Letra: %c\n", letra);            // Char
+printf("Nome: %s\n", nome);              // String
+printf("Soma: %d\n", a + b);             // Expressão
+```
+
+#### **11. Arrays** *(se suportados)*
+```c
+int numeros[5];                          // Declaração de array
+numeros[0] = 10;                         // Atribuição
+int valor = numeros[0];                  // Acesso
 ```
 
 ### Gramática Simplificada
@@ -463,15 +544,19 @@ programa    ::= declaracao*
 
 declaracao  ::= declaracao_var | comando
 
-declaracao_var ::= 'var' IDENT ('=' expressao)? ';'
+declaracao_var ::= tipo ID ('[' NUM ']')? ('=' expressao)? ';'
+
+tipo        ::= 'int' | 'float' | 'char' | 'string'
 
 comando     ::= bloco
               | if_stmt
               | while_stmt
+              | do_while_stmt
               | for_stmt
-              | return_stmt
-              | print_stmt
+              | switch_stmt
+              | printf_stmt
               | atribuicao ';'
+              | 'break' ';'
               | expressao ';'
 
 bloco       ::= '{' comando* '}'
@@ -480,23 +565,24 @@ if_stmt     ::= 'if' '(' expressao ')' comando ('else' comando)?
 
 while_stmt  ::= 'while' '(' expressao ')' comando
 
-for_stmt    ::= 'for' '(' declaracao_var expressao ';' atribuicao ')' comando
+do_while_stmt ::= 'do' comando 'while' '(' expressao ')' ';'
 
-return_stmt ::= 'return' expressao? ';'
+for_stmt    ::= 'for' '(' atribuicao ';' expressao ';' atribuicao ')' comando
 
-print_stmt  ::= 'print' '(' expressao ')' ';'
+switch_stmt ::= 'switch' '(' expressao ')' '{' case_list default_case? '}'
 
-atribuicao  ::= IDENT '=' expressao
-              | IDENT '+=' expressao
-              | IDENT '-=' expressao
-              | IDENT '*=' expressao
-              | IDENT '/=' expressao
+case_list   ::= case_stmt+
 
-expressao   ::= logica_ou
+case_stmt   ::= 'case' NUM ':' comando*
 
-logica_ou   ::= logica_e ('||' logica_e)*
+default_case ::= 'default' ':' comando*
 
-logica_e    ::= igualdade ('&&' igualdade)*
+printf_stmt ::= 'printf' '(' STRING_LIT (',' expressao)* ')' ';'
+
+atribuicao  ::= ID '=' expressao
+              | ID '[' expressao ']' '=' expressao
+
+expressao   ::= igualdade
 
 igualdade   ::= comparacao (('==' | '!=') comparacao)*
 
@@ -504,19 +590,29 @@ comparacao  ::= termo (('<' | '>' | '<=' | '>=') termo)*
 
 termo       ::= fator (('+' | '-') fator)*
 
-fator       ::= unario (('*' | '/' | '%') unario)*
+fator       ::= unario (('*' | '/') unario)*
 
-unario      ::= ('!' | '-') unario | potencia
+unario      ::= ('-') unario | primario
 
-potencia    ::= primario ('**' primario)*
-
-primario    ::= NUMBER | FLOAT | STRING | TRUE | FALSE
-              | IDENT
+primario    ::= NUM 
+              | FLOAT_NUM 
+              | CHAR_LIT 
+              | STRING_LIT
+              | ID
+              | ID '[' expressao ']'
               | '(' expressao ')'
-              | chamada_funcao
-
-chamada_funcao ::= IDENT '(' (expressao (',' expressao)*)? ')'
 ```
+
+### Regras de Precedência de Operadores
+
+Da menor para a maior precedência:
+
+1. **Comparação de igualdade:** `==`, `!=`
+2. **Comparação relacional:** `<`, `>`, `<=`, `>=`
+3. **Adição e subtração:** `+`, `-`
+4. **Multiplicação e divisão:** `*`, `/`
+5. **Unário:** `-` (negação)
+6. **Primários:** Literais, identificadores, parênteses
 
 ---
 
@@ -560,14 +656,14 @@ gdb ./build/interpretador
 
 ### Erros Léxicos e Sintáticos
 
-* **Lexer:** Reporta caracteres inválidos e tokens mal-formados
+* **Lexer:** Reporta caracteres inválidos e tokens mal-formados com número de linha
 * **Parser:** Usa recuperação de erros do Bison para reportar múltiplos erros
-* **Formato:** `arquivo.lang:linha:coluna: erro: descrição`
+* **Formato:** `Linha N: Erro Léxico: descrição`
 
 **Exemplo:**
 ```
-exemplo.lang:5:8: erro: caractere inválido '@'
-exemplo.lang:10:15: erro: esperado ';' após declaração
+Linha 5: Erro Léxico: Caractere inesperado '@'
+Linha 10: erro: esperado ';' após declaração
 ```
 
 ### Erros Semânticos
@@ -575,25 +671,25 @@ exemplo.lang:10:15: erro: esperado ';' após declaração
 * Variáveis não declaradas antes do uso
 * Redeclaração de variáveis no mesmo escopo
 * Incompatibilidade de tipos em operações
-* Número incorreto de argumentos em funções
-* Retorno fora de função
+* Uso incorreto de `break` fora de loops ou switch
 
 **Exemplo:**
 ```
-exemplo.lang:15:5: erro: variável 'x' não declarada
-exemplo.lang:20:9: erro: não é possível somar 'string' com 'int'
+erro: variável 'x' não declarada
+erro: não é possível somar 'string' com 'int'
 ```
 
 ### Erros de Runtime
 
 * Divisão por zero
 * Acesso a índice inválido de array
-* Stack overflow (recursão profunda)
-* Operações inválidas (ex: raiz quadrada de negativo)
+* Operações inválidas com tipos incompatíveis
+* Estouro de pilha em recursões profundas
 
 **Exemplo:**
 ```
-Runtime error em exemplo.lang:25: divisão por zero
+Runtime error: divisão por zero
+Runtime error: índice de array fora dos limites
 ```
 
 ---
@@ -679,3 +775,4 @@ git commit -m "docs: atualizar README com exemplos de uso"
 ## Licença
 
 Este projeto é desenvolvido para fins educacionais como parte da disciplina de Compiladores da UnB.
+
