@@ -10,9 +10,40 @@ Faculdade de Ciência e Tecnologia em Engenharia (FCTE)
 
 ## 👥 Equipe - Grupo 16
 
-| | | | | |
-|:---:|:---:|:---:|:---:|:---:|
-| [![Dara Maria](https://github.com/daramariabs.png?size=120)](https://github.com/daramariabs)<br>**[Dara Maria](https://github.com/daramariabs)** | [![Davi Nunes](https://github.com/davirnunes.png?size=120)](https://github.com/davirnunes)<br>**[Davi Nunes](https://github.com/davirnunes)** | [![Gustavo Oki](https://github.com/GustOki.png?size=120)](https://github.com/GustOki)<br>**[Gustavo Oki](https://github.com/GustOki)** | [![Marcos Filho](https://github.com/marcosfilhopq.png?size=120)](https://github.com/marcosfilhopq)<br>**[Marcos Filho](https://github.com/marcosfilhopq)** | [![Samara Alves](https://github.com/SamaraAlvess.png?size=120)](https://github.com/SamaraAlvess)<br>**[Samara Alves](https://github.com/SamaraAlvess)** |
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/daramariabs">
+        <img src="https://github.com/daramariabs.png" width="120px;" alt="Dara Maria"/><br>
+        <b>Dara Maria</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/davirnunes">
+        <img src="https://github.com/davirnunes.png" width="120px;" alt="Davi Nunes"/><br>
+        <b>Davi Nunes</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/GustOki">
+        <img src="https://github.com/GustOki.png" width="120px;" alt="Gustavo Oki"/><br>
+        <b>Gustavo Oki</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/marcosfilhopq">
+        <img src="https://github.com/marcosfilhopq.png" width="120px;" alt="Marcos Filho"/><br>
+        <b>Marcos Filho</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/SamaraAlvess">
+        <img src="https://github.com/SamaraAlvess.png" width="120px;" alt="Samara Alves"/><br>
+        <b>Samara Alves</b>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ---
 

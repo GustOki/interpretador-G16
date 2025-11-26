@@ -18,6 +18,7 @@ nav:
   - Início: index.md
   - Como Rodar: instalacao.md
   - Linguagem: linguagem.md
+  - Testes: testes.md
   - Sprints: sprints.md
   - Atas: atas.md
 
