@@ -1,0 +1,17 @@
+// Verifica se a atualização de variaveis na tabela de simbolos está estável
+// Calcula os primeiros 10 números de Fibonacci
+int n;
+n = 10;
+int t1; 
+t1 = 0;
+int t2; 
+t2 = 1;
+int proximoTermo;
+
+int i;
+for (i = 1; i <= n; i = i + 1) {
+    printf(t1);
+    proximoTermo = t1 + t2;
+    t1 = t2;
+    t2 = proximoTermo;
+}

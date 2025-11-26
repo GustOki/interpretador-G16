@@ -1,0 +1,19 @@
+--- Executando script: tests/valid/teste_ifelse.lang ---
+
+Árvore Sintática Abstrata (AST):
+int a = 2
+if ((a > 3)) {
+    (a = 10)
+} else {
+    (a = 0)
+}
+printf(a)
+--------------------------------------------
+Execução:
+0
+--------------------------------------------
+Tabela de Símbolos:
+Nome: a, Tipo: int, Valor: 0
+--------------------------------------------
+
+--- Script concluído com sucesso ---

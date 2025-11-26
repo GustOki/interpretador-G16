@@ -1,0 +1,17 @@
+--- Executando script: tests/valid/teste_for.lang ---
+
+Árvore Sintática Abstrata (AST):
+int i = 0
+for(i = 0; i < 3; i = i + 1) {
+
+}
+printf(i)
+--------------------------------------------
+Execução:
+3
+--------------------------------------------
+Tabela de Símbolos:
+Nome: i, Tipo: int, Valor: 3
+--------------------------------------------
+
+--- Script concluído com sucesso ---

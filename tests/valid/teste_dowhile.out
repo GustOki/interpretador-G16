@@ -1,0 +1,17 @@
+--- Executando script: tests/valid/teste_dowhile.lang ---
+
+Árvore Sintática Abstrata (AST):
+int x = 0
+do {
+    (x = (x + 1))
+} while ((x < 3))
+printf(x)
+--------------------------------------------
+Execução:
+3
+--------------------------------------------
+Tabela de Símbolos:
+Nome: x, Tipo: int, Valor: 3
+--------------------------------------------
+
+--- Script concluído com sucesso ---

@@ -1,0 +1,3 @@
+int a;
+a = 10;
+printf(a + b); // 'b' nunca foi declarada!

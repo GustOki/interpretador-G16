@@ -1,0 +1,27 @@
+--- Executando script: tests/valid/array_sort.lang ---
+
+Árvore Sintática Abstrata (AST):
+int arr[5]
+int i
+for(i = 0; i < 5; i = i + 1) {
+    (arr[i] = (i * 10))
+}
+int j
+for(j = 4; j >= 0; j = j + 1) {
+    printf(arr[j])
+}
+--------------------------------------------
+Execução:
+40
+30
+20
+10
+0
+--------------------------------------------
+Tabela de Símbolos:
+Nome: i, Tipo: int, Valor: 5
+Nome: j, Tipo: int, Valor: -1
+Nome: arr, Tipo: vetor<int, 5>, Valores: {0, 10, 20, 30, 40}
+--------------------------------------------
+
+--- Script concluído com sucesso ---

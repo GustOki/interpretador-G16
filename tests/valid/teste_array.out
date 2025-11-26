@@ -1,0 +1,20 @@
+--- Executando script: tests/valid/teste_array.lang ---
+
+Árvore Sintática Abstrata (AST):
+int nums[5]
+(nums[0] = 10)
+(nums[1] = 20)
+printf(nums[0])
+int valores[3] = {((100 , 200) , 300)}
+printf(valores[1])
+--------------------------------------------
+Execução:
+10
+200
+--------------------------------------------
+Tabela de Símbolos:
+Nome: valores, Tipo: vetor<int, 3>, Valores: {100, 200, 300}
+Nome: nums, Tipo: vetor<int, 5>, Valores: {10, 20, 0, 0, 0}
+--------------------------------------------
+
+--- Script concluído com sucesso ---

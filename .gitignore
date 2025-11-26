@@ -1,4 +1,4 @@
-compiladores/build/
+/build/
 
 /parser/parser.tab.c
 /parser/parser.tab.h

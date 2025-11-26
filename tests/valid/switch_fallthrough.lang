@@ -1,0 +1,21 @@
+int val;
+val = 1;
+
+printf(1111);
+
+switch (val) {
+    case 1: {
+        printf(1); 
+    }
+    case 2: {
+        printf(2); 
+    }
+    case 3: {
+        printf(3); 
+        break;    // Para aqui 
+    }
+    default: {
+        printf(0); // Não deve imprimir
+    }
+}
+printf(2222);

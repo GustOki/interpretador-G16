@@ -1,0 +1,24 @@
+--- Executando script: tests/valid/switch_fallthrough.lang ---
+
+Árvore Sintática Abstrata (AST):
+int val
+(val = 1)
+printf(1111)
+switch (val) {
+    case 1:
+        printf(1)
+}
+printf(2222)
+--------------------------------------------
+Execução:
+1111
+1
+2
+3
+2222
+--------------------------------------------
+Tabela de Símbolos:
+Nome: val, Tipo: int, Valor: 1
+--------------------------------------------
+
+--- Script concluído com sucesso ---

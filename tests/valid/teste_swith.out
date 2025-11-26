@@ -1,0 +1,19 @@
+--- Executando script: tests/valid/teste_swith.lang ---
+
+Árvore Sintática Abstrata (AST):
+int x
+(x = 2)
+switch (x) {
+    case 1:
+                printf(100)
+        break
+}
+--------------------------------------------
+Execução:
+200
+--------------------------------------------
+Tabela de Símbolos:
+Nome: x, Tipo: int, Valor: 2
+--------------------------------------------
+
+--- Script concluído com sucesso ---

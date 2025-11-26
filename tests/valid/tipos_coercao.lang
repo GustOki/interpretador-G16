@@ -1,0 +1,17 @@
+//Verifica se a matemática mista funciona e se a atribuição converte corretamente os tipos
+float x;
+x = 5.5;
+int y;
+y = 2;
+
+// Operação mista (float + int) -> deve resultar float
+printf(x + y); 
+
+// Atribuição de float para int (deve truncar)
+int z;
+z = x; 
+printf(z);
+
+// Divisão inteira vs float
+printf(5 / 2);     
+printf(5.0 / 2);   

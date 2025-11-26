@@ -52,3 +52,6 @@ clean:
 	@echo "===> LIMPANDO PROJETO..."
 	rm -rf $(BUILD_DIR)
 	rm -f $(PARSER_GEN_C) $(PARSER_GEN_H) $(LEXER_GEN_C)
+
+test: all
+	@python3 src/test_runner.py

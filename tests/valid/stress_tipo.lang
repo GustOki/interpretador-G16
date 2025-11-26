@@ -1,0 +1,11 @@
+float f;
+f = 5.99;
+
+int i;
+i = f; 
+
+printf(i); 
+
+float resultado;
+resultado = i + 0.5; // 5 + 0.5
+printf(resultado);

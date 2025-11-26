@@ -1,0 +1,23 @@
+--- Executando script: tests/valid/switch_vazio.lang ---
+
+Árvore Sintática Abstrata (AST):
+int x
+(x = 1)
+switch (x) {
+
+}
+switch (x) {
+    case 1:
+
+}
+printf(100)
+--------------------------------------------
+Execução:
+999
+100
+--------------------------------------------
+Tabela de Símbolos:
+Nome: x, Tipo: int, Valor: 1
+--------------------------------------------
+
+--- Script concluído com sucesso ---

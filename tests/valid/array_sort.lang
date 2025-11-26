@@ -1,0 +1,12 @@
+// Preenche um array e depois imprime ao contrário
+int arr[5];
+int i;
+
+for (i = 0; i < 5; i = i + 1) {
+    arr[i] = i * 10;
+}
+
+int j;
+for (j = 4; j >= 0; j = j - 1) {
+    printf(arr[j]);
+}

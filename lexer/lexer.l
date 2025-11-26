@@ -8,6 +8,7 @@
 #include <string.h>
 
 extern int yylineno;
+extern int interpret_error;
 %}
 
 %%
@@ -57,6 +58,8 @@ extern int yylineno;
 
 
 [ \t\r\n]+              {  }
+"//".*                  {  }
+"/*"([^*]|(\*+[^*/]))*\*+"/" {  }
 
 \/\/[^\r\n]* {  }
 
@@ -64,6 +67,8 @@ extern int yylineno;
 
 .                       {
                             fprintf(stderr, "Linha %d: Erro Léxico: Caractere inesperado '%s'\n", yylineno, yytext);
+                            interpret_error = 1;
+                            return TOKEN_ERRO;
                         }
 
 %%

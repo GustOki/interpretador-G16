@@ -1,0 +1,4 @@
+int x;
+x = 10;
+int x; // Erro: x já existe
+x = 20;

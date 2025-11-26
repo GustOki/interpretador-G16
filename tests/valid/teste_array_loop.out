@@ -1,0 +1,25 @@
+--- Executando script: tests/valid/teste_array_loop.lang ---
+
+Árvore Sintática Abstrata (AST):
+int arr[5]
+int i
+for(i = 0; i < 5; i = i + 1) {
+    (arr[i] = (i * 10))
+}
+for(i = 0; i < 5; i = i + 1) {
+    printf(arr[i])
+}
+--------------------------------------------
+Execução:
+0
+10
+20
+30
+40
+--------------------------------------------
+Tabela de Símbolos:
+Nome: i, Tipo: int, Valor: 5
+Nome: arr, Tipo: vetor<int, 5>, Valores: {0, 10, 20, 30, 40}
+--------------------------------------------
+
+--- Script concluído com sucesso ---

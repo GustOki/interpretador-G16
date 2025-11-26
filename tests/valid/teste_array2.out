@@ -1,0 +1,14 @@
+--- Executando script: tests/valid/teste_array2.lang ---
+
+Árvore Sintática Abstrata (AST):
+int nums[4] = {(((1 , 2) , 3) , 5)}
+printf(nums[3])
+--------------------------------------------
+Execução:
+5
+--------------------------------------------
+Tabela de Símbolos:
+Nome: nums, Tipo: vetor<int, 4>, Valores: {1, 2, 3, 5}
+--------------------------------------------
+
+--- Script concluído com sucesso ---

@@ -1,0 +1,27 @@
+--- Executando script: tests/valid/tipos_coercao.lang ---
+
+Árvore Sintática Abstrata (AST):
+float x
+(x = 5.50)
+int y
+(y = 2)
+printf((x + y))
+int z
+(z = x)
+printf(z)
+printf((5 / 2))
+printf((5.00 / 2))
+--------------------------------------------
+Execução:
+7.50
+5
+2
+2.50
+--------------------------------------------
+Tabela de Símbolos:
+Nome: x, Tipo: float, Valor: 5.5
+Nome: y, Tipo: int, Valor: 2
+Nome: z, Tipo: int, Valor: 5
+--------------------------------------------
+
+--- Script concluído com sucesso ---

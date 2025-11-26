@@ -1,0 +1,11 @@
+//If e else
+
+int a = 2;
+
+if (a > 3) {
+    a = 10;
+} else {
+    a = 0;
+}
+
+printf(a);

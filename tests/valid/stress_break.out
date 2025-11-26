@@ -1,0 +1,36 @@
+--- Executando script: tests/valid/stress_break.lang ---
+
+Árvore Sintática Abstrata (AST):
+int i
+int j
+for(i = 0; i < 3; i = i + 1) {
+            printf(1111)
+    for(j = 0; j < 5; j = j + 1) {
+                if ((j == 2)) {
+            break
+        }
+        printf(j)
+    }
+    printf(2222)
+}
+--------------------------------------------
+Execução:
+1111
+0
+1
+2222
+1111
+0
+1
+2222
+1111
+0
+1
+2222
+--------------------------------------------
+Tabela de Símbolos:
+Nome: i, Tipo: int, Valor: 3
+Nome: j, Tipo: int, Valor: 2
+--------------------------------------------
+
+--- Script concluído com sucesso ---
