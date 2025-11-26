@@ -1,0 +1,16 @@
+int x;
+x = 1;
+
+switch (x) {
+}
+
+switch (x) {
+    case 1: {
+        // Não faz nada
+    }
+    default: {
+        printf(999);
+    }
+}
+
+printf(100); 

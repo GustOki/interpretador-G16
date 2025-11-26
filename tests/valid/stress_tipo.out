@@ -1,0 +1,23 @@
+--- Executando script: tests/valid/stress_tipo.lang ---
+
+Árvore Sintática Abstrata (AST):
+float f
+(f = 5.99)
+int i
+(i = f)
+printf(i)
+float resultado
+(resultado = (i + 0.50))
+printf(resultado)
+--------------------------------------------
+Execução:
+5
+5.50
+--------------------------------------------
+Tabela de Símbolos:
+Nome: f, Tipo: float, Valor: 5.99
+Nome: i, Tipo: int, Valor: 5
+Nome: resultado, Tipo: float, Valor: 5.5
+--------------------------------------------
+
+--- Script concluído com sucesso ---

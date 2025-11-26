@@ -1,0 +1,10 @@
+int dados[5];
+dados[0] = 1;
+dados[1] = 2;
+dados[2] = 3;
+dados[3] = 4;
+dados[4] = 0; 
+
+printf(dados[1 + 1]); 
+
+printf(dados[dados[4]]);

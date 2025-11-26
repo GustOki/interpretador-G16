@@ -1,0 +1,18 @@
+// Objetivo: O break deve parar APENAS o loop 'for' de dentro (j), 
+// mas o loop de fora (i) deve continuar rodando.
+
+int i;
+int j;
+
+for (i = 0; i < 3; i = i + 1) {
+    printf(1111); 
+    
+    for (j = 0; j < 5; j = j + 1) {
+        if (j == 2) {
+            break; 
+        }
+        printf(j);
+    }
+    
+    printf(2222);
+}

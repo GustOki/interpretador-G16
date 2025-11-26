@@ -187,7 +187,7 @@ ValorSimbolo interpretar(AstNode* no) {
                 resultado = interpretar(no->data.children.right);
                 break;
             }
-            if (no->op == ':') {
+            if (no->op == ':') { 
                 interpretar(no->data.children.left);
                 if (interpret_error || g_break_flag) break;
                 resultado = interpretar(no->data.children.right);
@@ -200,6 +200,12 @@ ValorSimbolo interpretar(AstNode* no) {
             ValorSimbolo dir = interpretar(no->data.children.right);
             if (interpret_error || !dir.inicializado) break;
 
+            if (esq.tipo == TIPO_STRING || dir.tipo == TIPO_STRING) {
+                if (no->op != 'E' && no->op != 'N') { 
+                    erro_tipo("Operação aritmética inválida com tipo STRING", lineno);
+                    break;
+                }
+            }
             resultado.inicializado = 1;
             
             if (esq.tipo == TIPO_FLOAT || dir.tipo == TIPO_FLOAT) {
@@ -227,7 +233,7 @@ ValorSimbolo interpretar(AstNode* no) {
                     case 'E': 
                     case 'N': 
                         resultado.tipo = TIPO_INT;
-                        resultado.valor.i = 0;
+                        resultado.valor.i = 0; 
                         break;
                     
                     default:
@@ -245,27 +251,32 @@ ValorSimbolo interpretar(AstNode* no) {
                         case 'N': resultado.valor.i = esq_f != dir_f; break;
                     }
                 }
-            } else {
+            } 
+            
+            else {
                 resultado.tipo = TIPO_INT;
+                int val_esq = (esq.tipo == TIPO_CHAR) ? (int)esq.valor.c : esq.valor.i;
+                int val_dir = (dir.tipo == TIPO_CHAR) ? (int)dir.valor.c : dir.valor.i;
+
                 switch (no->op) {
-                    case '+': resultado.valor.i = esq.valor.i + dir.valor.i; break;
-                    case '-': resultado.valor.i = esq.valor.i - dir.valor.i; break;
-                    case '*': resultado.valor.i = esq.valor.i * dir.valor.i; break;
+                    case '+': resultado.valor.i = val_esq + val_dir; break;
+                    case '-': resultado.valor.i = val_esq - val_dir; break;
+                    case '*': resultado.valor.i = val_esq * val_dir; break;
                     case '/':
-                        if (dir.valor.i == 0) {
+                        if (val_dir == 0) {
                             erro_tipo("divisão por zero", lineno);
                             resultado.inicializado = 0;
                             break;
                         }
-                        resultado.valor.i = esq.valor.i / dir.valor.i;
+                        resultado.valor.i = val_esq / val_dir;
                         break;
                         
-                    case '<': resultado.valor.i = esq.valor.i < dir.valor.i; break;
-                    case '>': resultado.valor.i = esq.valor.i > dir.valor.i; break;
-                    case 'L': resultado.valor.i = esq.valor.i <= dir.valor.i; break;
-                    case 'G': resultado.valor.i = esq.valor.i >= dir.valor.i; break;
-                    case 'E': resultado.valor.i = esq.valor.i == dir.valor.i; break;
-                    case 'N': resultado.valor.i = esq.valor.i != dir.valor.i; break;
+                    case '<': resultado.valor.i = val_esq < val_dir; break;
+                    case '>': resultado.valor.i = val_esq > val_dir; break;
+                    case 'L': resultado.valor.i = val_esq <= val_dir; break;
+                    case 'G': resultado.valor.i = val_esq >= val_dir; break;
+                    case 'E': resultado.valor.i = val_esq == val_dir; break;
+                    case 'N': resultado.valor.i = val_esq != val_dir; break;
                     default:
                         erro_tipo("operador desconhecido", lineno);
                         resultado.inicializado = 0;
@@ -601,6 +612,11 @@ ValorSimbolo interpretar(AstNode* no) {
             ValorSimbolo cond = interpretar(no->data.switch_details.condicao);
             if (interpret_error || !cond.inicializado) break;
 
+            if (cond.tipo != TIPO_INT && cond.tipo != TIPO_CHAR) {
+                erro_tipo("A condição do switch deve ser do tipo INT ou CHAR.", lineno);
+                break;
+            }
+
             int old_break_flag = g_break_flag;
             g_break_flag = 0;
 
@@ -619,11 +635,16 @@ ValorSimbolo interpretar(AstNode* no) {
                         ValorSimbolo case_val = interpretar(caso_atual->data.case_details.valor);
                         if (interpret_error) break;
 
+                        if (case_val.tipo != cond.tipo) {
+                             erro_tipo("O tipo do 'case' não corresponde ao tipo do 'switch'.", lineno);
+                             break;
+                        }
+
                         int eh_igual = 0;
-                        if (cond.tipo == TIPO_INT && case_val.tipo == TIPO_INT) {
+                        if (cond.tipo == TIPO_INT) {
                             eh_igual = (cond.valor.i == case_val.valor.i);
-                        } else if (cond.tipo == TIPO_FLOAT && case_val.tipo == TIPO_FLOAT) {
-                            eh_igual = (cond.valor.f == case_val.valor.f);
+                        } else if (cond.tipo == TIPO_CHAR) {
+                            eh_igual = (cond.valor.c == case_val.valor.c);
                         }
 
                         if (eh_igual) match_encontrado = 1;
