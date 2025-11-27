@@ -23,21 +23,29 @@ void executar_e_capturar_saida(AstNode* no) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        fprintf(stderr, "Uso correto: %s <arquivo_do_script>\n", argv[0]);
+    FILE *arquivo = NULL;
+
+    if (argc == 2) {
+        arquivo = fopen(argv[1], "r");
+        if (!arquivo) {
+            fprintf(stderr, "Erro: Não foi possível abrir o arquivo '%s'\n", argv[1]);
+            exit(1);
+        }
+        yyin = arquivo;
+        printf("--- Executando script: %s ---\n\n", argv[1]);
+    } 
+    
+    else if (argc == 1) {
+        yyin = stdin; 
+        printf("=== Interpretador Interativo ===\n");
+        printf("Digite o código. Pressione Ctrl+D (Linux/Mac) ou Ctrl+Z (Windows) para finalizar e executar.\n\n");
+    } 
+    else {
+        fprintf(stderr, "Uso: %s [arquivo_do_script]\n", argv[0]);
         exit(1);
     }
 
-    FILE *arquivo = fopen(argv[1], "r");
-    if (!arquivo) {
-        fprintf(stderr, "Erro: Não foi possível abrir o arquivo '%s'\n", argv[1]);
-        exit(1);
-    }
-
-    yyin = arquivo; 
     tabela_iniciar(); 
-
-    printf("--- Executando script: %s ---\n\n", argv[1]);
 
     int parse_result = yyparse(); 
 
@@ -63,7 +71,10 @@ int main(int argc, char **argv) {
     }
 
     tabela_liberar();
-    fclose(arquivo);
+    
+    if (arquivo) {
+        fclose(arquivo);
+    }
     
     return (parse_result != 0 || interpret_error);
 }
