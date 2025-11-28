@@ -62,6 +62,7 @@ int         float       char        string
 
 #### **Comentários**
 O lexer suporta dois tipos de comentários:
+
 - **Comentário de linha:** `// comentário até o fim da linha`
 - **Comentário de bloco:** `/* comentário em múltiplas linhas */`
 
@@ -77,6 +78,7 @@ A linguagem suporta os seguintes tipos de dados primitivos:
 | `string` | Cadeia de caracteres | `string nome = "João";` | `"Hello"`, `"Mundo"` |
 
 **Observações sobre tipos:**
+
 - Inteiros são representados sem ponto decimal
 - Floats devem conter pelo menos um dígito após o ponto (ex: `2.0` não apenas `2.`)
 - Chars são delimitados por aspas simples (`'`)

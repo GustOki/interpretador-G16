@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     else if (argc == 1) {
         yyin = stdin; 
         printf("=== Interpretador Interativo ===\n");
-        printf("Digite o código. Pressione Ctrl+D (Linux/Mac) ou Ctrl+Z (Windows) para finalizar e executar.\n\n");
+        printf("Digite o código. Pressione Ctrl+D para finalizar e executar.\n\n");
     } 
     else {
         fprintf(stderr, "Uso: %s [arquivo_do_script]\n", argv[0]);

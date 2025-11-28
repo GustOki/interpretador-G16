@@ -11,6 +11,7 @@ make test
 ```
 
 O sistema de testes:
+
 - ✅ Compila o interpretador automaticamente
 - ✅ Executa todos os casos de teste válidos e inválidos
 - ✅ Compara saídas com gabaritos esperados
@@ -38,6 +39,7 @@ tests/valid/
 ```
 
 **Critérios de aprovação:**
+
 - Interpretador retorna exit code 0
 - Saída impressa em `stdout` é idêntica ao arquivo `.out` correspondente
 - Nenhum erro de segmentação ou vazamento de memória
@@ -59,6 +61,7 @@ tests/invalid/
 ```
 
 **Critérios de aprovação:**
+
 - Interpretador retorna exit code diferente de 0
 - Mensagem de erro clara é emitida
 - Programa não trava ou causa comportamento indefinido

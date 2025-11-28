@@ -48,6 +48,7 @@ make
 ```
 
 O processo de compilação executa automaticamente:
+
 1. Geração do lexer (Flex): `lexer/lex.yy.c`
 2. Geração do parser (Bison): `parser/parser.tab.c` e `parser/parser.tab.h`
 3. Compilação de todos os arquivos `.c` em `src/`
