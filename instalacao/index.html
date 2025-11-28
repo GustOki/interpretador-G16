@@ -1,0 +1,947 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://GustOki.github.io/interpretador-G16/instalacao/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../linguagem/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Como Rodar - Interpretador G16</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#como-rodar-o-projeto" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Interpretador G16" class="md-header__button md-logo" aria-label="Interpretador G16" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Interpretador G16
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Como Rodar
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GustOki/interpretador-G16" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GustOki/interpretador-G16
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Interpretador G16" class="md-nav__button md-logo" aria-label="Interpretador G16" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Interpretador G16
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GustOki/interpretador-G16" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GustOki/interpretador-G16
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Como Rodar
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Como Rodar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pre-requisitos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Pré-requisitos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compilacao-e-execucao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Compilação e Execução
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Compilação e Execução">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compilar-o-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compilar o Projeto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limpar-arquivos-gerados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limpar Arquivos Gerados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#executar-um-script-manualmente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executar um Script Manualmente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recompilar-tudo-do-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recompilar Tudo do Zero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estrutura-do-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estrutura do Projeto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxo-de-trabalho-com-git" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Fluxo de Trabalho com Git
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Fluxo de Trabalho com Git">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrutura-de-branches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estrutura de Branches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#processo-de-desenvolvimento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Processo de Desenvolvimento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convencao-de-commits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenção de Commits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../linguagem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linguagem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sprints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sprints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../atas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pre-requisitos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Pré-requisitos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compilacao-e-execucao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Compilação e Execução
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Compilação e Execução">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compilar-o-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compilar o Projeto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limpar-arquivos-gerados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limpar Arquivos Gerados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#executar-um-script-manualmente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executar um Script Manualmente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recompilar-tudo-do-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recompilar Tudo do Zero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estrutura-do-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estrutura do Projeto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxo-de-trabalho-com-git" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Fluxo de Trabalho com Git
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Fluxo de Trabalho com Git">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrutura-de-branches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estrutura de Branches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#processo-de-desenvolvimento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Processo de Desenvolvimento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convencao-de-commits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenção de Commits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="como-rodar-o-projeto">Como Rodar o Projeto</h1>
+<h2 id="pre-requisitos">🛠️ Pré-requisitos</h2>
+<p>Para compilar e rodar o projeto, você precisará das seguintes ferramentas instaladas:</p>
+<ul>
+<li><strong>GCC</strong> (Compilador C - versão 7.0 ou superior recomendada)</li>
+<li><strong>Flex</strong> (Fast Lexical Analyzer - versão 2.6+)</li>
+<li><strong>Bison</strong> (GNU Parser Generator - versão 3.0+)</li>
+<li><strong>Python 3</strong> (Para rodar a suíte de testes - versão 3.6+)</li>
+<li><strong>Make</strong> (GNU Make para automação de build)</li>
+</ul>
+<p><strong>Instalação no Ubuntu/Debian/WSL:</strong></p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>flex<span class="w"> </span>bison<span class="w"> </span>python3
+</code></pre></div>
+<p><strong>Instalação no macOS:</strong></p>
+<div class="highlight"><pre><span></span><code>brew<span class="w"> </span>install<span class="w"> </span>flex<span class="w"> </span>bison<span class="w"> </span>make<span class="w"> </span>python3
+</code></pre></div>
+<p><strong>Verificação da instalação:</strong></p>
+<div class="highlight"><pre><span></span><code>gcc<span class="w"> </span>--version
+flex<span class="w"> </span>--version
+bison<span class="w"> </span>--version
+python3<span class="w"> </span>--version
+make<span class="w"> </span>--version
+</code></pre></div>
+<hr />
+<h2 id="compilacao-e-execucao">🚀 Compilação e Execução</h2>
+<p>O projeto utiliza um Makefile para automatizar todo o processo de build.</p>
+<h3 id="compilar-o-projeto">Compilar o Projeto</h3>
+<p>Gera o executável <code>interpretador</code> na pasta <code>build/</code>:</p>
+<div class="highlight"><pre><span></span><code>make
+</code></pre></div>
+<p>O processo de compilação executa automaticamente:</p>
+<ol>
+<li>Geração do lexer (Flex): <code>lexer/lex.yy.c</code></li>
+<li>Geração do parser (Bison): <code>parser/parser.tab.c</code> e <code>parser/parser.tab.h</code></li>
+<li>Compilação de todos os arquivos <code>.c</code> em <code>src/</code></li>
+<li>Linkagem final para produzir <code>build/interpretador</code></li>
+</ol>
+<h3 id="limpar-arquivos-gerados">Limpar Arquivos Gerados</h3>
+<p>Remove a pasta <code>build/</code> e todos os arquivos gerados automaticamente:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>clean
+</code></pre></div>
+<h3 id="executar-um-script-manualmente">Executar um Script Manualmente</h3>
+<p>Para interpretar um arquivo específico da nossa linguagem:</p>
+<div class="highlight"><pre><span></span><code>./build/interpretador<span class="w"> </span>caminho/para/arquivo.lang
+</code></pre></div>
+<p><strong>Exemplo:</strong>
+<div class="highlight"><pre><span></span><code>./build/interpretador<span class="w"> </span>tests/valid/fibonacci.lang
+</code></pre></div></p>
+<h3 id="recompilar-tudo-do-zero">Recompilar Tudo do Zero</h3>
+<p>Para garantir uma compilação limpa:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>clean<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make
+</code></pre></div>
+<hr />
+<h2 id="estrutura-do-projeto">Estrutura do Projeto</h2>
+<div class="highlight"><pre><span></span><code>interpretador-grupo16/
+├── build/                    # Artefatos de compilação e executável final (gerado automaticamente)
+│   └── interpretador         # Executável principal (gerado pelo make)
+├── lexer/
+│   ├── lex.yy.c              # Código C gerado automaticamente pelo Flex
+│   └── lexer.l               # Especificação léxica (definição de tokens e regras)
+├── parser/
+│   ├── parser.tab.c          # Código C gerado automaticamente pelo Bison
+│   ├── parser.tab.h          # Header com definições de tokens e tipos (gerado pelo Bison)
+│   └── parser.y              # Especificação gramatical (regras de produção)
+├── src/
+│   ├── ast.c                 # Implementação da Árvore Sintática Abstrata
+│   ├── ast.h                 # Estruturas de dados e interface da AST
+│   ├── interpretador.c       # Motor de execução: avaliação de expressões e execução de comandos
+│   ├── main.c                # Ponto de entrada: leitura de arquivo, inicialização e coordenação
+│   ├── simbolo.c             # Implementação da Tabela de Símbolos (escopos e variáveis)
+│   ├── simbolo.h             # Interface da Tabela de Símbolos
+|   └── test_runner.py        # Script Python para orquestração e execução automatizada dos testes
+├── tests/                    # Suíte completa de testes automatizados
+│   ├── valid/                # Casos de teste válidos (devem executar com sucesso)
+│   │   ├── *.lang            # Código fonte dos testes
+│   │   └── *.out             # Saída esperada (gabarito) para cada teste
+│   └── invalid/              # Casos de teste com erros (devem falhar propositalmente)
+│       └── *.lang            # Código fonte com erros sintáticos ou semânticos
+├── Makefile                  # Automação completa de build, limpeza e testes
+└── README.md                 # Documentação do projeto
+</code></pre></div>
+<hr />
+<h2 id="fluxo-de-trabalho-com-git">🔄 Fluxo de Trabalho com Git</h2>
+<h3 id="estrutura-de-branches">Estrutura de Branches</h3>
+<ul>
+<li><strong><code>main</code></strong>: Branch estável, apenas código testado e aprovado</li>
+<li><strong><code>dev</code></strong>: Branch de integração para desenvolvimento ativo</li>
+<li><strong><code>feature/&lt;nome&gt;</code></strong>: Branches para novas funcionalidades individuais</li>
+<li><strong><code>fix/&lt;nome&gt;</code></strong>: Branches para correção de bugs</li>
+</ul>
+<h3 id="processo-de-desenvolvimento">Processo de Desenvolvimento</h3>
+<ol>
+<li>
+<p><strong>Criar feature branch:</strong>
+   <div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>dev
+git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>dev
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/nova-funcionalidade
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Desenvolver e commitar:</strong>
+   <div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: implementar nova funcionalidade&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Abrir Pull Request:</strong></p>
+</li>
+<li>Requer revisão de pelo menos 1 membro</li>
+<li>Todos os testes devem passar</li>
+<li>
+<p>Código deve seguir padrões de estilo</p>
+</li>
+<li>
+<p><strong>Merge em <code>dev</code>:</strong>
+   <div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>dev
+git<span class="w"> </span>merge<span class="w"> </span>feature/nova-funcionalidade
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="convencao-de-commits">Convenção de Commits</h3>
+<p>Seguir o padrão <a href="https://www.conventionalcommits.org/">Conventional Commits</a>:</p>
+<ul>
+<li><code>feat:</code> Nova funcionalidade</li>
+<li><code>fix:</code> Correção de bug</li>
+<li><code>docs:</code> Alterações em documentação</li>
+<li><code>test:</code> Adição ou modificação de testes</li>
+<li><code>refactor:</code> Refatoração de código</li>
+<li><code>style:</code> Formatação, espaços em branco</li>
+<li><code>chore:</code> Tarefas de manutenção</li>
+</ul>
+<p><strong>Exemplos:</strong>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: adicionar suporte a arrays&quot;</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;fix: corrigir vazamento de memória no parser&quot;</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;test: adicionar casos de teste para loops&quot;</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;docs: atualizar README com exemplos de uso&quot;</span>
+</code></pre></div></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.top", "toc.follow"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
