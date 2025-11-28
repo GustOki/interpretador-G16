@@ -120,4 +120,4 @@ if __name__ == "__main__":
     print("="*30)
 
     if (p_valid + p_invalid) < (t_valid + t_invalid):
-        sys.exit(1) # Falha no CI/Make
+        sys.exit(1) 
